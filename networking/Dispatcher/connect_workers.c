@@ -15,7 +15,7 @@
 void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
 {
   int             worker_fd;
-  pthread_t       *work_thread;
+
   /*
   *   TODO : Connect dispatcher to workers via TCP;
   *   : add worker to linked list;
@@ -23,9 +23,10 @@ void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
   *   : repeat for next worker;
   */
 
-  while (workers->next)
+  while (*workers)
   {
-    if (0 > (*workers.socket.fd = accept(dispatcher.server_fd, 0, 0)))
+    if (0 > (*workers.socket.fd = accept(dispatcher.server_sock.fd,
+      &dispatcher.server_sock.addr, dispatcher.server_sock.addrlen))
     {
       if (EINTR == errno)
         continue ;
@@ -33,7 +34,6 @@ void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
     }
     //add worker to linked list
     dispatcher->workers = **workers;
-    dispatcher->workers->next = workers->next;
     *workers = workers->next;
   }
   return ;

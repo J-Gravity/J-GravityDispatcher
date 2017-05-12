@@ -10,8 +10,16 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-void  send_to_worker(t_dispatcher *dispatcher)
+void  send_to_worker(t_dispatcher *dispatcher, t_worker worker, t_work_unit *data)
 {
-  write(dispatcher->worker_connections, dispatcher->data, sizeof(data) * );
+
+  /*
+  *   TODO : ERROR CHECKING where needed;
+  *   : define whether data is type t_work_unit or t_dataset;
+  *   :
+  */
+
+  if (0 > (write(worker.socket.fd, data, data.cell.body_count)))
+    ft_error();
   return ;
 }

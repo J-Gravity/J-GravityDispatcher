@@ -89,7 +89,7 @@ typedef struct			s_dispatcher
 	int					cell_cnt;
 	int					unassigned_cells;
 	t_socket			server_sock;
-	t_lst				worker_connections;
+	t_lst				worker_connections; // Please clarify;
 }						t_dispatcher;
 
 /*

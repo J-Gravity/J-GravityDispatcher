@@ -15,5 +15,9 @@
 void  broadcast_super_particle(t_dispatcher *dispatcher, t_body *body)
 {
 
+  /*
+  *   TODO : broad cast a super particle to all the cells for their computation of the next tick;
+  */
+
   return ;
 }
