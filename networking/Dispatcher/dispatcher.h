@@ -70,6 +70,7 @@ typedef struct			s_worker
 	t_cell				*acitve_cells;
 	int					cell_cnt;
 	char				*compute_class;
+	pthread_t			*event_tid;
 	t_socket			socket;
 }						t_worker;
 
