@@ -71,6 +71,7 @@ typedef struct			s_worker
 	int					cell_cnt;
 	char				*compute_class;
 	t_socket			socket;
+	char 					*id;
 }						t_worker;
 
 typedef struct			s_dataset
