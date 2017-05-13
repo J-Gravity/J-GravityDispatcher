@@ -214,4 +214,43 @@ int 		request_cache_dump(t_dispatcher *dispatcher, t_worker *worker);
 */
 int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
 
+/*
+*	Handles the request for broadacasting a super particle to all the
+*	other cells in the simulation
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that made the request
+*		@param	msg	The message sent by the worker
+*/
+void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	*msg);
+
+/*
+*	Handles the notificaion from the worker that their storage threashold
+*	is almost reached
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that sent the notification message
+*		@param	msg	The message sent by the worker
+*/
+void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	*msg);
+
+/*
+*	Handles the worker's request for a work unit to process
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that made the request
+*		@param	msg	The message sent by the worker
+*/
+void		handle_work_unit_req(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	*msg);
+
+/*
+*	Handles the worker's notification that it is done with its assigned
+*	work unit
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that sent the message
+*		@param	msg	The message sent by the worker
+*/
+void		handle_worker_done_msg(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	*msg);
+
 #endif
