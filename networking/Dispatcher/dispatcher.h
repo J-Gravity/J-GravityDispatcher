@@ -13,6 +13,7 @@
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define PORT 4242
+# define HEADER_SIZE 5
 # include <stdio.h>
 # include <sys/socket.h>
 # include <stdlib.h>
@@ -28,6 +29,14 @@ typedef struct			s_lst
 	size_t				data_size;
 	struct s_lst		*next;
 }						t_lst;
+
+typedef struct			s_msg
+{
+	char				id;
+	int					size;
+	char				*data;
+	int					error;
+}						t_msg;
 
 typedef struct			s_vect3f
 {
