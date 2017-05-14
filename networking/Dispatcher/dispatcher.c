@@ -30,24 +30,6 @@ char	*ftob(float value)
 	return string;	
 }
 
-int		btoi(char *str)
-{
-	int				ret;
-
-	for (unsigned int i = 0; i < sizeof(int); i++)
-		((char *)(&ret))[i] = str[i];
-	return (ret);
-}
-
-float	btof(char *str)
-{
-	float	ret;
-
-	for (unsigned int i = 0; i < sizeof(float); i++)
-		((char *)(&ret))[i] = str[i];
-	return (ret);
-}
-
 void	strbjoin(t_serial *serial, char const *s2, size_t size)
 {
 	char	*copy;
@@ -88,44 +70,100 @@ char	*work_unit_serializer(t_work_unit *work_unit)
 		strbjoin(serial, ftob(work_unit->cell.contained_bodies[i]->velocity.x), sizeof(float));
 		strbjoin(serial, ftob(work_unit->cell.contained_bodies[i]->velocity.y), sizeof(float));
 		strbjoin(serial, ftob(work_unit->cell.contained_bodies[i]->velocity.z), sizeof(float));
+		strbjoin(serial, ftob(work_unit->cell.contained_bodies[i]->mass), sizeof(float));
 	}
-	printf("serial->len %d\n", serial->len);
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.position.x), sizeof(float));
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.position.y), sizeof(float));
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.position.z), sizeof(float));
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.velocity.x), sizeof(float));
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.velocity.y), sizeof(float));
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.velocity.z), sizeof(float));
+	strbjoin(serial, ftob(work_unit->cell.cell_as_body.mass), sizeof(float));
+	strbjoin(serial, itob(work_unit->adjoining_cells_cnt), sizeof(int));
+	for (int i = 0; i < work_unit->adjoining_cells_cnt; i++)
+	{
+		strbjoin(serial, itob(work_unit->adjoining_cells[i].body_count), sizeof(int));
+		for (int x = 0; x < work_unit->adjoining_cells[i].body_count; x++)
+		{
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->position.x), sizeof(float));
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->position.y), sizeof(float));
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->position.z), sizeof(float));
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->velocity.x), sizeof(float));
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->velocity.y), sizeof(float));
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->velocity.z), sizeof(float));
+			strbjoin(serial, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->mass), sizeof(float));
+		}
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.position.x), sizeof(float));
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.position.y), sizeof(float));
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.position.z), sizeof(float));
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.x), sizeof(float));
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.y), sizeof(float));
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.z), sizeof(float));
+		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.mass), sizeof(float));
+	}
 	return (serial->data);
 }
 
-t_work_unit	*work_unit_parser(char *str)
-{
-	int			i;
-	t_work_unit	*work_unit;
+#include <sys/types.h>
+#include <sys/socket.h>
 
-	i = 0;
-	work_unit = malloc(sizeof(t_work_unit));
-	work_unit->compute_class = btoi(str += 4);
-	printf("wu->compute_class = %d\n", work_unit->compute_class);
-	work_unit->cell.body_count = btoi(str += 4);
-	printf("wu->body_count = %d\n", work_unit->cell.body_count);
-	work_unit->cell.contained_bodies = (t_body **)malloc(sizeof(t_body *) * work_unit->cell.body_count);
-	for (int i = 0; i < work_unit->cell.body_count; i++)
-	{
-		work_unit->cell.contained_bodies[i] = (t_body *)malloc(sizeof(t_body));
-		work_unit->cell.contained_bodies[i]->position.x = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->position.y = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->position.z = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->velocity.x = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->velocity.y = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->velocity.z = btoi(str += 4);
-	}
-	return (work_unit);
-}
+#define MYPORT "3490"  // the port users will be connecting to
+#define BACKLOG 10     // how many pending connections queue will hold
 
-void	serializer_identifier(char *str)
+int	send_message(char *serial_str)
 {
-	printf("\nserializer id: %d\n", btoi(str));
-	if (btoi(str) == 1)
-	{
-		printf("yes\n");
-		work_unit_parser(str);
-	}
+	int socket_desc , client_sock , c , read_size;
+    struct sockaddr_in server , client;
+    char client_message[2000];
+    //Create socket
+    socket_desc = socket(AF_INET , SOCK_STREAM , 0);
+    if (socket_desc == -1)
+    {
+        printf("Could not create socket");
+    }
+    puts("Socket created");
+    //Prepare the sockaddr_in structure
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = INADDR_ANY;
+    server.sin_port = htons( 8888 );
+    //Bind
+    if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
+    {
+        //print the error message
+        perror("bind failed. Error");
+        return 1;
+    }
+    puts("bind done");
+    //Listen
+    listen(socket_desc , 3);
+    //Accept and incoming connection
+    puts("Waiting for incoming connections...");
+    c = sizeof(struct sockaddr_in);
+    //accept connection from an incoming client
+    client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
+    if (client_sock < 0)
+    {
+        perror("accept failed");
+        return 1;
+    }
+    puts("Connection accepted");
+    //Receive a message from client
+    while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
+    {
+        //Send the message back to client
+        write(client_sock , client_message , strlen(client_message));
+    }
+     
+    if(read_size == 0)
+    {
+        puts("Client disconnected");
+        fflush(stdout);
+    }
+    else if(read_size == -1)
+    {
+        perror("recv failed");
+    }     
+    return 0;
 }
 
 int		main(void)
@@ -147,6 +185,7 @@ int		main(void)
 		work_unit->cell.contained_bodies[i]->velocity.x = 111111111.222;
 		work_unit->cell.contained_bodies[i]->velocity.y = 222222222.333;
 		work_unit->cell.contained_bodies[i]->velocity.z = 333333333.444;
+		work_unit->cell.contained_bodies[i]->mass = 333333333.444;
 	}
 	work_unit->adjoining_cells = malloc(sizeof(t_cell));
 	work_unit->adjoining_cells->contained_bodies = (t_body **)malloc(sizeof(t_body*));
@@ -160,14 +199,17 @@ int		main(void)
 		work_unit->adjoining_cells->contained_bodies[0][i].velocity.x = i;
 		work_unit->adjoining_cells->contained_bodies[0][i].velocity.y = i;
 		work_unit->adjoining_cells->contained_bodies[0][i].velocity.z = i;
+		work_unit->adjoining_cells->contained_bodies[0][i].mass = i;
 	}
 	work_unit->adjoining_cells->cell_as_body.velocity.x = i;
 	work_unit->adjoining_cells->cell_as_body.velocity.y = i;
 	work_unit->adjoining_cells->cell_as_body.velocity.z = i;
+	work_unit->adjoining_cells->cell_as_body.mass = i;
 	work_unit->adjoining_cells_cnt = 10;
-	work_unit->compute_class = 555;
+	work_unit->compute_class = 15;
 	serial_str = work_unit_serializer(work_unit);
-	serializer_identifier(serial_str);
+	send_message(serial_str);
+	//serializer_identifier(serial_str);
 	return (0);
 }
 
