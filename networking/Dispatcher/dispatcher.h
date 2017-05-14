@@ -13,6 +13,15 @@
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define PORT 4242
+# define HEADER_SIZE 5
+
+# define BROADCAST_SUPER_PARTICLE 1
+# define CACHE_REACHED_THREASHOLD 2
+# define WORK_UNIT_REQUEST 3
+# define WORKER_DONE 4
+# define WORKER_CONNECT 5
+# define WORK_UNITS_READY 6
+
 # include <stdio.h>
 # include <sys/socket.h>
 # include <stdlib.h>
@@ -28,6 +37,14 @@ typedef struct			s_lst
 	size_t				data_size;
 	struct s_lst		*next;
 }						t_lst;
+
+typedef struct			s_msg
+{
+	char				id;
+	int					size;
+	char				*data;
+	int					error;
+}						t_msg;
 
 typedef struct			s_vect3f
 {
@@ -70,6 +87,7 @@ typedef struct			s_worker
 	t_cell				*acitve_cells;
 	int					cell_cnt;
 	char				*compute_class;
+	pthread_t			*tid;
 	t_socket			socket;
 }						t_worker;
 
@@ -91,6 +109,20 @@ typedef struct			s_dispatcher
 	t_lst				worker_connections;
 }						t_dispatcher;
 
+typedef struct			s_thread_handler
+{
+	t_dispatcher		*dispatcher;
+	t_lst				*worker;
+}						t_thread_handler;
+
+/*
+*	Allocates and populates the thread handler struct
+*		@usage	can be freed safely with free();
+*		@param disp	A pointer to the dispatcher's main struct
+*		@param	worker	A pointer to a worker struct
+*/
+t_thread_handler	*new_thread_handler(t_dispatcher *disp, t_lst *worker);
+
 /*
 *	Setup a server socket endpoint
 *		@param	port	the port the server will run on
@@ -100,13 +132,19 @@ typedef struct			s_dispatcher
 t_socket	setup_server_socket(int port);
 
 /*
-*	Send data to a worker
-*		@param woker
-*		@param header
-*		@param data
-*		@incomplete	prototype still needs to be flushed out
+*	Listen for messages from a specific worker
+*		@param worker	The worker you want to listen for a message from
 */
-void		send_to_worker();
+t_msg	get_worker_msg(t_worker *worker);
+
+/*
+*	Send a message to a specific worker
+*		@param 	worker	The worker you want to send a message to
+*		@param	id	Message identifier (e.g. 6 for WORK_UNITS_READY)
+*		@param	data_size	The size of the body of the message to send
+*		@param	data	The body of the message to send
+*/
+void	send_worker_msg(t_worker *worker, char id, int data_size, char *data);
 
 /*
 *	Adds a worker to the workers linked list for each worker and populate
@@ -203,5 +241,44 @@ int 		request_cache_dump(t_dispatcher *dispatcher, t_worker *worker);
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
 int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
+
+/*
+*	Handles the request for broadacasting a super particle to all the
+*	other cells in the simulation
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that made the request
+*		@param	msg	The message sent by the worker
+*/
+void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	msg);
+
+/*
+*	Handles the notificaion from the worker that their storage threashold
+*	is almost reached
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that sent the notification message
+*		@param	msg	The message sent by the worker
+*/
+void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	msg);
+
+/*
+*	Handles the worker's request for a work unit to process
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that made the request
+*		@param	msg	The message sent by the worker
+*/
+void		handle_work_unit_req(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	msg);
+
+/*
+*	Handles the worker's notification that it is done with its assigned
+*	work unit
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that sent the message
+*		@param	msg	The message sent by the worker
+*/
+void		handle_worker_done_msg(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	msg);
 
 #endif
