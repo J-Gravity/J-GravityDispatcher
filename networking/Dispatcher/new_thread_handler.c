@@ -1,17 +1,11 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   send_to_worker.c                                   :+:      :+:    :+:   */
+/*   new_thread_handler.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/09 22:43:32 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/09 22:43:33 by scollet          ###   ########.fr       */
+/*   Created: 2017/05/13 21:59:46 by cyildiri          #+#    #+#             */
+/*   Updated: 2017/05/13 21:59:47 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-void  send_to_worker(t_dispatcher *dispatcher)
-{
-  write(dispatcher->worker_connections, dispatcher->data, sizeof(data) * );
-  return ;
-}
