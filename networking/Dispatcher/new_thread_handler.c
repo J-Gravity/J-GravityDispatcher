@@ -9,3 +9,13 @@
 /*   Updated: 2017/05/13 21:59:47 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
+
+t_thread_handler	*new_thread_handler(t_dispatcher *disp, t_lst *worker)
+{
+	t_thread_handler	*params;
+
+	params = (t_thread_handler	*)calloc(1, sizeof(t_thread_handler));
+	params->dispatcher = disp;
+	params->worker = worker;
+	return (params);
+}
