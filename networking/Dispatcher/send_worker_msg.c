@@ -20,7 +20,8 @@ void	send_worker_msg(t_worker *worker, char id, int data_size, char *data)
 	msg_size = HEADER_SIZE + data_size;
 	buffer = (char *)calloc(1, msg_size);
 	buffer[0] = id;
-	memcpy(&buffer[1], data, data_size);
+	memcpy(&buffer[1], data_size, sizeof(int));
+	memcpy(&buffer[5], data, data_size);
 	send(worker->socket.fd, buffer, msg_size, 0);
 	free(buffer);
 }

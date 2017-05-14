@@ -13,14 +13,6 @@
 #include "dispatcher.h"
 #include "pthread.h"
 
-static void	check_for_errors(int bytes_read, int *error)
-{
-	if (bytes_read == -1)
-		*error = -1;
-	else if (bytes_read == 0)
-		*error = 0;
-}
-
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
