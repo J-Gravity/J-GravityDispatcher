@@ -53,7 +53,7 @@ void	strbjoin(t_serial *serial, char const *s2, size_t size)
 	serial->len += size;
 }
 
-char	*work_unit_serializer(t_work_unit *work_unit)
+t_serial *work_unit_serializer(t_work_unit *work_unit)
 {
 	t_serial		*serial;
 
@@ -101,7 +101,7 @@ char	*work_unit_serializer(t_work_unit *work_unit)
 		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.z), sizeof(float));
 		strbjoin(serial, ftob(work_unit->adjoining_cells[i].cell_as_body.mass), sizeof(float));
 	}
-	return (serial->data);
+	return (serial);
 }
 
 #include <sys/types.h>
@@ -110,7 +110,7 @@ char	*work_unit_serializer(t_work_unit *work_unit)
 #define MYPORT "3490"  // the port users will be connecting to
 #define BACKLOG 10     // how many pending connections queue will hold
 
-int	send_message(char *serial_str)
+int	send_message(t_serial *serial)
 {
 	int socket_desc , client_sock , c , read_size;
     struct sockaddr_in server , client;
@@ -150,31 +150,30 @@ int	send_message(char *serial_str)
     //Receive a message from client
     while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
     {
-        //Send the message back to client
-        write(client_sock , client_message , strlen(client_message));
+    	puts("loop");
+    	printf("strlen: %d\n", serial->len);
+        write(client_sock, serial->data, serial->len);
     }
-     
     if(read_size == 0)
     {
         puts("Client disconnected");
         fflush(stdout);
     }
     else if(read_size == -1)
-    {
         perror("recv failed");
-    }     
     return 0;
 }
 
 int		main(void)
 {
 	int			i;
-	char		*serial_str;
 	t_work_unit	*work_unit;
+	t_serial		*serial;
 
 	i = -1;
 	work_unit = malloc(sizeof(t_work_unit));
-	work_unit->cell.body_count = 10;
+	work_unit->compute_class = 15;
+	work_unit->cell.body_count = 15;
 	work_unit->cell.contained_bodies = (t_body **)malloc(sizeof(t_body *) * work_unit->cell.body_count);
 	for (int i = 0; i < work_unit->cell.body_count; i++)
 	{
@@ -187,120 +186,43 @@ int		main(void)
 		work_unit->cell.contained_bodies[i]->velocity.z = 333333333.444;
 		work_unit->cell.contained_bodies[i]->mass = 333333333.444;
 	}
+	work_unit->cell.cell_as_body.position.x = 55;
+	work_unit->cell.cell_as_body.position.y = 55;
+	work_unit->cell.cell_as_body.position.z = 55;
+	work_unit->cell.cell_as_body.velocity.x = 22;
+	work_unit->cell.cell_as_body.velocity.y = 22;
+	work_unit->cell.cell_as_body.velocity.z = 22;
+	work_unit->cell.cell_as_body.mass = 100;
+	//.........adjoining cells........//
 	work_unit->adjoining_cells = malloc(sizeof(t_cell));
-	work_unit->adjoining_cells->contained_bodies = (t_body **)malloc(sizeof(t_body*));
-	work_unit->adjoining_cells->contained_bodies[0] = (t_body *)malloc(sizeof(t_body) *
-			work_unit->cell.body_count);
-	while (++i < work_unit->cell.body_count)
-	{
-		work_unit->adjoining_cells->contained_bodies[0][i].position.x = i;
-		work_unit->adjoining_cells->contained_bodies[0][i].position.y = i;
-		work_unit->adjoining_cells->contained_bodies[0][i].position.z = i;
-		work_unit->adjoining_cells->contained_bodies[0][i].velocity.x = i;
-		work_unit->adjoining_cells->contained_bodies[0][i].velocity.y = i;
-		work_unit->adjoining_cells->contained_bodies[0][i].velocity.z = i;
-		work_unit->adjoining_cells->contained_bodies[0][i].mass = i;
-	}
-	work_unit->adjoining_cells->cell_as_body.velocity.x = i;
-	work_unit->adjoining_cells->cell_as_body.velocity.y = i;
-	work_unit->adjoining_cells->cell_as_body.velocity.z = i;
-	work_unit->adjoining_cells->cell_as_body.mass = i;
 	work_unit->adjoining_cells_cnt = 10;
-	work_unit->compute_class = 15;
-	serial_str = work_unit_serializer(work_unit);
-	send_message(serial_str);
+	work_unit->adjoining_cells = (t_cell *)malloc(sizeof(t_cell) * work_unit->adjoining_cells_cnt);
+	for (int i = 0; i < work_unit->adjoining_cells_cnt; i++)
+	{
+		work_unit->adjoining_cells[i].body_count = 10;
+		work_unit->adjoining_cells[i].contained_bodies =
+			(t_body **)malloc(sizeof(t_body *) * work_unit->adjoining_cells[i].body_count);
+		for (int x = 0; x < work_unit->adjoining_cells[i].body_count; x++)
+		{
+			work_unit->adjoining_cells[i].contained_bodies[x] = (t_body *)malloc(sizeof(t_body));
+			work_unit->adjoining_cells[i].contained_bodies[x]->position.x = i * x;
+			work_unit->adjoining_cells[i].contained_bodies[x]->position.y = i * x;
+			work_unit->adjoining_cells[i].contained_bodies[x]->position.z = i * x;
+			work_unit->adjoining_cells[i].contained_bodies[x]->velocity.x = i * x;
+			work_unit->adjoining_cells[i].contained_bodies[x]->velocity.y = i * x;
+			work_unit->adjoining_cells[i].contained_bodies[x]->velocity.z = i * x;
+			work_unit->adjoining_cells[i].contained_bodies[x]->mass = i * x;
+		}
+		work_unit->adjoining_cells->cell_as_body.position.x = i;
+		work_unit->adjoining_cells->cell_as_body.position.y = i;
+		work_unit->adjoining_cells->cell_as_body.position.z = i;
+		work_unit->adjoining_cells->cell_as_body.velocity.x = i;
+		work_unit->adjoining_cells->cell_as_body.velocity.y = i;
+		work_unit->adjoining_cells->cell_as_body.velocity.z = i;
+		work_unit->adjoining_cells->cell_as_body.mass = i;
+	}
+	serial = work_unit_serializer(work_unit);
+	send_message(serial);
 	//serializer_identifier(serial_str);
 	return (0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-int		main(void)
-{
-	int			i;
-	int			body_ct;
-	t_worker	*worker;
-
-	i = -1;
-	body_ct = 10;
-	worker = malloc(sizeof(t_worker));
-	worker->active_cells = malloc(sizeof(t_cell));
-	worker->active_cells->contained_bodies = (t_body **)malloc(sizeof(t_body*));
-	worker->active_cells->contained_bodies[0] = (t_body *)malloc(sizeof(t_body) * body_ct);
-	while (++i < body_ct)
-	{
-		worker->active_cells->contained_bodies[0][i].position.x = i;
-		worker->active_cells->contained_bodies[0][i].position.y = i;
-		worker->active_cells->contained_bodies[0][i].position.z = i;
-		worker->active_cells->contained_bodies[0][i].velocity.x = i;
-		worker->active_cells->contained_bodies[0][i].velocity.y = i;
-		worker->active_cells->contained_bodies[0][i].velocity.z = i;
-	}
-		worker->active_cells->cell_as_body.velocity.x = i;
-		worker->active_cells->cell_as_body.velocity.y = i;
-		worker->active_cells->cell_as_body.velocity.z = i;
-}
-*/
-
-/*
-int		main(void)
-{
-	t_dispatcher	*dispatcher;
-
-	dispatcher = malloc(sizeof(t_dispatcher));
-	dispatcher->workers = malloc(sizeof(t_lst));
-	dispatcher->data = malloc(sizeof(t_dataset));
-	dispatcher->cells = malloc(sizeof(t_lst));
-	return (0);
-}
-*/

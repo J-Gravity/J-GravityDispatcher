@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 16:08:11 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/14 11:37:22 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/14 16:36:06 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,28 +48,62 @@ t_work_unit	*work_unit_parser(char *str)
 	work_unit->compute_class = btoi(str += 4);
 	work_unit->cell.body_count = btoi(str += 4);
 	work_unit->cell.contained_bodies = (t_body **)malloc(sizeof(t_body *) * work_unit->cell.body_count);
+	printf("f0\n");
 	for (int i = 0; i < work_unit->cell.body_count; i++)
 	{
 		work_unit->cell.contained_bodies[i] = (t_body *)malloc(sizeof(t_body));
-		work_unit->cell.contained_bodies[i]->position.x = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->position.y = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->position.z = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->velocity.x = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->velocity.y = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->velocity.z = btoi(str += 4);
-		work_unit->cell.contained_bodies[i]->mass = btoi(str += 4);
+		work_unit->cell.contained_bodies[i]->position.x = btof(str += 4);
+		work_unit->cell.contained_bodies[i]->position.y = btof(str += 4);
+		work_unit->cell.contained_bodies[i]->position.z = btof(str += 4);
+		work_unit->cell.contained_bodies[i]->velocity.x = btof(str += 4);
+		work_unit->cell.contained_bodies[i]->velocity.y = btof(str += 4);
+		work_unit->cell.contained_bodies[i]->velocity.z = btof(str += 4);
+		work_unit->cell.contained_bodies[i]->mass = btof(str += 4);
+	}
+	printf("f1\n");
+	work_unit->cell.cell_as_body.position.x = btof(str += 4);
+	work_unit->cell.cell_as_body.position.y = btof(str += 4);
+	work_unit->cell.cell_as_body.position.z = btof(str += 4);
+	work_unit->cell.cell_as_body.velocity.x = btof(str += 4);
+	work_unit->cell.cell_as_body.velocity.y = btof(str += 4);
+	work_unit->cell.cell_as_body.velocity.z = btof(str += 4);
+	work_unit->cell.cell_as_body.mass = btof(str += 4);
+	
+	work_unit->adjoining_cells_cnt = btoi(str += 4);
+	printf("count: %d\n", work_unit->adjoining_cells_cnt);
+	work_unit->adjoining_cells = (t_cell *)malloc(sizeof(t_cell) * work_unit->adjoining_cells_cnt);
+	for (int i = 0; i < work_unit->adjoining_cells_cnt; i++)
+	{
+		work_unit->adjoining_cells[i].body_count = btoi(str += 4);
+		printf("count2: %d\n", work_unit->adjoining_cells[i].body_count);
+		work_unit->adjoining_cells[i].contained_bodies =
+			(t_body **)malloc(sizeof(t_body *) * work_unit->adjoining_cells[i].body_count);
+		for (int x = 0; x < work_unit->adjoining_cells[i].body_count; x++)
+		{
+			work_unit->adjoining_cells[i].contained_bodies[x] = (t_body *)malloc(sizeof(t_body));
+			work_unit->adjoining_cells[i].contained_bodies[x]->position.x = btof(str += 4);
+			work_unit->adjoining_cells[i].contained_bodies[x]->position.y = btof(str += 4);
+			work_unit->adjoining_cells[i].contained_bodies[x]->position.z = btof(str += 4);
+			work_unit->adjoining_cells[i].contained_bodies[x]->velocity.x = btof(str += 4);
+			work_unit->adjoining_cells[i].contained_bodies[x]->velocity.y = btof(str += 4);
+			work_unit->adjoining_cells[i].contained_bodies[x]->velocity.z = btof(str += 4);
+			work_unit->adjoining_cells[i].contained_bodies[x]->mass = btof(str += 4);
+		}
+		work_unit->adjoining_cells[i].cell_as_body.position.x = btof(str += 4);
+		work_unit->adjoining_cells[i].cell_as_body.position.y = btof(str += 4);
+		work_unit->adjoining_cells[i].cell_as_body.position.z = btof(str += 4);
+		work_unit->adjoining_cells[i].cell_as_body.velocity.x = btof(str += 4);
+		work_unit->adjoining_cells[i].cell_as_body.velocity.y = btof(str += 4);
+		work_unit->adjoining_cells[i].cell_as_body.velocity.z = btof(str += 4);
+		work_unit->adjoining_cells[i].cell_as_body.mass = btof(str += 4);
 	}
 	return (work_unit);
 }
 
 void	serializer_identifier(char *str)
 {
-	printf("\nserializer id: %d\n", btoi(str));
 	if (btoi(str) == 1)
-	{
-		printf("yes\n");
 		work_unit_parser(str);
-	}
 }
 
 void	looper(struct sockaddr_in client, int server_fd, int client_fd)
@@ -114,7 +148,7 @@ int main(void)
 {
     int sock;
     struct sockaddr_in server;
-    char message[1000] , server_reply[2000];
+    char server_reply[2000];
 
     //Create socket
     sock = socket(AF_INET , SOCK_STREAM , 0);
@@ -134,21 +168,22 @@ int main(void)
     //keep communicating with server
     while(1)
     {
-        message = strdup("ready");
         //Send some data
-        if( send(sock , message , strlen(message) , 0) < 0)
+        if( send(sock , "ready" , 5 , 0) < 0)
         {
             puts("Send failed");
             return 1;
         }
         //Receive a reply from the server
-        if( recv(sock , server_reply , 2000 , 0) < 0)
+        if( recv(sock , server_reply , 4000 , 0) < 0)
         {
             puts("recv failed");
             break;
         }
+        puts("sending string\n");
         work_unit_parser(server_reply);
         puts(server_reply);
+        sleep(1);
     }
     close(sock);
     return 0;
