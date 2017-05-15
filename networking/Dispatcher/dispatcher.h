@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/05 21:22:28 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/14 15:53:34 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,12 @@ typedef struct			s_worker
 	pthread_t			*tid;
 	t_socket			socket;
 }						t_worker;
+
+typedef struct			s_serial
+{
+	char				*data;
+	int					len;
+}						t_serial;
 
 typedef struct			s_dataset
 {
