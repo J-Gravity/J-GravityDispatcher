@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   dispatcher.c                                       :+:      :+:    :+:   */
+/*   serialize_work_unit.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 20:43:09 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/14 20:43:11 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/14 20:58:45 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,8 @@ t_msg	serialize_work_unit(t_work_unit *work_unit)
 	t_msg	*msg;
 
 	msg = malloc(sizeof(msg));
-	msg->data = itob(work_unit->compute_class);
+	msg->data = calloc(1, sizeof(char));
+	msg->data[0] = work_unit->compute_class;
 	msg->size = 4;
 	strbjoin(msg, itob(work_unit->cell.body_count), sizeof(int));
 	for (int i = 0; i< work_unit->cell.body_count; i++)
