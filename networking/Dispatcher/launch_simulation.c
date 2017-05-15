@@ -34,7 +34,7 @@ static void	handle_worker_connection(t_thread_handler *params)
 
 	worker = params->worker;
 	cur_worker = (t_worker *)worker->data;
-	send_worker_msg(cur_worker, WORK_UNITS_READY, 0, "");
+	send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 0, ""));
 	while (1)
 	{
 		if (worker->next && ((t_worker *)worker->next)->tid == 0)
