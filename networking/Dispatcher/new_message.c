@@ -1,28 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   send_worker_msg.c                                  :+:      :+:    :+:   */
+/*   new_message.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/13 21:38:19 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/13 21:38:21 by cyildiri         ###   ########.fr       */
+/*   Created: 2017/05/14 21:27:02 by cyildiri          #+#    #+#             */
+/*   Updated: 2017/05/14 21:27:03 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-void	send_worker_msg(t_worker *worker, t_msg msg)
+t_msg	new_message(char id, int data_size, char *data)
 {
-	char	*buffer;
-	int		msg_size;
+	t_msg	message;
 
-	msg_size = HEADER_SIZE + msg.size;
-	buffer = (char *)calloc(1, msg_size);
-	buffer[0] = msg.id;
-	memcpy(&buffer[1], &msg.size, sizeof(int));
-	memcpy(&buffer[5], &msg.data, msg.size);
-	send(worker->socket.fd, buffer, msg_size, 0);
-	free(msg.data);
-	free(buffer);
+	message.id = id;
+	message.size = data_size;
+	message.data = (char *)calloc(1, data_size);
+	memcpy(&message.data, data, data_size);
+	return (message);
 }

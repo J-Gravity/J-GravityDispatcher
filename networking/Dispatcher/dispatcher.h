@@ -145,13 +145,20 @@ t_socket	setup_server_socket(int port);
 t_msg	get_worker_msg(t_worker *worker);
 
 /*
+*	fill in and return the t_msg(message) struct
+*		@param	id	Message identifier (e.g. 6 for WORK_UNITS_READY)
+*		@param	data_size	The size of the body of the message
+*		@param	data	The body of the message
+*		@return	the struct initialized with the parameters
+*/
+t_msg	new_message(char id, int data_size, char *data);
+
+/*
 *	Send a message to a specific worker
 *		@param 	worker	The worker you want to send a message to
-*		@param	id	Message identifier (e.g. 6 for WORK_UNITS_READY)
-*		@param	data_size	The size of the body of the message to send
-*		@param	data	The body of the message to send
+*		@param	msg	The message(struct) to send to the worker
 */
-void	send_worker_msg(t_worker *worker, char id, int data_size, char *data);
+void	send_worker_msg(t_worker *worker, t_msg msg);
 
 /*
 *	Adds a worker to the workers linked list for each worker and populate
