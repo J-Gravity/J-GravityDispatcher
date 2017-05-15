@@ -21,6 +21,7 @@
 # define WORKER_DONE 4
 # define WORKER_CONNECT 5
 # define WORK_UNITS_READY 6
+# define ACKNOWLEDGED 42
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -79,12 +80,13 @@ typedef struct			s_work_unit
 	t_cell				cell;
 	t_cell				*adjoining_cells;
 	int					adjoining_cells_cnt;
-	char				*compute_class;
+	char				compute_class;
+	char				complete;
 }						t_work_unit;
 
 typedef struct			s_worker
 {
-	t_cell				*acitve_cells;
+	t_work_unit			*work_unit;
 	int					cell_cnt;
 	char				*compute_class;
 	pthread_t			*tid;
@@ -250,7 +252,7 @@ int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
 *		@param	msg	The message sent by the worker
 */
 void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg	msg);
+			t_worker *worker, t_msg msg);
 
 /*
 *	Handles the notificaion from the worker that their storage threashold
@@ -260,7 +262,7 @@ void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
 *		@param	msg	The message sent by the worker
 */
 void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg	msg);
+			t_worker *worker, t_msg msg);
 
 /*
 *	Handles the worker's request for a work unit to process
@@ -269,7 +271,7 @@ void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
 *		@param	msg	The message sent by the worker
 */
 void		handle_work_unit_req(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg	msg);
+			t_worker *worker, t_msg msg);
 
 /*
 *	Handles the worker's notification that it is done with its assigned
@@ -279,6 +281,6 @@ void		handle_work_unit_req(t_dispatcher *dispatcher,
 *		@param	msg	The message sent by the worker
 */
 void		handle_worker_done_msg(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg	msg);
+			t_worker *worker, t_msg msg);
 
 #endif
