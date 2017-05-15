@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/14 21:06:35 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/14 21:47:22 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,11 +196,11 @@ void 		save_output(t_dispatcher *dispatcher);
 
 /*
 *	Send a work unit to a specified worker
-*		@param	dispatcher	The dispatcher's main struct
 *		@param	worker	worker to recieve the work unit
+*		@param	work_unit	non-completed work unit
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
-int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
+int			send_work_unit(t_worker *worker, t_work_unit *work_unit);
 
 /*
 *	Handles the worker's request for a work unit to process
@@ -271,15 +271,6 @@ int 		dump_all_workers_cache(t_dispatcher *dispatcher);
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
 int 		request_cache_dump(t_dispatcher *dispatcher, t_worker *worker);
-
-/*
-
-*	Send a work unit to a specified worker
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	worker	worker to recieve the work unit
-*		@return	0 if the request was fullfilled. 1 otherwise
-*/
-int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
 
 /*
 *	Serializes the work_unit struct and stores it in the message struct
