@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/14 15:53:34 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/14 21:06:35 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,7 @@ typedef struct			s_serial
 
 typedef struct			s_dataset
 {
-	t_body				*particles
+	t_body				*particles;
 	int					particle_cnt;
 }						t_dataset;
 
