@@ -10,6 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "dispatcher.h"
+
 void		handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
@@ -20,9 +22,9 @@ void		handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	new_work_unit = deserialize_work_unit(msg);
 	old_work_unit = worker->work_unit;
 	i = 0;
-	while (i < old_work_unit->cell->body_count)
+	while (i < old_work_unit->cell.body_count)
 	{
-		memcpy(old_work_unit->cell->contained_bodies[i],
+		memcpy(old_work_unit->cell.contained_bodies[i],
 			new_work_unit.cell.contained_bodies[i], sizeof(t_body));
 		i++;
 	}
