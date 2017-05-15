@@ -16,11 +16,7 @@
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
-	if (msg.id == BROADCAST_SUPER_PARTICLE)
-		handle_broadcast_super_particle_req(dispatcher, worker, msg);
-	else if (msg.id == CACHE_REACHED_THREASHOLD)
-		handle_cache_threshold_reached(dispatcher, worker, msg);
-	else if (msg.id == WORK_UNIT_REQUEST)
+	if (msg.id == WORK_UNIT_REQUEST)
 		handle_work_unit_req(dispatcher, worker, msg);
 	else if (msg.id == WORKER_DONE)
 		handle_worker_done_msg(dispatcher, worker, msg);

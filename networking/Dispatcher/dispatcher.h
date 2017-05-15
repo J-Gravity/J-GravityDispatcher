@@ -18,10 +18,11 @@
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
 # define WORK_UNIT_REQUEST 3
-# define WORKER_DONE 4
-# define WORKER_CONNECT 5
-# define WORK_UNITS_READY 6
 # define ACKNOWLEDGED 42
+# define WORKER_CONNECT 3
+# define WORK_UNITS_READY 4
+# define WORK_UNIT 6
+# define WORK_UNIT_DONE 7
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -88,14 +89,15 @@ typedef struct			s_worker
 {
 	t_work_unit			*work_unit;
 	int					cell_cnt;
-	char				*compute_class;
+	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
 }						t_worker;
 
 typedef struct			s_dataset
 {
-
+	t_body				*particles
+	int					particle_cnt;
 }						t_dataset;
 
 typedef struct			s_dispatcher
@@ -103,12 +105,9 @@ typedef struct			s_dispatcher
 	t_lst				*workers;
 	int					worker_cnt;
 	t_dataset			*dataset;
-	t_lst				*cells;
 	t_lst				*work_units;
-	int					cell_cnt;
-	int					unassigned_cells;
+	int					work_units_done;
 	t_socket			server_sock;
-	t_lst				worker_connections;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -172,7 +171,7 @@ void		request_dataset(t_dispatcher *dispatcher, t_dataset **init_data);
 *		@param	dataset	The dataset that would be divided into work_units
 *		@param	work_units	Linked list of the work units
 */
-void		divide_dataset(t_dispatcher *dispatcher, t_dataset *init_data,
+void		divide_dataset(t_dispatcher *dispatcher, t_dataset *dataset,
 			t_lst **work_units);
 
 /*
@@ -183,18 +182,50 @@ void		divide_dataset(t_dispatcher *dispatcher, t_dataset *init_data,
 void		launch_simulation(t_dispatcher *dispatcher);
 
 /*
-*	Coalesce all cells for each tick into a full tick
-*		@param	dispatcher	The dispatcher's main struct
-*		@incomplete	prototype still needs to be flushed out
-*/
-void		coalesce_into_ticks(t_dispatcher *dispatcher);
-
-/*
 *	Save the ticks to the appropriate file format
 *		@param	dispatcher	The dispatcher's main struct
 *		@incomplete	prototype still needs to be flushed out
 */
 void 		save_output(t_dispatcher *dispatcher);
+
+/*
+*	Send a work unit to a specified worker
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	worker to recieve the work unit
+*		@return	0 if the request was fullfilled. 1 otherwise
+*/
+int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
+
+/*
+*	Handles the worker's request for a work unit to process
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that made the request
+*		@param	msg	The message sent by the worker
+*/
+void		handle_work_unit_req(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	msg);
+
+/*
+*	Handles the worker's notification that it is done with its assigned
+*	work unit
+*		@param	dispatcher	The dispatcher's main struct
+*		@param	worker	The worker that sent the message
+*		@param	msg	The message sent by the worker
+*/
+void		handle_worker_done_msg(t_dispatcher *dispatcher,
+			t_worker *worker, t_msg	msg);
+
+/*******************************************************************************
+********************************************************************************
+                 POTENTIAL OPTIMIZATIONS AFTER MVP COMPLETE
+********************************************************************************
+*******************************************************************************/
+/*
+*	Coalesce all cells for each tick into a full tick
+*		@param	dispatcher	The dispatcher's main struct
+*		@incomplete	prototype still needs to be flushed out
+*/
+void		coalesce_into_ticks(t_dispatcher *dispatcher);
 
 /*
 *	Broadcast a super particle to all the cells for their computaiton
@@ -203,7 +234,6 @@ void 		save_output(t_dispatcher *dispatcher);
 *		@param	body	The super particle that represents a cell
 */
 void		broadcast_super_particle(t_dispatcher *dispatcher, t_body *body);
-
 
 /*
 *	get the cell where the specified particle belongs
@@ -237,6 +267,7 @@ int 		dump_all_workers_cache(t_dispatcher *dispatcher);
 int 		request_cache_dump(t_dispatcher *dispatcher, t_worker *worker);
 
 /*
+
 *	Send a work unit to a specified worker
 *		@param	dispatcher	The dispatcher's main struct
 *		@param	worker	worker to recieve the work unit
@@ -259,6 +290,7 @@ t_msg		serialize_work_unit(t_work_unit *work_unit);
 t_work_unit	deserialize_work_unit(t_msg msg);
 
 /*
+
 *	Handles the request for broadacasting a super particle to all the
 *	other cells in the simulation
 *		@param	dispatcher	The dispatcher's main struct
@@ -278,6 +310,7 @@ void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
 void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg msg);
 
+
 /*
 *	Handles the worker's request for a work unit to process
 *		@param	dispatcher	The dispatcher's main struct
@@ -296,5 +329,4 @@ void		handle_work_unit_req(t_dispatcher *dispatcher,
 */
 void		handle_worker_done_msg(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg msg);
-
 #endif
