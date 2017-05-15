@@ -17,7 +17,7 @@ void		handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	t_work_unit	*old_work_unit;
 	int i;
 
-	new_work_unit = read_work_unit(msg);
+	new_work_unit = deserialize_work_unit(msg);
 	old_work_unit = worker->work_unit;
 	i = 0;
 	while (i < old_work_unit->cell->body_count)
