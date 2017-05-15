@@ -245,6 +245,13 @@ int 		request_cache_dump(t_dispatcher *dispatcher, t_worker *worker);
 int			send_work_unit(t_dispatcher *dispatcher, t_worker *worker);
 
 /*
+*	Parse the data of a worker message and write it to t_work_unit struct
+*		@param	msg	The message from the worker that contains a complete
+					work unit
+*/
+t_work_unit deserialize_work_unit(t_msg msg);
+
+/*
 *	Handles the request for broadacasting a super particle to all the
 *	other cells in the simulation
 *		@param	dispatcher	The dispatcher's main struct
