@@ -92,6 +92,7 @@ typedef struct			s_worker
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
+	char 					*id;
 }						t_worker;
 
 typedef struct			s_serial

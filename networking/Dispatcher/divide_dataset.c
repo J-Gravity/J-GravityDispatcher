@@ -23,9 +23,14 @@ void	divide_dataset(t_dispatcher *dispatcher, t_dataset *dataset, t_lst **work_u
 		((t_work_unit *)((*work_units)->data))->cell = cell;
 		((t_work_unit *)((*work_units)->data))->compute_class = 5;
     /*
-    *   TODO : Recursively divide the dataset;
+    *   TODO : Recursively divide the dataset using barnes_hut();
     *   TODO : Store results of Barne's Hut Algorithm in a cell;
-    *   TODO : Store the cell inside of work_unit and assign a compute_class;
+    *   @Optimization TODO : assign a compute_class;
+    */
+
+    /*
+    *   TODO : Assign the result of Barne's Hut Algorithm to every field of the work_units;
+    *     ex.: work_unit->cell->contained_bodies.position.x = barnes_hut()[0];
     */
 	}
 	return ;
