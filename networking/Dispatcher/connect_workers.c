@@ -6,11 +6,12 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/08 21:10:03 by scollet          ###   ########.fr       */
+/*   Updated: 2017/05/15 12:30:00 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
+#include <unistd.h>
 
 void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
 {

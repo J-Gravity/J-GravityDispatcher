@@ -6,7 +6,7 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:42:50 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/09 22:42:51 by scollet          ###   ########.fr       */
+/*   Updated: 2017/05/16 11:01:46 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 t_cell  *find_appropriate_cell(t_dispatcher *dispatcher, t_body *body)
 {
-  t_cell  cell;
+  t_cell  *cell;
 
   /*
   *   TODO : find cell where *body belongs and return cell;

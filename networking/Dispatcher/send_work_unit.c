@@ -6,20 +6,18 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:42:08 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/09 22:42:12 by scollet          ###   ########.fr       */
+/*   Updated: 2017/05/16 13:24:55 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-int   send_work_unit(t_dispatcher *dispatcher, t_worker *worker)
+int		send_work_unit(t_worker *worker, t_work_unit *work_unit)
 {
-  if ((worker) && (*worker))
-  {
-    if (0 > (write(worker.socket.fd, dispatcher->work_units,
-      dispatcher->work_units.cell.body_count)))
-      return (1);
-    return (0);
-  }
-  return (1);
+	t_msg	msg;
+
+	msg = serialize_work_unit(work_unit);
+	msg.id = 1;
+	send_worker_msg(worker, msg);
+	return (0);
 }

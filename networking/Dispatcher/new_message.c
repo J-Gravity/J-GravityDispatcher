@@ -1,22 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   send_particle.c                                    :+:      :+:    :+:   */
+/*   new_message.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/09 22:34:22 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/16 13:10:09 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/14 21:27:02 by cyildiri          #+#    #+#             */
+/*   Updated: 2017/05/14 21:27:03 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
-#include <unistd.h>
 
-void  send_particle(t_dispatcher *dispatcher, t_body *body, t_cell *cell)
+t_msg	new_message(char id, int data_size, char *data)
 {
-  /*
-  * TODO : send particle to a new cell;
-  */
-  return ;
+	t_msg	message;
+
+	message.id = id;
+	message.size = data_size;
+	message.data = (char *)calloc(1, data_size);
+	memcpy(&message.data, data, data_size);
+	return (message);
 }

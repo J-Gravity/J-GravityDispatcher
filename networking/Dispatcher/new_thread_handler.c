@@ -1,22 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   send_particle.c                                    :+:      :+:    :+:   */
+/*   new_thread_handler.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/09 22:34:22 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/16 13:10:09 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/13 21:59:46 by cyildiri          #+#    #+#             */
+/*   Updated: 2017/05/16 12:43:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
-#include <unistd.h>
 
-void  send_particle(t_dispatcher *dispatcher, t_body *body, t_cell *cell)
+t_thread_handler	*new_thread_handler(t_dispatcher *disp, t_lst *worker)
 {
-  /*
-  * TODO : send particle to a new cell;
-  */
-  return ;
+	t_thread_handler	*params;
+
+	params = (t_thread_handler	*)calloc(1, sizeof(t_thread_handler));
+	params->dispatcher = disp;
+	params->worker = worker;
+	return (params);
 }
