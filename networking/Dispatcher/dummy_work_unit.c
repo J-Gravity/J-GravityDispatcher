@@ -1,3 +1,6 @@
+
+#include "dispatcher.h"
+
 int		main(void)
 {
 	int			i;
@@ -56,7 +59,5 @@ int		main(void)
 		work_unit->adjoining_cells->cell_as_body.mass = i;
 	}
 	msg = serialize_work_unit(work_unit);
-	send_message(msg);
-	//serializer_identifier(serial_str);
 	return (0);
 }

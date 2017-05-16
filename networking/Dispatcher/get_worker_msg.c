@@ -6,11 +6,11 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/13 21:57:37 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/16 11:02:19 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <dispatcher.h>
+#include "dispatcher.h"
 
 static void	check_for_errors(int bytes_read, int *error)
 {
@@ -32,7 +32,7 @@ t_msg	get_worker_msg(t_worker *worker)
 	if (bytes_read == HEADER_SIZE)
 	{
 		msg.id = buffer[0];
-		memcpy(&msg.size, &buffer[1], sizof(int));
+		memcpy(&msg.size, &buffer[1], sizeof(int));
 		msg.data = (char *)calloc(1, msg.size);
 		bytes_read = recv(worker->socket.fd, msg.data, msg.size, 0);
 		if (bytes_read != msg.size)
