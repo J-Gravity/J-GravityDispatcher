@@ -79,7 +79,7 @@ typedef struct			s_cell
 typedef struct			s_work_unit
 {
 	t_cell				cell;
-	t_cell				*adjoining_cells;
+	t_cell				**adjoining_cells;
 	int					adjoining_cells_cnt;
 	char				compute_class;
 	char				complete;
@@ -103,17 +103,24 @@ typedef struct			s_serial
 
 typedef struct			s_dataset
 {
+	long				particle_cnt;
+	double				max_scale;
 	t_body				*particles;
-	int					particle_cnt;
 }						t_dataset;
 
 typedef struct			s_dispatcher
 {
+	char				*name;
 	t_lst				*workers;
 	int					worker_cnt;
 	t_dataset			*dataset;
+	int					ticks_cnt;
+	int					ticks_done;
 	t_lst				*work_units;
+	int					work_units_cnt;
 	int					work_units_done;
+	t_cell				*cells;
+	int					cell_count;
 	t_socket			server_sock;
 }						t_dispatcher;
 
@@ -196,11 +203,11 @@ void		divide_dataset(t_dispatcher *dispatcher, t_dataset *dataset,
 void		launch_simulation(t_dispatcher *dispatcher);
 
 /*
-*	Save the ticks to the appropriate file format
+*	Save the latest tick to file with the output file format
 *		@param	dispatcher	The dispatcher's main struct
-*		@incomplete	prototype still needs to be flushed out
+*		@param	name	The name for the output files
 */
-void 		save_output(t_dispatcher *dispatcher);
+void 		save_output(t_dispatcher *dispatcher, char *name);
 
 /*
 *	Send a work unit to a specified worker
@@ -242,6 +249,18 @@ void		handle_work_unit_req(t_dispatcher *dispatcher,
 */
 void		handle_worker_done_msg(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg	msg);
+
+/*
+*	Handles the TICK_COMPLETE_EVENT
+*		@param	dispatcher	The dispatcher's main struct
+*/
+void		all_work_units_done(t_dispatcher *dispatcher);
+
+/*
+*	Broadcast message to all workers
+*		@param	dispatcher	The dispatcher's main struct
+*/
+void		broadcast_worker_msg(t_lst *workers, t_msg msg);
 
 /*******************************************************************************
 ********************************************************************************

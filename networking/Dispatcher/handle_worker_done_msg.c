@@ -29,5 +29,10 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		i++;
 	}
 	old_work_unit->complete = 1;
+	dispatcher->work_units_done++;
+	if (dispatcher->work_units_done == dispatcher->work_units_cnt)
+	{
+		all_work_units_done(dispatcher);
+	}
 	send_worker_msg(worker, new_message(ACKNOWLEDGED, 0, ""));
 }
