@@ -12,34 +12,37 @@
 
 #include "dispatcher.h"
 
-int   read_into_dataset(FILE *fp, t_dispatcher *dispatcher, t_dataset **init_data)
+int   read_into_dataset(FILE *fp, t_dispatcher *dispatcher)
 {
   int     bytes_read = 0;
 
+
+  //int sscanf(const char *str, const char *format, ...)
+
   if (0 >= (fp))
     return (-1);
-  if ((**init_data))
+  while (bytes_read)
   {
     /* READ PARTICLE POSITION */
-    fread(dispatcher.dataset.particles.position.x,
-      sizeof(float), 4, fp));
-    fread(dispatcher.dataset.particles.position.y,
-        sizeof(float), 4, fp)));
-    fread(dispatcher.dataset.particles.position.z,
+    fread(&dispatcher->dataset->particles->position.x,
+      sizeof(float), 4, fp);
+    fread(&dispatcher->dataset->particles->position.y,
+      sizeof(float), 4, fp);
+    fread(&dispatcher->dataset->particles->position.z,
       sizeof(float), 4, fp);
     /* READ PARTICLE VELOCITY */
-    fread(dispatcher.dataset.particles.velocity.x,
+    fread(&dispatcher->dataset->particles->velocity.x,
       sizeof(float), 4, fp);
-    fread(dispatcher.dataset.particles.velocity.y,
+    fread(&dispatcher->dataset->particles->velocity.y,
       sizeof(float), 4, fp);
-    fread(dispatcher.dataset.particles.velocity.z,
-      sizeof(float), 4, fp)
+    fread(&dispatcher->dataset->particles->velocity.z,
+      sizeof(float), 4, fp);
     /* READ PARTICLE MASS */
-    if (0 > (bytes_read = fread(dispatcher.dataset.particles.mass,
-      sizeof(float), 4, fp);
-      return (-1);
-    /* PARTICLE HAS BEEN READ */
-    return (1);
+    if (0 > (bytes_read = fread(&dispatcher->dataset->particles->mass,
+      sizeof(float), 4, fp)))
+        return (-1);
+
+  /* PARTICLE HAS BEEN READ */
   }
   return (0);
 }
@@ -54,18 +57,18 @@ void  request_dataset(t_dispatcher *dispatcher, t_dataset **init_data)
 
   if (0 > (fp = fopen("./data.jgrv", "r")))
   {
-    fprintf(2, "Error opening file\n");
+    fprintf(stderr, "Error opening file\n");
     exit(0);
   }
   while ((*init_data))
   {
-    if (0 > (dispatcher.dataset.particle_cnt +=
-      read_into_dataset(fp, dispatcher, *init_data)))
+    if (0 > (dispatcher->dataset->particle_cnt +=
+      read_into_dataset(fp, dispatcher)))
     {
-      fprintf(2, "Error reading file\n");
+      fprintf(stderr, "Error reading file\n");
       exit(0);
     }
-    *++init_data;
+    ++init_data;
   }
   return ;
 }
