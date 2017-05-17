@@ -19,12 +19,13 @@ int	main(void)
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->server_sock = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 18000;
+	dispatcher->name = "mvp_test";
 	connect_workers(dispatcher, &dispatcher->workers);
 	request_dataset(dispatcher, &dispatcher->dataset);
 	divide_dataset(dispatcher, dispatcher->dataset, &dispatcher->work_units);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	//dump_all_workers_cache(dispatcher);
 	//coalesce_into_ticks(dispatcher);
-	save_output(dispatcher, "mvp_test");
+	//save_output(dispatcher, "mvp_test");
 	return (0);
 }

@@ -110,6 +110,7 @@ typedef struct			s_dataset
 
 typedef struct			s_dispatcher
 {
+	char				*name;
 	t_lst				*workers;
 	int					worker_cnt;
 	t_dataset			*dataset;
@@ -199,7 +200,7 @@ void		divide_dataset(t_dispatcher *dispatcher, t_dataset *dataset,
 void		launch_simulation(t_dispatcher *dispatcher);
 
 /*
-*	Save the ticks to the appropriate file format
+*	Save the latest tick to file with the output file format
 *		@param	dispatcher	The dispatcher's main struct
 *		@param	name	The name for the output files
 */
