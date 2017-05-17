@@ -172,11 +172,10 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 /*
 *	Get the next dataset (t_dataset) from the web server and store it in the
 *	dispatcher struct
-*		@param	dispatcher	The dispatcher's main struct
 *		@param	init_data	Pointer to the initial dataset ptr in the dispatcher
 *							struct
 */
-void		request_dataset(t_dispatcher *dispatcher, t_dataset **init_data);
+void		request_dataset(t_dataset **init_data);
 
 /*
 *	Divide up the dataset into work_units and store them in the
