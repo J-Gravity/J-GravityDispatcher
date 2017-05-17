@@ -32,6 +32,7 @@
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
+# include <OpenCL/opencl.h>
 
 typedef struct			s_lst
 {
@@ -48,13 +49,6 @@ typedef struct			s_msg
 	int					error;
 }						t_msg;
 
-typedef struct			s_vect3f
-{
-	float				x;
-	float				y;
-	float				z;
-}						t_vect3f;
-
 typedef	struct			s_socket
 {
 	int					fd;
@@ -64,9 +58,8 @@ typedef	struct			s_socket
 
 typedef struct			s_body
 {
-	t_vect3f			position;
-	t_vect3f			velocity;
-	float				mass;
+	cl_float4			position;
+	cl_float4			velocity;
 }						t_body;
 
 typedef struct			s_cell
@@ -74,22 +67,23 @@ typedef struct			s_cell
 	t_body				**contained_bodies;
 	int					body_count;
 	t_body				cell_as_body;
-	t_vect3f			force_bias;
+	cl_float4			force_bias;
 }						t_cell;
 
-typedef struct			s_work_unit
+typedef struct			s_workunit
 {
-	t_cell				cell;
-	t_cell				**adjoining_cells;
-	int					adjoining_cells_cnt;
-	char				compute_class;
-	char				complete;
-}						t_work_unit;
+	int					id;
+	int					localcount;
+	int					neighborcount;
+	t_body				*local_bodies;
+	t_body				*neighborhood;
+	cl_float4			force_bias;
+}						t_workunit;
 
 typedef struct			s_worker
 {
-	t_work_unit			*work_unit;
-	int					cell_cnt;
+	t_workunit			*workunit;
+	int					workunit_cnt;
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
@@ -119,7 +113,7 @@ typedef struct			s_dispatcher
 	t_lst				*work_units;
 	int					work_units_cnt;
 	int					work_units_done;
-	t_cell				*cells;
+	t_cell				**cells;
 	int					cell_count;
 	t_socket			server_sock;
 	char				is_connect;
