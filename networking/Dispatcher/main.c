@@ -21,7 +21,7 @@ int	main(void)
 	dispatcher->ticks_cnt = 18000;
 	dispatcher->name = "mvp_test";
 	connect_workers(dispatcher, &dispatcher->workers);
-	request_dataset(dispatcher, &dispatcher->dataset);
+	request_dataset(&dispatcher->dataset);
 	divide_dataset(&dispatcher->worker_cnt, dispatcher->dataset, &dispatcher->work_units);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	//dump_all_workers_cache(dispatcher);
