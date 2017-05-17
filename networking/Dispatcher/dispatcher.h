@@ -117,6 +117,7 @@ typedef struct			s_dispatcher
 	int					ticks_cnt;
 	int					ticks_done;
 	t_lst				*work_units;
+	int					work_units_cnt;
 	int					work_units_done;
 	t_socket			server_sock;
 }						t_dispatcher;
@@ -246,6 +247,18 @@ void		handle_work_unit_req(t_dispatcher *dispatcher,
 */
 void		handle_worker_done_msg(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg	msg);
+
+/*
+*	Handles the TICK_COMPLETE_EVENT
+*		@param	dispatcher	The dispatcher's main struct
+*/
+void		all_work_units_done(t_dispatcher *dispatcher);
+
+/*
+*	Broadcast message to all workers
+*		@param	dispatcher	The dispatcher's main struct
+*/
+void		broadcast_worker_msg(t_lst *workers, t_msg msg);
 
 /*******************************************************************************
 ********************************************************************************
