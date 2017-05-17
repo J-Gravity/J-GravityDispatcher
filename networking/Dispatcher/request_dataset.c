@@ -51,7 +51,8 @@ void  request_dataset(t_dataset **init_data)
   *   TODO : Figure out what the hell the file will be called;
   */
 
-  memset(&init_data, 0, 1);
+  *init_data = (t_dataset*)calloc(1, sizeof(t_dataset));
+  (*init_data)->particles = (t_body*)calloc(1, sizeof(t_body));
   if (0 > (fp = fopen("./data.jgrv", "r")))
   {
     fprintf(stderr, "Error opening file\n");
@@ -59,7 +60,6 @@ void  request_dataset(t_dataset **init_data)
   }
   while ((*init_data))
   {
-    *init_data = (t_dataset*)calloc(1, sizeof(t_dataset));
     if (0 > ((*init_data)->particle_cnt +=
       read_into_dataset(fp, *init_data)))
     {
