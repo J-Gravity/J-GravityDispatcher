@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 00:05:11 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 15:41:11 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,21 +209,21 @@ void 		save_output(t_dispatcher *dispatcher, char *name);
 *		@param	work_unit	non-completed work unit
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
-int			send_work_unit(t_worker *worker, t_work_unit *work_unit);
+int			send_work_unit(t_worker *worker, t_workunit *work_unit);
 
 /*
 *	Serializes the work_unit struct and stores it in the message struct
 *		@param	work_unit	The work unit that will be stored in the msg
 *		@return message struct conataining the serialized work unit
 */
-t_msg		serialize_work_unit(t_work_unit *work_unit);
+t_msg		serialize_work_unit(t_workunit *work_unit);
 
 /*
-*	Parse the data of a worker message and write it to t_work_unit struct
+*	Parse the data of a worker message and write it to t_workunit struct
 *		@param	msg	The message from the worker that contains a complete
 					work unit
 */
-t_work_unit	deserialize_work_unit(t_msg msg);
+t_workunit	deserialize_work_unit(t_msg msg);
 
 /*
 *	Handles the worker's request for a work unit to process
