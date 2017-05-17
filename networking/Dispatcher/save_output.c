@@ -14,11 +14,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-void  save_output(t_dispatcher *dispatcher, char *name)
+void	save_output(t_dispatcher *dispatcher, char *name)
 {
 	int		fd;
 	char	*filename;
-
 
 	asprintf(&filename, "%s-%d.jgrav", name, dispatcher->ticks_done);
 	if ((fd = open(filename, O_WRONLY | O_CREAT | O_APPEND)) == -1)
@@ -30,7 +29,8 @@ void  save_output(t_dispatcher *dispatcher, char *name)
 	write(fd, &dispatcher->dataset->max_scale, 4);
 	for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
 	{
-		write(fd, &dispatcher->dataset->particles[i].position, sizeof(t_vect3f));
+		write(fd, &dispatcher->dataset->particles[i].position,
+			sizeof(t_vect3f));
 		write(fd, &dispatcher->dataset->particles[i].mass, sizeof(double));
 	}
 	close(fd);
