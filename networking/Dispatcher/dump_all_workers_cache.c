@@ -6,11 +6,11 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 23:56:51 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/11 23:56:56 by scollet          ###   ########.fr       */
+/*   Updated: 2017/05/17 00:08:24 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "dispatcher.c"
+#include "dispatcher.h"
 
 int   dump_all_workers_cache(t_dispatcher *dispatcher)
 {
@@ -23,5 +23,6 @@ int   dump_all_workers_cache(t_dispatcher *dispatcher)
     {
       
     }
+	return (0);
 }
 
