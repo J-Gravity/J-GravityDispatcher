@@ -16,7 +16,7 @@ void	broadcast_worker_msg(t_lst *workers, t_msg msg)
 {
 	t_lst	*head;
 
-	head = dispatcher->workers;
+	head = workers;
 	while (head)
 	{
         send_worker_msg((t_worker *)head->data, msg);
