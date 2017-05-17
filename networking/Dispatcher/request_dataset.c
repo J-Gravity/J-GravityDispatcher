@@ -16,9 +16,6 @@ int   read_into_dataset(FILE *fp, t_dispatcher *dispatcher)
 {
   int     bytes_read = 0;
 
-
-  //int sscanf(const char *str, const char *format, ...)
-
   if (0 >= (fp))
     return (-1);
   while (bytes_read)
@@ -41,8 +38,7 @@ int   read_into_dataset(FILE *fp, t_dispatcher *dispatcher)
     if (0 > (bytes_read = fread(&dispatcher->dataset->particles->mass,
       sizeof(float), 4, fp)))
         return (-1);
-
-  /* PARTICLE HAS BEEN READ */
+    /* PARTICLE HAS BEEN READ */
   }
   return (0);
 }
@@ -52,7 +48,7 @@ void  request_dataset(t_dispatcher *dispatcher, t_dataset **init_data)
   FILE   *fp;
 
   /*
-  *   TODO : Figure out what the hell the file will be;
+  *   TODO : Figure out what the hell the file will be called;
   */
 
   if (0 > (fp = fopen("./data.jgrv", "r")))
