@@ -22,21 +22,21 @@ int   read_into_dataset(FILE *fp, t_dispatcher *dispatcher)
   {
     /* READ PARTICLE POSITION */
     fread(&dispatcher->dataset->particles->position.x,
-      sizeof(float), 4, fp);
+      sizeof(float), 1, fp);
     fread(&dispatcher->dataset->particles->position.y,
-      sizeof(float), 4, fp);
+      sizeof(float), 1, fp);
     fread(&dispatcher->dataset->particles->position.z,
-      sizeof(float), 4, fp);
+      sizeof(float), 1, fp);
     /* READ PARTICLE VELOCITY */
     fread(&dispatcher->dataset->particles->velocity.x,
-      sizeof(float), 4, fp);
+      sizeof(float), 1, fp);
     fread(&dispatcher->dataset->particles->velocity.y,
-      sizeof(float), 4, fp);
+      sizeof(float), 1, fp);
     fread(&dispatcher->dataset->particles->velocity.z,
-      sizeof(float), 4, fp);
+      sizeof(float), 1, fp);
     /* READ PARTICLE MASS */
     if (0 > (bytes_read = fread(&dispatcher->dataset->particles->mass,
-      sizeof(float), 4, fp)))
+      sizeof(float), 1, fp)))
         return (-1);
     /* PARTICLE HAS BEEN READ */
   }
