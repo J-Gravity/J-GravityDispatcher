@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/14 21:47:22 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 00:05:11 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ typedef	struct			s_socket
 {
 	int					fd;
 	struct sockaddr_in	*addr;
-	size_t				*addrlen;
+	socklen_t			*addrlen;
 }						t_socket;
 
 typedef struct			s_body
@@ -74,6 +74,7 @@ typedef struct			s_cell
 	t_body				**contained_bodies;
 	int					body_count;
 	t_body				cell_as_body;
+	t_vect3f			force_bias;
 }						t_cell;
 
 typedef struct			s_work_unit
@@ -92,7 +93,6 @@ typedef struct			s_worker
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
-	char 					*id;
 }						t_worker;
 
 typedef struct			s_serial
@@ -122,6 +122,7 @@ typedef struct			s_dispatcher
 	t_cell				*cells;
 	int					cell_count;
 	t_socket			server_sock;
+	char				is_connect;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -192,7 +193,7 @@ void		request_dataset(t_dispatcher *dispatcher, t_dataset **init_data);
 *		@param	dataset	The dataset that would be divided into work_units
 *		@param	work_units	Linked list of the work units
 */
-void		divide_dataset(t_dispatcher *dispatcher, t_dataset *dataset,
+void		divide_dataset(int *worker_cnt, t_dataset *dataset,
 			t_lst **work_units);
 
 /*

@@ -6,36 +6,47 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/15 12:30:00 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 00:05:40 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 #include <unistd.h>
+#include <pthread.h>
+
+void	*connect_worker_thread(void *param)
+{
+	t_lst			*new_worker;
+	t_socket		*server_sock;
+	t_dispatcher	*dispatcher;
+	dispatcher = (t_dispatcher *)param;
+
+	while (dispatcher->is_connect)
+	{
+		new_worker = calloc(1, sizeof(t_worker));
+		new_worker->next = dispatcher->workers;
+		dispatcher->workers = new_worker;
+		new_worker->data = (t_worker *)calloc(1, sizeof(t_worker));
+		((t_worker *)new_worker)->socket.fd = accept(server_sock->fd, (struct sockaddr *)server_sock->addr, server_sock->addrlen);
+		if (((t_worker *)new_worker)->socket.fd == -1)
+			return (0);
+		((t_worker *)new_worker)->tid = 0;
+	}
+	return (0);
+}
 
 void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
 {
-  int             worker_fd;
+	pthread_t	*worker_conn_thr;
 
-  /*
-  *   TODO : Connect dispatcher to workers via TCP;
-  *   : add worker to linked list;
-  *   : update worker socket;
-  *   : repeat for next worker;
-  */
+	/*
+	*   TODO : Connect dispatcher to workers via TCP;
+	*   : add worker to linked list;
+	*   : update worker socket;
+	*   : repeat for next worker;
+	*/
 
-  while (*workers)
-  {
-    if (0 > (*workers.socket.fd = accept(dispatcher.server_sock.fd,
-      &dispatcher.server_sock.addr, dispatcher.server_sock.addrlen))
-    {
-      if (EINTR == errno)
-        continue ;
-      ft_error();
-    }
-    //add worker to linked list
-    dispatcher->workers = **workers;
-    *workers = workers->next;
-  }
-  return ;
+	worker_conn_thr = (pthread_t *)calloc(1, sizeof(pthread_t));
+	pthread_create(worker_conn_thr, NULL, connect_worker_thread, dispatcher);
+	return ;
 }

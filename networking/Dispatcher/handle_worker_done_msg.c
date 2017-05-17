@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/14 16:35:39 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/17 00:09:41 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	i = 0;
 	while (i < old_work_unit->cell.body_count)
 	{
-		memcpy(old_work_unit->cell.contained_bodies[i],
-			new_work_unit.cell.contained_bodies[i], sizeof(t_body));
+		memcpy(old_work_unit->cell.contained_bodies[i], new_work_unit.cell.contained_bodies[i], sizeof(t_body));
 		i++;
 	}
 	old_work_unit->complete = 1;
