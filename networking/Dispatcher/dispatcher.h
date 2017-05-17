@@ -103,8 +103,9 @@ typedef struct			s_serial
 
 typedef struct			s_dataset
 {
+	long				particle_cnt;
+	double				max_scale;
 	t_body				*particles;
-	int					particle_cnt;
 }						t_dataset;
 
 typedef struct			s_dispatcher
@@ -112,6 +113,8 @@ typedef struct			s_dispatcher
 	t_lst				*workers;
 	int					worker_cnt;
 	t_dataset			*dataset;
+	int					ticks_cnt;
+	int					ticks_done;
 	t_lst				*work_units;
 	int					work_units_done;
 	t_socket			server_sock;
@@ -198,9 +201,9 @@ void		launch_simulation(t_dispatcher *dispatcher);
 /*
 *	Save the ticks to the appropriate file format
 *		@param	dispatcher	The dispatcher's main struct
-*		@incomplete	prototype still needs to be flushed out
+*		@param	name	The name for the output files
 */
-void 		save_output(t_dispatcher *dispatcher);
+void 		save_output(t_dispatcher *dispatcher, char *name);
 
 /*
 *	Send a work unit to a specified worker
