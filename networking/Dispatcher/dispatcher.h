@@ -79,7 +79,7 @@ typedef struct			s_cell
 typedef struct			s_work_unit
 {
 	t_cell				cell;
-	t_cell				*adjoining_cells;
+	t_cell				**adjoining_cells;
 	int					adjoining_cells_cnt;
 	char				compute_class;
 	char				complete;
@@ -119,6 +119,8 @@ typedef struct			s_dispatcher
 	t_lst				*work_units;
 	int					work_units_cnt;
 	int					work_units_done;
+	t_cell				*cells;
+	int					cell_count;
 	t_socket			server_sock;
 }						t_dispatcher;
 
