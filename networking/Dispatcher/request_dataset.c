@@ -12,61 +12,57 @@
 
 #include "dispatcher.h"
 
-int   read_into_dataset(FILE *fp, t_dataset *init_data)
+int   read_into_body(FILE *fp, t_body *particles)
 {
-  int     bytes_read = 0;
-
   if (0 >= (fp))
     return (-1);
-  while (bytes_read)
-  {
-    /* READ PARTICLE POSITION */
-    fread(&init_data->particles->position.x,
-      sizeof(float), 1, fp);
-    fread(&init_data->particles->position.y,
-      sizeof(float), 1, fp);
-    fread(&init_data->particles->position.z,
-      sizeof(float), 1, fp);
-    /* READ PARTICLE VELOCITY */
-    fread(&init_data->particles->velocity.x,
-      sizeof(float), 1, fp);
-    fread(&init_data->particles->velocity.y,
-      sizeof(float), 1, fp);
-    fread(&init_data->particles->velocity.z,
-      sizeof(float), 1, fp);
-    /* READ PARTICLE MASS */
-    if (0 > (bytes_read = fread(&init_data->particles->mass,
-      sizeof(float), 1, fp)))
-        return (-1);
-    /* PARTICLE HAS BEEN READ */
-  }
+  /* READ PARTICLE POSITION */
+  fread(&particles->position.x,
+    sizeof(float), 1, fp);
+  fread(&particles->position.y,
+    sizeof(float), 1, fp);
+  fread(&particles->position.z,
+    sizeof(float), 1, fp);
+  /* READ PARTICLE VELOCITY */
+  fread(&particles->velocity.x,
+    sizeof(float), 1, fp);
+  fread(&particles->velocity.y,
+    sizeof(float), 1, fp);
+  fread(&particles->velocity.z,
+    sizeof(float), 1, fp);
+  /* READ PARTICLE MASS */
+  fread(&particles->mass,
+    sizeof(float), 1, fp);
+  /* PARTICLE HAS BEEN READ */
   return (0);
 }
 
 void  request_dataset(t_dataset **init_data)
 {
-  FILE   *fp;
-
+  FILE  *fp;
+  int   p_left;
   /*
   *   TODO : Figure out what the hell the file will be called;
   */
 
-  *init_data = (t_dataset*)calloc(1, sizeof(t_dataset));
-  (*init_data)->particles = (t_body*)calloc(1, sizeof(t_body));
   if (0 > (fp = fopen("./data.jgrv", "r")))
   {
     fprintf(stderr, "Error opening file\n");
     exit(0);
   }
-  while ((*init_data))
+  fread(&(*init_data)->particle_cnt, sizeof(int), 1, fp);
+  p_left = 1 + (*init_data)->particle_cnt;
+  (*init_data)->particles = (t_body*)calloc
+    (p_left - 1, sizeof(t_body));
+  while (0 < --p_left)
   {
-    if (0 > ((*init_data)->particle_cnt +=
-      read_into_dataset(fp, *init_data)))
+    if (0 > (read_into_body(fp,
+      &(*init_data)->particles[p_left])))
     {
       fprintf(stderr, "Error reading file\n");
       exit(0);
     }
-    ++init_data;
   }
+  fclose(fp);
   return ;
 }
