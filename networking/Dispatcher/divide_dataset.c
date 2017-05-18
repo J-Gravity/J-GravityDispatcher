@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 17:10:35 by pmclaugh         ###   ########.fr       */
+/*   Updated: 2017/05/17 17:42:05 by pmclaugh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,35 @@
 #define THETA 1.5
 #define LEAF_THRESHOLD pow(2, 13)
 
-static t_bounds bounds_from_scale(double scale)
+static t_bounds bounds_from_bodies(t_body **bodies)
 {
-    //for now we are assuming data is symmetric around the origin, ie the center implied by scale is 0,0,0
-    return (t_bounds){scale / -2, scale / 2, scale / -2, scale / 2, scale / -2, scale / 2};
+    float xmin = 0, xmax = 0;
+    float ymin = 0, ymax = 0;
+    float zmin = 0, zmax = 0;
+
+    for (int i = 0; bodies[i]; i++)
+    {
+        if (bodies[i]->position.x < xmin)
+            xmin = bodies[i]->position.x;
+        if (bodies[i]->position.x > xmax)
+            xmax = bodies[i]->position.x;
+
+        if (bodies[i]->position.y < ymin)
+            ymin = bodies[i]->position.y;
+        if (bodies[i]->position.y > ymax)
+            ymax = bodies[i]->position.y;
+
+        if (bodies[i]->position.z < zmin)
+            zmin = bodies[i]->position.z;
+        if (bodies[i]->position.z > zmax)
+            zmax = bodies[i]->position.z;
+    }
+    return (t_bounds){xmin, xmax, ymin, ymax, zmin, zmax};
 }
 
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
 {
+    //add two vectors.
     return (cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
 }
 
@@ -60,9 +81,7 @@ static cl_float4 center_of_mass(t_treecell *c, t_body **bodies)
 
     v = (cl_float4){0,0,0, count_bodies(bodies)};
     if (v.w == 0)
-    {
         return (cl_float4){xmid, ymid, zmid, 0};
-    }
     for (int i = 0; bodies[i]; i++)
         v = vadd(v, bodies[i]->position);
     return (cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w};
@@ -168,8 +187,7 @@ static t_treecell **find_inners_do_outers(t_treecell *cell, t_treecell *root, t_
     }
     else
     {
-        returned = (t_treecell ***)malloc(sizeof(t_treecell **) * 9);
-        returned[8] = NULL;
+        returned = (t_treecell ***)malloc(sizeof(t_treecell **) * 8);
         int total = 0;
         for (int i = 0; i < 8; i++)
         {
@@ -233,6 +251,8 @@ static t_workunit *new_workunit(t_body **local, t_body **neighborhood, cl_float4
         w->local_bodies[i] = local[i][0];
     for (int i = 0; i < w->neighborcount; i++)
         w->neighborhood[i] = neighborhood[i][0];
+    free(local);
+    free(neighborhood);
     return (w);
 
 }
@@ -450,6 +470,7 @@ static void recursive_tree_free(t_treecell *c)
     for (int i = 0; i < 8; i++)
     {
         recursive_tree_free(c->children[i]);
+        free(c->bodies);
         free(c->children[i]);
     }
 }
@@ -466,12 +487,19 @@ void	divide_dataset(int worker_cnt, t_dataset *dataset, t_lst **work_units)
     bodies[dataset->particle_cnt] = NULL;
     for (int i = 0; i < dataset->particle_cnt; i++)
         bodies[i] = &(dataset->particles[i]);
-    t_octree *t = init_tree(bodies, dataset->particle_cnt, bounds_from_scale(dataset->max_scale));
+    t_octree *t = init_tree(bodies, dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
     t_treecell **leaves = enumerate_leaves(t->root);
     *work_units = create_workunits(t, leaves);
-    free(bodies);
     free(leaves);
-    free_tree(t);
+    free_tree(t); //bodies is freed in here
 	return ;
 }
+
+/*
+//TO DO
+    test sawyer's "sort the pointers" idea
+    optimize, optimize, optimize
+    shrink/reorganize this code if possible
+    resolve t_cell vs t_treecell conflict (maybe not necessary)
+*/
