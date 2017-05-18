@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:41:52 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 15:44:35 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int	main(void)
 	dispatcher->name = "mvp_test";
 	connect_workers(dispatcher, &dispatcher->workers);
 	request_dataset(&dispatcher->dataset);
-	divide_dataset(dispatcher->worker_cnt, dispatcher->dataset, &dispatcher->workunits);
+	divide_dataset(dispatcher);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	//dump_all_workers_cache(dispatcher);
 	//coalesce_into_ticks(dispatcher);

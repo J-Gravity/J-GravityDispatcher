@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:38:46 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 15:41:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,8 +214,7 @@ void		request_dataset(t_dataset **init_data);
 *		@param	dataset	The dataset that would be divided into workunits
 *		@param	workunits	Linked list of the work units
 */
-void		divide_dataset(int worker_cnt, t_dataset *dataset,
-			t_lst **work_units);
+void		divide_dataset(t_dispatcher *dispatcher);
 
 /*
 *		Starts the simulation by informing workers that work units are

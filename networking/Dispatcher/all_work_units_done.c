@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:13:57 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 15:40:18 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void	all_work_units_done(t_dispatcher *dispatcher)
 	// Reset work units done
 	dispatcher->workunits_done = 0;
 	// re-Divide the dataset into work units
-	divide_dataset(dispatcher->worker_cnt, dispatcher->dataset, &dispatcher->workunits);
+	divide_dataset(dispatcher);
 	// Inform all workers work units are ready
 	broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
 }

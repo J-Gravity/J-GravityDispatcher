@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:35:43 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 15:44:04 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,15 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	new_workunit = deserialize_workunit(msg);
 	old_workunit = worker->workunit;
 	i = 0;
-	while (i < old_workunit->cell.body_count)
+	while (i < old_workunit->localcount)
 	{
-		memcpy(old_workunit->cell.contained_bodies[i], new_workunit.cell.contained_bodies[i], sizeof(t_body));
+		memcpy(&old_workunit->neighborhood[i], &new_workunit.local_bodies[i], sizeof(t_body));
 		i++;
 	}
-	old_workunit->complete = 1;
 	dispatcher->workunits_done++;
 	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
 	{
-		all_work_units_done(dispatcher);
+		all_workunits_done(dispatcher);
 	}
 	send_worker_msg(worker, new_message(ACKNOWLEDGED, 0, ""));
 }
