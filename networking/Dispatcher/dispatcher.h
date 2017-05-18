@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:38:46 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 23:41:16 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ typedef struct			s_msg
 typedef	struct			s_socket
 {
 	int					fd;
-	struct sockaddr_in	*addr;
+	struct sockaddr_in	addr;
 	socklen_t			*addrlen;
 }						t_socket;
 
@@ -152,6 +152,29 @@ typedef struct			s_thread_handler
 	t_dispatcher		*dispatcher;
 	t_lst				*worker;
 }						t_thread_handler;
+
+/*
+*	Takes an cl_float4 value and converts to a binary string
+*		@value contains the cl_float4 to be converted to a string
+*/
+
+char	*clftob(cl_float4 star);
+
+/*
+*	Takes an int value and converts to a binary string
+*		@value contains the int to be converted to a string
+*/	
+
+char	*itob(int value);
+
+/*
+*	Allocates and populates a string msg->data with s2
+*		@msg contains current string
+*		@s2 contains string to be added to end of msg->data
+*		@size declares the size of s2
+*/
+
+void	strbjoin(t_msg *msg, char const *s2, size_t size);
 
 /*
 *	Allocates and populates the thread handler struct

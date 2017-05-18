@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   all_work_units_done.c                              :+:      :+:    :+:   */
+/*   all_workunits_done.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:13:57 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 22:35:30 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-void	all_work_units_done(t_dispatcher *dispatcher)
+void	all_workunits_done(t_dispatcher *dispatcher)
 {
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);

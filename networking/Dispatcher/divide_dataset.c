@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 18:05:11 by pmclaugh         ###   ########.fr       */
+/*   Updated: 2017/05/18 00:09:37 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -492,9 +492,9 @@ static void free_tree(t_octree *t)
 void	divide_dataset(int worker_cnt, t_dataset *dataset, t_lst **work_units)
 {
     t_body **bodies = (t_body **)malloc(sizeof(t_body*) * (dataset->particle_cnt + 1));
-    bodies[dataset->particle_cnt] = NULL;
-    for (int i = 0; i < dataset->particle_cnt; i++)
-        bodies[i] = &(dataset->particles[i]);
+	bodies[dataset->particle_cnt] = NULL;
+	for (int i = 0; i < dataset->particle_cnt; i++)
+		bodies[i] = &(dataset->particles[i]);
     t_octree *t = init_tree(bodies, dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
     t_treecell **leaves = enumerate_leaves(t->root);
