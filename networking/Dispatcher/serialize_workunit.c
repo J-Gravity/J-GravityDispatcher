@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/17 17:21:16 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 17:57:40 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,6 @@ char	*itob(int value)
 		string[i] = ((char *)(&value))[i];
 		i++;
 	}
-	return string;	
-}
-
-char	*ftob(float value)
-{
-	char	*string;
-
-	string = calloc(1, sizeof(float));
-	for (unsigned int i = 0; i < sizeof(float); i++)
-		string[i] = ((char *)(&value))[i];
 	return string;	
 }
 
@@ -76,22 +66,14 @@ t_msg	serialize_workunit(t_workunit *workunit)
 	strbjoin(msg, itob(workunit->localcount), sizeof(int));
 	for (int i = 0; i < workunit->localcount; i++)
 	{
-		strbjoin(msg, ftob(workunit->local_bodies[i].position.x), sizeof(float));
-		strbjoin(msg, ftob(workunit->local_bodies[i].position.y), sizeof(float));
-		strbjoin(msg, ftob(workunit->local_bodies[i].position.z), sizeof(float));
-		strbjoin(msg, ftob(workunit->local_bodies[i].velocity.x), sizeof(float));
-		strbjoin(msg, ftob(workunit->local_bodies[i].velocity.y), sizeof(float));
-		strbjoin(msg, ftob(workunit->local_bodies[i].velocity.z), sizeof(float));
+		strbjoin(msg, clftob(workunit->local_bodies[i].position), sizeof(float) * 4);
+		strbjoin(msg, clftob(workunit->local_bodies[i].velocity), sizeof(float) * 4);
 	}
 	strbjoin(msg, itob(workunit->neighborcount), sizeof(int));
 	for (int i = 0; i < workunit->neighborcount; i++)
 	{
-		strbjoin(msg, ftob(workunit->neighborhood[i].position.x), sizeof(float));
-		strbjoin(msg, ftob(workunit->neighborhood[i].position.y), sizeof(float));
-		strbjoin(msg, ftob(workunit->neighborhood[i].position.z), sizeof(float));
-		strbjoin(msg, ftob(workunit->neighborhood[i].velocity.x), sizeof(float));
-		strbjoin(msg, ftob(workunit->neighborhood[i].velocity.y), sizeof(float));
-		strbjoin(msg, ftob(workunit->neighborhood[i].velocity.z), sizeof(float));
+		strbjoin(msg, clftob(workunit->neighborhood[i].position), sizeof(float) * 4);
+		strbjoin(msg, clftob(workunit->neighborhood[i].velocity), sizeof(float) * 4);
 	}
 	strbjoin(msg, clftob(workunit->force_bias), sizeof(float) * 4);
 	return (*msg);
