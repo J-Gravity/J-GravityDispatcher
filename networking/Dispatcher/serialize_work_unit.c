@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 20:43:09 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/14 20:58:45 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 17:07:33 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,10 @@
 
 char	*itob(int value)
 {
-	unsigned int	i;
-	char			*string;
+	char	*string;
 
-	i = 0;
 	string = calloc(1, sizeof(int));
-	while (i < sizeof(int))
+	for (unsigned int i = 0; i < sizeof(int); i++)
 	{
 		string[i] = ((char *)(&value))[i];
 		i++;
@@ -29,12 +27,22 @@ char	*itob(int value)
 
 char	*ftob(float value)
 {
-	char *string;
+	char	*string;
 
 	string = calloc(1, sizeof(float));
 	for (unsigned int i = 0; i < sizeof(float); i++)
 		string[i] = ((char *)(&value))[i];
 	return string;	
+}
+
+char	*clftob(cl_float4 star)
+{
+	char	*string;
+
+	string = calloc(1, sizeof(cl_float4));
+	for (unsigned int i = 0; i < sizeof(cl_float4); i++)
+		string[i] = ((char *)(&star))[i];
+	return string;
 }
 
 void	strbjoin(t_msg *msg, char const *s2, size_t size)
@@ -53,60 +61,38 @@ void	strbjoin(t_msg *msg, char const *s2, size_t size)
 		i++;
 	}
 	for (unsigned int x = 0; x < size; x++)
-	{
-		msg->data[i] = s2[x];
-		i++;
-	}
+		msg->data[i + x] = s2[x];
 	msg->size += size;
 }
 
-t_msg	serialize_work_unit(t_work_unit *work_unit)
+t_msg	serialize_workunit(t_workunit *workunit)
 {
 	t_msg	*msg;
 
 	msg = malloc(sizeof(msg));
 	msg->data = calloc(1, sizeof(char));
-	msg->data[0] = work_unit->compute_class;
+	msg->data[0] = workunit->id;
 	msg->size = 4;
-	strbjoin(msg, itob(work_unit->cell.body_count), sizeof(int));
-	for (int i = 0; i< work_unit->cell.body_count; i++)
+	strbjoin(msg, itob(workunit->localcount), sizeof(int));
+	for (int i = 0; i < workunit->localcount; i++)
 	{
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->position.x), sizeof(float));
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->position.y), sizeof(float));
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->position.z), sizeof(float));
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->velocity.x), sizeof(float));
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->velocity.y), sizeof(float));
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->velocity.z), sizeof(float));
-		strbjoin(msg, ftob(work_unit->cell.contained_bodies[i]->mass), sizeof(float));
+		strbjoin(msg, ftob(workunit->local_bodies[i].position.x), sizeof(float));
+		strbjoin(msg, ftob(workunit->local_bodies[i].position.y), sizeof(float));
+		strbjoin(msg, ftob(workunit->local_bodies[i].position.z), sizeof(float));
+		strbjoin(msg, ftob(workunit->local_bodies[i].velocity.x), sizeof(float));
+		strbjoin(msg, ftob(workunit->local_bodies[i].velocity.y), sizeof(float));
+		strbjoin(msg, ftob(workunit->local_bodies[i].velocity.z), sizeof(float));
 	}
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.position.x), sizeof(float));
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.position.y), sizeof(float));
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.position.z), sizeof(float));
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.velocity.x), sizeof(float));
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.velocity.y), sizeof(float));
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.velocity.z), sizeof(float));
-	strbjoin(msg, ftob(work_unit->cell.cell_as_body.mass), sizeof(float));
-	strbjoin(msg, itob(work_unit->adjoining_cells_cnt), sizeof(int));
-	for (int i = 0; i < work_unit->adjoining_cells_cnt; i++)
+	strbjoin(msg, itob(workunit->neighborcount), sizeof(int));
+	for (int i = 0; i < workunit->neighborcount; i++)
 	{
-		strbjoin(msg, itob(work_unit->adjoining_cells[i].body_count), sizeof(int));
-		for (int x = 0; x < work_unit->adjoining_cells[i].body_count; x++)
-		{
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->position.x), sizeof(float));
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->position.y), sizeof(float));
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->position.z), sizeof(float));
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->velocity.x), sizeof(float));
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->velocity.y), sizeof(float));
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->velocity.z), sizeof(float));
-			strbjoin(msg, ftob(work_unit->adjoining_cells[i].contained_bodies[x]->mass), sizeof(float));
-		}
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.position.x), sizeof(float));
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.position.y), sizeof(float));
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.position.z), sizeof(float));
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.x), sizeof(float));
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.y), sizeof(float));
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.velocity.z), sizeof(float));
-		strbjoin(msg, ftob(work_unit->adjoining_cells[i].cell_as_body.mass), sizeof(float));
+		strbjoin(msg, ftob(workunit->neighborhood[i].position.x), sizeof(float));
+		strbjoin(msg, ftob(workunit->neighborhood[i].position.y), sizeof(float));
+		strbjoin(msg, ftob(workunit->neighborhood[i].position.z), sizeof(float));
+		strbjoin(msg, ftob(workunit->neighborhood[i].velocity.x), sizeof(float));
+		strbjoin(msg, ftob(workunit->neighborhood[i].velocity.y), sizeof(float));
+		strbjoin(msg, ftob(workunit->neighborhood[i].velocity.z), sizeof(float));
 	}
+	strbjoin(msg, clftob(workunit->force_bias), sizeof(float) * 4);
 	return (*msg);
 }
