@@ -22,7 +22,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	new_workunit = deserialize_workunit(msg);
 	local_cell = dispatcher->cells[new_workunit->id];
 	i = 0;
-	while (i < local_cell->localcount)
+	while (i < new_workunit->localcount)
 	{
 		memcpy(local_cell->bodies[i], &new_workunit->local_bodies[i],
 				sizeof(t_body));
