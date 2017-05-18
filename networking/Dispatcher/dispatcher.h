@@ -203,8 +203,6 @@ void		request_dataset(t_dataset **init_data);
 *	Divide up the dataset into work_units and store them in the
 *		@optimization	Assign them a compute_class
 *		@param	dispatcher	The dispatcher's main struct
-*		@param	dataset	The dataset that would be divided into work_units
-*		@param	work_units	Linked list of the work units
 */
 void		divide_dataset(t_dispatcher *dispatcher);
 
