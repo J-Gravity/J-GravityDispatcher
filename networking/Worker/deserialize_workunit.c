@@ -1,26 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   worker.c                                           :+:      :+:    :+:   */
+/*   deserialize_workunit.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/08 16:08:11 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/14 20:43:43 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/17 17:22:04 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 17:22:54 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
-int		btoi(char *str)
+
+int			btoi(char *str)
 {
-	int				ret;
+	int		ret;
 
 	for (unsigned int i = 0; i < sizeof(int); i++)
 		((char *)(&ret))[i] = str[i];
 	return (ret);
 }
 
-float	btof(char *str)
+float		btof(char *str)
 {
 	float	ret;
 
