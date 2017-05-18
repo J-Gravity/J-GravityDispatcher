@@ -66,7 +66,20 @@ void		launch_simulation(t_dispatcher *dispatcher)
 {
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
-
+	int 				timeout;
+	
+	timeout = 120;
+	while (!dispatcher->workers)
+	{
+		printf("There are no workers, simulation cannot start!\n");
+		printf("Waiting for workers to connect...\n");
+		sleep(5);
+		if (--timeout == 0)
+		{
+			printf("Timeout reached, Simulation aborted!");
+			return ;
+		}
+	}
 	param = new_thread_handler(dispatcher, dispatcher->workers);
 	printf("NEED TO TEST WITH WORKERS\n");
 	cur_worker = (t_worker *)dispatcher->workers->data;
