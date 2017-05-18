@@ -284,6 +284,11 @@ void		all_workunits_done(t_dispatcher *dispatcher);
 */
 void		broadcast_worker_msg(t_lst *workers, t_msg msg);
 
+/*
+*	clears the link list of work units.
+*/
+void		clear_work_units(t_lst **work_units);
+
 /*******************************************************************************
 ********************************************************************************
                  POTENTIAL OPTIMIZATIONS AFTER MVP COMPLETE
