@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 00:09:37 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 16:21:59 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -510,10 +510,10 @@ void	divide_dataset(t_dispatcher *dispatcher)
     t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
-    dispatcher->work_units = create_workunits(t, leaves);
-    int len = lstlen(dispatcher->work_units);
-    dispatcher->work_units_cnt = len;
-    dispatcher->work_units_done = 0;
+    dispatcher->workunits = create_workunits(t, leaves);
+    int len = lstlen(dispatcher->workunits);
+    dispatcher->workunits_cnt = len;
+    dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
     free_tree(t); //bodies is freed in here

@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 15:44:04 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 16:22:44 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,9 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 				sizeof(t_body));
 		i++;
 	}
-	dispatcher->work_units_done++;
-	if (dispatcher->work_units_done == dispatcher->work_units_cnt)
-		all_work_units_done(dispatcher);
-	else if (dispatcher->work_units)
+	dispatcher->workunits_done++;
+	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
+		all_workunits_done(dispatcher);
+	else if (dispatcher->workunits)
 		send_worker_msg(worker, new_message(WORK_UNITS_READY, 0, ""));
 }
