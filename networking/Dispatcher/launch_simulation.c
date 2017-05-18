@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/11 20:53:10 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/17 21:38:31 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
 	if (msg.id == WORK_UNIT_REQUEST)
-		handle_work_unit_req(dispatcher, worker, msg);
+		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
 		handle_worker_done_msg(dispatcher, worker, msg);
 	else
