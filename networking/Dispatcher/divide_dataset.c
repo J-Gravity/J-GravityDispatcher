@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 16:59:57 by pmclaugh         ###   ########.fr       */
+/*   Updated: 2017/05/17 17:10:35 by pmclaugh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -443,13 +443,35 @@ static t_lst   *create_workunits(t_octree *t, t_treecell **leaves)
     return (head);
 }
 
+static void recursive_tree_free(t_treecell *c)
+{
+    if (!c->children)
+        return;
+    for (int i = 0; i < 8; i++)
+    {
+        recursive_tree_free(c->children[i]);
+        free(c->children[i]);
+    }
+}
+
+static void free_tree(t_octree *t)
+{
+    recursive_tree_free(t->root);
+    free(t->root);
+}
+
 void	divide_dataset(int worker_cnt, t_dataset *dataset, t_lst **work_units)
 {
     t_body **bodies = (t_body **)malloc(sizeof(t_body*) * (dataset->particle_cnt + 1));
     bodies[dataset->particle_cnt] = NULL;
+    for (int i = 0; i < dataset->particle_cnt; i++)
+        bodies[i] = &(dataset->particles[i]);
     t_octree *t = init_tree(bodies, dataset->particle_cnt, bounds_from_scale(dataset->max_scale));
     tree_it_up(t->root);
     t_treecell **leaves = enumerate_leaves(t->root);
     *work_units = create_workunits(t, leaves);
+    free(bodies);
+    free(leaves);
+    free_tree(t);
 	return ;
 }
