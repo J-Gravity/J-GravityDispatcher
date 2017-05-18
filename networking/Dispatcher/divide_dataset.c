@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 17:42:05 by pmclaugh         ###   ########.fr       */
+/*   Updated: 2017/05/17 18:01:08 by pmclaugh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -448,17 +448,22 @@ static t_lst *new_node(t_workunit *w)
 
 static t_lst   *create_workunits(t_octree *t, t_treecell **leaves)
 {
-    t_lst *head;
-    t_lst *tail;
+    t_lst *head = NULL;
+    t_lst *tail = NULL;
 
-    head = new_node(make_workunit_for_cell(leaves[0], t, 0));
-    if (!head)
-        return (NULL);
-    tail = head;
-    for (int i = 1; leaves[i]; i++)
+    for (int i = 0; leaves[i]; i++)
     {
-        tail->next = new_node(make_workunit_for_cell(leaves[i], t, i));
-        tail = tail->next;
+        t_workunit *w = make_workunit_for_cell(leaves[i], t, i);
+        if (!head)
+        {
+            head = new_node(w);
+            tail = head;
+        }
+        else
+        {
+            tail->next = new_node(make_workunit_for_cell(leaves[i], t, i));
+            tail = tail->next;
+        }
     }
     return (head);
 }
