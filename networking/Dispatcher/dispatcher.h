@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 16:46:40 by pmclaugh         ###   ########.fr       */
+/*   Updated: 2017/05/17 21:38:46 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@
 # define WORKER_CONNECT 3
 # define WORK_UNITS_READY 4
 # define WORK_UNIT 6
-# define workunit_DONE 7
+# define WORK_UNIT_DONE 7
 
 # include <stdio.h>
 # include <sys/socket.h>
