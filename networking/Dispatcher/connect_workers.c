@@ -6,7 +6,7 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 00:05:40 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 23:43:32 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	*connect_worker_thread(void *param)
 		new_worker->next = dispatcher->workers;
 		dispatcher->workers = new_worker;
 		new_worker->data = (t_worker *)calloc(1, sizeof(t_worker));
-		((t_worker *)new_worker)->socket.fd = accept(server_sock->fd, (struct sockaddr *)server_sock->addr, server_sock->addrlen);
+		((t_worker *)new_worker)->socket.fd = accept(server_sock->fd, (struct sockaddr *)&server_sock->addr, server_sock->addrlen);
 		if (((t_worker *)new_worker)->socket.fd == -1)
 			return (0);
 		((t_worker *)new_worker)->tid = 0;
@@ -38,13 +38,6 @@ void	*connect_worker_thread(void *param)
 void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
 {
 	pthread_t	*worker_conn_thr;
-
-	/*
-	*   TODO : Connect dispatcher to workers via TCP;
-	*   : add worker to linked list;
-	*   : update worker socket;
-	*   : repeat for next worker;
-	*/
 
 	worker_conn_thr = (pthread_t *)calloc(1, sizeof(pthread_t));
 	pthread_create(worker_conn_thr, NULL, connect_worker_thread, dispatcher);

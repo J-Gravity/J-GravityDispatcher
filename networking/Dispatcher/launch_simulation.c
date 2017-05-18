@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/11 20:53:10 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/18 00:10:53 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
 	if (msg.id == WORK_UNIT_REQUEST)
-		handle_work_unit_req(dispatcher, worker, msg);
+		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
 		handle_worker_done_msg(dispatcher, worker, msg);
 	else
@@ -66,9 +66,23 @@ void		launch_simulation(t_dispatcher *dispatcher)
 {
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
-
+	int 				timeout;
+	
+	timeout = 120;
+	while (!dispatcher->workers)
+	{
+		printf("There are no workers, simulation cannot start!\n");
+		printf("Waiting for workers to connect...\n");
+		sleep(5);
+		if (--timeout == 0)
+		{
+			printf("Timeout reached, Simulation aborted!");
+			return ;
+		}
+	}
 	param = new_thread_handler(dispatcher, dispatcher->workers);
+	printf("NEED TO TEST WITH WORKERS\n");
 	cur_worker = (t_worker *)dispatcher->workers->data;
-	pthread_create(cur_worker->tid, NULL,
-					handle_worker_connection, param);
+	printf("BREAK\n");
+	pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
 }

@@ -1,25 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   broadcast_worker_msg.c                             :+:      :+:    :+:   */
+/*   handle_workunit_req.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/16 22:38:04 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/16 22:39:04 by cyildiri         ###   ########.fr       */
+/*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 21:31:36 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-void	broadcast_worker_msg(t_lst *workers, t_msg msg)
+void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 {
 	t_lst	*head;
 
-	head = workers;
+	head = dispatcher->workunits;
 	while (head)
 	{
-        send_worker_msg((t_worker *)head->data, msg);
+		send_workunit(worker, (t_workunit *)(head->data));
+		break ;
 		head = head->next;
 	}
 }

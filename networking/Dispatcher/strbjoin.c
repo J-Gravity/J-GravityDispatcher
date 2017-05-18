@@ -1,30 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   handle_work_unit_req.c                             :+:      :+:    :+:   */
+/*   strbjoin.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/16 11:35:34 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/17 22:39:59 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 22:45:43 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-void	handle_work_unit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
+void	strbjoin(t_msg *msg, char const *s2, size_t size)
 {
-	t_lst	*head;
+	char	*copy;
+	int		i;
 
-	head = dispatcher->work_units;
-	while (head)
+	i = 0;
+	copy = (char *)malloc(msg->size);
+	for (int x = 0; x < msg->size; x++)
+		copy[x] = msg->data[x];
+	msg->data = (char *)calloc(1, msg->size + size);
+	while (i < msg->size)
 	{
-		if ((*(t_work_unit *)(head->data)).complete == 0)
-		{
-			(*(t_work_unit *)(head->data)).complete = 1;
-			send_work_unit(worker, (t_work_unit *)(head->data));
-			break ;
-		}
-		head = head->next;
+		msg->data[i] = copy[i];
+		i++;
 	}
+	for (unsigned int x = 0; x < size; x++)
+		msg->data[i + x] = s2[x];
+	msg->size += size;
 }

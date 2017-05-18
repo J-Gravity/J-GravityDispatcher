@@ -1,25 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   broadcast_worker_msg.c                             :+:      :+:    :+:   */
+/*   send_workunit.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/16 22:38:04 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/16 22:39:04 by cyildiri         ###   ########.fr       */
+/*   Created: 2017/05/09 22:42:08 by scollet           #+#    #+#             */
+/*   Updated: 2017/05/17 21:44:11 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-void	broadcast_worker_msg(t_lst *workers, t_msg msg)
+int		send_workunit(t_worker *worker, t_workunit *work_unit)
 {
-	t_lst	*head;
+	t_msg	msg;
 
-	head = workers;
-	while (head)
-	{
-        send_worker_msg((t_worker *)head->data, msg);
-		head = head->next;
-	}
+	msg = serialize_workunit(work_unit);
+	msg.id = 1;
+	send_worker_msg(worker, msg);
+	return (0);
 }
