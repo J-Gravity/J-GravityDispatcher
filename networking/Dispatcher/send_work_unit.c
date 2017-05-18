@@ -6,13 +6,13 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:42:08 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/16 13:24:55 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 15:56:37 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-int		send_work_unit(t_worker *worker, t_work_unit *work_unit)
+int		send_work_unit(t_worker *worker, t_workunit *work_unit)
 {
 	t_msg	msg;
 

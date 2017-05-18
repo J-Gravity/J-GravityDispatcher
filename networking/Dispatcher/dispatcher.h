@@ -22,7 +22,7 @@
 # define WORKER_CONNECT 3
 # define WORK_UNITS_READY 4
 # define WORK_UNIT 6
-# define WORK_UNIT_DONE 7
+# define workunit_DONE 7
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -138,9 +138,9 @@ typedef struct			s_dispatcher
 	t_dataset			*dataset;
 	int					ticks_cnt;
 	int					ticks_done;
-	t_lst				*work_units;
-	int					work_units_cnt;
-	int					work_units_done;
+	t_lst				*workunits;
+	int					workunits_cnt;
+	int					workunits_done;
 	t_cell				**cells;
 	int					cell_count;
 	t_socket			server_sock;
@@ -177,7 +177,7 @@ t_msg	get_worker_msg(t_worker *worker);
 
 /*
 *	fill in and return the t_msg(message) struct
-*		@param	id	Message identifier (e.g. 6 for WORK_UNITS_READY)
+*		@param	id	Message identifier (e.g. 6 for workunitS_READY)
 *		@param	data_size	The size of the body of the message
 *		@param	data	The body of the message
 *		@return	the struct initialized with the parameters
@@ -208,11 +208,11 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 void		request_dataset(t_dataset **init_data);
 
 /*
-*	Divide up the dataset into work_units and store them in the
+*	Divide up the dataset into workunits and store them in the
 *		@optimization	Assign them a compute_class
 *		@param	dispatcher	The dispatcher's main struct
-*		@param	dataset	The dataset that would be divided into work_units
-*		@param	work_units	Linked list of the work units
+*		@param	dataset	The dataset that would be divided into workunits
+*		@param	workunits	Linked list of the work units
 */
 void		divide_dataset(int worker_cnt, t_dataset *dataset,
 			t_lst **work_units);
@@ -234,24 +234,24 @@ void 		save_output(t_dispatcher *dispatcher, char *name);
 /*
 *	Send a work unit to a specified worker
 *		@param	worker	worker to recieve the work unit
-*		@param	work_unit	non-completed work unit
+*		@param	workunit	non-completed work unit
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
-int			send_work_unit(t_worker *worker, t_workunit *work_unit);
+int			send_workunit(t_worker *worker, t_workunit *workunit);
 
 /*
-*	Serializes the work_unit struct and stores it in the message struct
-*		@param	work_unit	The work unit that will be stored in the msg
+*	Serializes the workunit struct and stores it in the message struct
+*		@param	workunit	The work unit that will be stored in the msg
 *		@return message struct conataining the serialized work unit
 */
-t_msg		serialize_work_unit(t_workunit *work_unit);
+t_msg		serialize_workunit(t_workunit *workunit);
 
 /*
 *	Parse the data of a worker message and write it to t_workunit struct
 *		@param	msg	The message from the worker that contains a complete
 					work unit
 */
-t_workunit	deserialize_work_unit(t_msg msg);
+t_workunit	deserialize_workunit(t_msg msg);
 
 /*
 *	Handles the worker's request for a work unit to process
@@ -259,7 +259,7 @@ t_workunit	deserialize_work_unit(t_msg msg);
 *		@param	worker	The worker that made the request
 *		@param	msg	The message sent by the worker
 */
-void		handle_work_unit_req(t_dispatcher *dispatcher,
+void		handle_workunit_req(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg	msg);
 
 /*
@@ -276,7 +276,7 @@ void		handle_worker_done_msg(t_dispatcher *dispatcher,
 *	Handles the TICK_COMPLETE_EVENT
 *		@param	dispatcher	The dispatcher's main struct
 */
-void		all_work_units_done(t_dispatcher *dispatcher);
+void		all_workunits_done(t_dispatcher *dispatcher);
 
 /*
 *	Broadcast message to all workers
