@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 18:01:08 by pmclaugh         ###   ########.fr       */
+/*   Updated: 2017/05/17 18:05:11 by pmclaugh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,13 +43,13 @@ static t_bounds bounds_from_bodies(t_body **bodies)
         if (bodies[i]->position.z > zmax)
             zmax = bodies[i]->position.z;
     }
-    return (t_bounds){xmin, xmax, ymin, ymax, zmin, zmax};
+    return ((t_bounds){xmin, xmax, ymin, ymax, zmin, zmax});
 }
 
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
 {
     //add two vectors.
-    return (cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
+    return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w});
 }
 
 static int count_bodies(t_body **bodies)
@@ -59,7 +59,7 @@ static int count_bodies(t_body **bodies)
     i = 0;
     while (bodies[i])
         i++;
-    return i;
+    return (i);
 }
 
 static int count_cell_array(t_treecell **cells)
@@ -70,7 +70,7 @@ static int count_cell_array(t_treecell **cells)
         return 0;
     while (cells[i])
         i++;
-    return i;
+    return (i);
 }
 
 static cl_float4 center_of_mass(t_treecell *c, t_body **bodies)
@@ -84,7 +84,7 @@ static cl_float4 center_of_mass(t_treecell *c, t_body **bodies)
         return (cl_float4){xmid, ymid, zmid, 0};
     for (int i = 0; bodies[i]; i++)
         v = vadd(v, bodies[i]->position);
-    return (cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w};
+    return ((cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w});
 }
 
 static t_treecell *init_treecell(t_body **bodies, t_treecell *parent, t_bounds bounds)
@@ -409,7 +409,7 @@ static t_treecell **enumerate_leaves(t_treecell *root)
         ret = (t_treecell **)malloc(sizeof(t_treecell *) * 2);
         ret[0] = root;
         ret[1] = NULL;
-        return ret;
+        return (ret);
     }
     t_treecell ***returned = (t_treecell ***)malloc(sizeof(t_treecell **) * 8);
     int total = 0;
@@ -454,15 +454,18 @@ static t_lst   *create_workunits(t_octree *t, t_treecell **leaves)
     for (int i = 0; leaves[i]; i++)
     {
         t_workunit *w = make_workunit_for_cell(leaves[i], t, i);
-        if (!head)
+        if (w)
         {
-            head = new_node(w);
-            tail = head;
-        }
-        else
-        {
-            tail->next = new_node(make_workunit_for_cell(leaves[i], t, i));
-            tail = tail->next;
+            if (!head)
+            {
+                head = new_node(w);
+                tail = head;
+            }
+            else
+            {
+                tail->next = new_node(make_workunit_for_cell(leaves[i], t, i));
+                tail = tail->next;
+            }
         }
     }
     return (head);
