@@ -62,7 +62,7 @@ static int count_bodies(t_body **bodies)
     return (i);
 }
 
-static int count_cell_array(t_treecell **cells)
+static int count_cell_array(t_cell **cells)
 {
     //returns the length of a null terminated array of cell pointers
     int i = 0;
@@ -73,7 +73,7 @@ static int count_cell_array(t_treecell **cells)
     return (i);
 }
 
-static cl_float4 center_of_mass(t_treecell *c, t_body **bodies)
+static cl_float4 center_of_mass(t_cell *c, t_body **bodies)
 {
     //center of mass (sum of all positions divided by total mass)
     //NB this is currently assuming all masses are 1.
@@ -87,12 +87,12 @@ static cl_float4 center_of_mass(t_treecell *c, t_body **bodies)
     return ((cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w});
 }
 
-static t_treecell *init_treecell(t_body **bodies, t_treecell *parent, t_bounds bounds)
+static t_cell *init_cell(t_body **bodies, t_cell *parent, t_bounds bounds)
 {
     //allocates and sets up a cell struct.
-    t_treecell *c;
+    t_cell *c;
 
-    c = (t_treecell *)malloc(sizeof(t_treecell));
+    c = (t_cell *)malloc(sizeof(t_cell));
     c->bodies = bodies;
     c->parent = parent;
     c->children = NULL;
@@ -111,11 +111,11 @@ static t_octree *init_tree(t_body **bodies, size_t n, t_bounds bounds)
     t->bodies = bodies;
     t->n_bodies = n;
     t->bounds = bounds;
-    t->root = init_treecell(bodies, NULL, bounds);
+    t->root = init_cell(bodies, NULL, bounds);
     return (t);
 }
 
-static void pair_force_cell(t_treecell *i, t_treecell *j)
+static void pair_force_cell(t_cell *i, t_cell *j)
 {
     //compute the force between two distant cells, treating them as single particles
     cl_float4 r;
@@ -131,7 +131,7 @@ static void pair_force_cell(t_treecell *i, t_treecell *j)
     i->force_bias = vadd(i->force_bias, (cl_float4){r.x * f, r.y * f, r.z * f});
 }
 
-static float multipole_acceptance_criterion(t_treecell *us, t_treecell *them)
+static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
 {
     //assess whether a cell is "near" or "far" for the sake of barnes-hut
     //if the value returned is less than THETA, that cell is far
@@ -149,10 +149,10 @@ static float multipole_acceptance_criterion(t_treecell *us, t_treecell *them)
     return (s/d);
 }
 
-static t_treecell **find_inners_do_outers(t_treecell *cell, t_treecell *root, t_octree *t)
+static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
 {
-    t_treecell **ret;
-    t_treecell ***returned;
+    t_cell **ret;
+    t_cell ***returned;
 
     /*
         recursively flow through the tree, determining if cells are near or far from
@@ -180,21 +180,21 @@ static t_treecell **find_inners_do_outers(t_treecell *cell, t_treecell *root, t_
     }
     else if (!(root->children))
     {
-        ret = (t_treecell **)malloc(sizeof(t_treecell *) * 2);
+        ret = (t_cell **)malloc(sizeof(t_cell *) * 2);
         ret[0] = root;
         ret[1] = NULL;
         return (ret);
     }
     else
     {
-        returned = (t_treecell ***)malloc(sizeof(t_treecell **) * 8);
+        returned = (t_cell ***)malloc(sizeof(t_cell **) * 8);
         int total = 0;
         for (int i = 0; i < 8; i++)
         {
             returned[i] = find_inners_do_outers(cell, root->children[i], t);
             total += count_cell_array(returned[i]);
         }
-        ret = (t_treecell **)malloc(sizeof(t_treecell *) * (total + 1));
+        ret = (t_cell **)malloc(sizeof(t_cell *) * (total + 1));
         for (int i = 0; i < total;)
         {
             for (int j = 0; j < 8; j++)
@@ -214,7 +214,7 @@ static t_treecell **find_inners_do_outers(t_treecell *cell, t_treecell *root, t_
     }
 }
 
-static t_body **bodies_from_cells(t_treecell **cells)
+static t_body **bodies_from_cells(t_cell **cells)
 {
     //given a null terminated list of cells, make an array of all the bodies in those cells.
     int count;
@@ -257,9 +257,9 @@ static t_workunit *new_workunit(t_body **local, t_body **neighborhood, cl_float4
 
 }
 
-static t_workunit *make_workunit_for_cell(t_treecell *cell, t_octree *t, int index)
+static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
 {
-    t_treecell **inners;
+    t_cell **inners;
     t_body **direct_bodies;
 
     //skip empty cells (yes there are empty cells)
@@ -272,7 +272,7 @@ static t_workunit *make_workunit_for_cell(t_treecell *cell, t_octree *t, int ind
     return (new_workunit(cell->bodies, direct_bodies, cell->force_bias, index));
 }
 
-static void    paint_bodies_octants(t_body **bodies, t_treecell *c)
+static void    paint_bodies_octants(t_body **bodies, t_cell *c)
 {
     //mark each body with a value for which octant it will be in after cell is split
     for (int i = 0; bodies[i]; i++)
@@ -340,7 +340,7 @@ static t_body ***scoop_octants(t_body **bodies)
     return (ret);
 }
 
-static void divide_cell(t_treecell *c)
+static void divide_cell(t_cell *c)
 {
     //split a cell into 8 octants.
 
@@ -377,16 +377,16 @@ static void divide_cell(t_treecell *c)
     //////Numbering is a bit weird here ^ but the idea is that even indices are near, odd far
                                 //0..3 are left, 4..7 are right
                                 //0, 1, 6, 7 bottom, 2345 top
-    t_treecell **children = (t_treecell **)malloc(sizeof(t_treecell *) * 9);
+    t_cell **children = (t_cell **)malloc(sizeof(t_cell *) * 9);
     paint_bodies_octants(c->bodies, c);
     t_body ***kids = scoop_octants(c->bodies);
     for (int i = 0; i < 8; i++)
-        children[i] = init_treecell(kids[i], c, subbounds[i]);
+        children[i] = init_cell(kids[i], c, subbounds[i]);
     children[8] = NULL;
     c->children = children;
 }
 
-static void tree_it_up(t_treecell *root)
+static void tree_it_up(t_cell *root)
 {
     //recursively flesh out the barnes-hut tree from the root node.
     if (!root)
@@ -398,27 +398,27 @@ static void tree_it_up(t_treecell *root)
         tree_it_up(root->children[i]);
 }
 
-static t_treecell **enumerate_leaves(t_treecell *root)
+static t_cell **enumerate_leaves(t_cell *root)
 {
-    //goal is to return a linear t_treecell** that's all the leaf nodes in the tree
+    //goal is to return a linear t_cell** that's all the leaf nodes in the tree
 
-    t_treecell **ret;
+    t_cell **ret;
 
     if (!root->children)
     {
-        ret = (t_treecell **)malloc(sizeof(t_treecell *) * 2);
+        ret = (t_cell **)malloc(sizeof(t_cell *) * 2);
         ret[0] = root;
         ret[1] = NULL;
         return (ret);
     }
-    t_treecell ***returned = (t_treecell ***)malloc(sizeof(t_treecell **) * 8);
+    t_cell ***returned = (t_cell ***)malloc(sizeof(t_cell **) * 8);
     int total = 0;
     for (int i = 0; i < 8; i++)
     {
         returned[i] = enumerate_leaves(root->children[i]);
         total += count_cell_array(returned[i]);
     }
-    ret = (t_treecell **)malloc(sizeof(t_treecell *) * (total + 1));
+    ret = (t_cell **)malloc(sizeof(t_cell *) * (total + 1));
     for (int i = 0; i < total;)
     {
         for (int j = 0; j < 8; j++)
@@ -446,7 +446,20 @@ static t_lst *new_node(t_workunit *w)
     return (n);
 }
 
-static t_lst   *create_workunits(t_octree *t, t_treecell **leaves)
+int lstlen(t_lst *lst)
+{
+    if (!lst)
+        return (0);
+    int i = 0;
+    while (lst)
+    {
+        lst = lst->next;
+        i++;
+    }
+    return (i);
+}
+
+static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
 {
     t_lst *head = NULL;
     t_lst *tail = NULL;
@@ -471,7 +484,7 @@ static t_lst   *create_workunits(t_octree *t, t_treecell **leaves)
     return (head);
 }
 
-static void recursive_tree_free(t_treecell *c)
+static void recursive_tree_free(t_cell *c)
 {
     if (!c->children)
         return;
@@ -489,25 +502,21 @@ static void free_tree(t_octree *t)
     free(t->root);
 }
 
-void	divide_dataset(int worker_cnt, t_dataset *dataset, t_lst **work_units)
+void	divide_dataset(t_dispatcher *dispatcher)
 {
-    t_body **bodies = (t_body **)malloc(sizeof(t_body*) * (dataset->particle_cnt + 1));
-	bodies[dataset->particle_cnt] = NULL;
-	for (int i = 0; i < dataset->particle_cnt; i++)
-		bodies[i] = &(dataset->particles[i]);
-    t_octree *t = init_tree(bodies, dataset->particle_cnt, bounds_from_bodies(bodies));
+    t_body **bodies = (t_body **)malloc(sizeof(t_body*) * (dispatcher->dataset->particle_cnt + 1));
+    bodies[dispatcher->dataset->particle_cnt] = NULL;
+    for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
+        bodies[i] = &(dispatcher->dataset->particles[i]);
+    t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
-    t_treecell **leaves = enumerate_leaves(t->root);
-    *work_units = create_workunits(t, leaves);
-    free(leaves);
+    t_cell **leaves = enumerate_leaves(t->root);
+    dispatcher->work_units = create_workunits(t, leaves);
+    int len = lstlen(dispatcher->work_units);
+    dispatcher->work_units_cnt = len;
+    dispatcher->work_units_done = 0;
+    dispatcher->cells = leaves;
+    dispatcher->cell_count = len;
     free_tree(t); //bodies is freed in here
 	return ;
 }
-
-/*
-//TO DO
-    test sawyer's "sort the pointers" idea
-    optimize, optimize, optimize
-    shrink/reorganize this code if possible
-    resolve t_cell vs t_treecell conflict (maybe not necessary)
-*/
