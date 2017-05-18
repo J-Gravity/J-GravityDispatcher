@@ -102,8 +102,7 @@ typedef struct			s_workunit
 
 typedef struct			s_worker
 {
-	t_workunit			*workunit;
-	int					workunit_cnt;
+	int					*workunit_id;
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
