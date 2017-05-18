@@ -75,15 +75,14 @@ static int count_cell_array(t_cell **cells)
 
 static cl_float4 center_of_mass(t_cell *c, t_body **bodies)
 {
-    //center of mass (sum of all positions divided by total mass)
-    //NB this is currently assuming all masses are 1.
     cl_float4 v;
 
-    v = (cl_float4){0,0,0, count_bodies(bodies)};
-    if (v.w == 0)
-        return (cl_float4){xmid, ymid, zmid, 0};
+    v = (cl_float4){0,0,0,0};
+
     for (int i = 0; bodies[i]; i++)
         v = vadd(v, bodies[i]->position);
+    if (v.w == 0)
+      	return (cl_float4){xmid, ymid, zmid, 0};
     return ((cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w});
 }
 
