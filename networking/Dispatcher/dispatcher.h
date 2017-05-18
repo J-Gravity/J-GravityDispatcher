@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dispatcher.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
+/*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 17:28:17 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 16:46:40 by pmclaugh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,34 @@ typedef struct			s_cell
 	t_body				cell_as_body;
 	cl_float4			force_bias;
 }						t_cell;
+
+typedef struct s_bounds
+{
+	float xmin;
+	float xmax;
+	float ymin;
+	float ymax;
+	float zmin;
+	float zmax;
+}				t_bounds;
+
+typedef struct s_treecell
+{
+	t_body **bodies;
+	struct s_treecell *parent;
+	struct s_treecell **children;
+	cl_float4 center;
+	cl_float4 force_bias;
+	t_bounds bounds;
+}				t_treecell;
+
+typedef struct s_octree
+{
+	t_treecell *root;
+	t_body **bodies;
+	size_t n_bodies;
+	t_bounds bounds;
+}				t_octree;
 
 typedef struct			s_workunit
 {
@@ -186,8 +214,8 @@ void		request_dataset(t_dataset **init_data);
 *		@param	dataset	The dataset that would be divided into workunits
 *		@param	workunits	Linked list of the work units
 */
-void		divide_dataset(int *worker_cnt, t_dataset *dataset,
-			t_lst **workunits);
+void		divide_dataset(int worker_cnt, t_dataset *dataset,
+			t_lst **work_units);
 
 /*
 *		Starts the simulation by informing workers that work units are
