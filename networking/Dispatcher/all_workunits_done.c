@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   all_work_units_done.c                              :+:      :+:    :+:   */
+/*   all_workunits_done.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,7 +12,7 @@
 
 #include "dispatcher.h"
 
-void	all_work_units_done(t_dispatcher *dispatcher)
+void	all_workunits_done(t_dispatcher *dispatcher)
 {
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);

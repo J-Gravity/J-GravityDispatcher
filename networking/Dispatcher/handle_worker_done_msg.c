@@ -16,21 +16,21 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		t_msg msg)
 {
 	t_workunit	new_workunit;
-	t_workunit	*old_workunit;
+	t_cell		*local_cell;
 	int			i;
 
 	new_workunit = deserialize_workunit(msg);
-	old_workunit = worker->workunit;
+	local_cell = dispatcher->cells[new_workunit.id];
 	i = 0;
-	while (i < old_workunit->localcount)
+	while (i < new_workunit.localcount)
 	{
-		memcpy(&old_workunit->neighborhood[i], &new_workunit.local_bodies[i], sizeof(t_body));
+		memcpy(local_cell->bodies[i], &new_workunit.local_bodies[i],
+				sizeof(t_body));
 		i++;
 	}
-	dispatcher->workunits_done++;
-	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
-	{
-		all_workunits_done(dispatcher);
-	}
-	send_worker_msg(worker, new_message(ACKNOWLEDGED, 0, ""));
+	dispatcher->work_units_done++;
+	if (dispatcher->work_units_done == dispatcher->work_units_cnt)
+		all_work_units_done(dispatcher);
+	else if (dispatcher->work_units)
+		send_worker_msg(worker, new_message(WORK_UNITS_READY, 0, ""));
 }

@@ -20,6 +20,7 @@ int	main(void)
 	dispatcher->server_sock = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 18000;
 	dispatcher->name = "mvp_test";
+	dispatcher->is_connect = 1;
 	connect_workers(dispatcher, &dispatcher->workers);
 	request_dataset(&dispatcher->dataset);
 	divide_dataset(dispatcher);

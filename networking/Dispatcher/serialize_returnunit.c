@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   serialize_workunit.c                               :+:      :+:    :+:   */
+/*   serialize_returnunit.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/17 22:46:13 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/17 21:56:40 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_msg	serialize_workunit(t_workunit *workunit)
+t_msg	serialize_returnunit(t_workunit *workunit)
 {
 	t_msg	msg;
 
@@ -25,12 +25,5 @@ t_msg	serialize_workunit(t_workunit *workunit)
 		strbjoin(&msg, clftob(workunit->local_bodies[i].position), sizeof(float) * 4);
 		strbjoin(&msg, clftob(workunit->local_bodies[i].velocity), sizeof(float) * 4);
 	}
-	strbjoin(&msg, itob(workunit->neighborcount), sizeof(int));
-	for (int i = 0; i < workunit->neighborcount; i++)
-	{
-		strbjoin(&msg, clftob(workunit->neighborhood[i].position), sizeof(float) * 4);
-		strbjoin(&msg, clftob(workunit->neighborhood[i].velocity), sizeof(float) * 4);
-	}
-	strbjoin(&msg, clftob(workunit->force_bias), sizeof(float) * 4);
 	return (msg);
 }
