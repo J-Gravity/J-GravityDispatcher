@@ -24,16 +24,13 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	i = 0;
 	while (i < local_cell->body_count)
 	{
-		memcpy(local_cell->contained_bodies[i], &new_workunit->local_bodies[i],
+		memcpy(local_cell->bodies[i], &new_workunit->local_bodies[i],
 				sizeof(t_body));
 		i++;
 	}
 	dispatcher->work_units_done++;
 	if (dispatcher->work_units_done == dispatcher->work_units_cnt)
-	{
-		send_worker_msg(worker, new_message(ACKNOWLEDGED, 0, ""));
 		all_work_units_done(dispatcher);
-	}
 	else if (dispatcher->work_units)
 		send_worker_msg(worker, new_message(WORK_UNITS_READY, 0, ""));
 }
