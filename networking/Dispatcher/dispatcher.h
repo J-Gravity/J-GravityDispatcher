@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 15:41:56 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 16:44:38 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ typedef	struct			s_socket
 {
 	int					fd;
 	struct sockaddr_in	addr;
-	socklen_t			*addrlen;
+	socklen_t			addrlen;
 }						t_socket;
 
 typedef struct			s_body
