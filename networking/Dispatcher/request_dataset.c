@@ -31,7 +31,7 @@ int   read_into_body(FILE *fp, t_body *particles)
   fread(&particles->velocity.z,
     sizeof(float), 1, fp);
   /* READ PARTICLE MASS */
-  fread(&particles->mass,
+  fread(&particles->position.w,
     sizeof(float), 1, fp);
   /* PARTICLE HAS BEEN READ */
   return (0);
@@ -50,7 +50,9 @@ void  request_dataset(t_dataset **init_data)
     fprintf(stderr, "Error opening file\n");
     exit(0);
   }
-  fread(&(*init_data)->particle_cnt, sizeof(int), 1, fp);
+  *init_data = (t_dataset *)calloc(1, sizeof(t_dataset));
+  fread(&(*init_data)->particle_cnt, sizeof(long), 1, fp);
+  fread(&(*init_data)->max_scale, sizeof(double), 1, fp);
   p_left = 1 + (*init_data)->particle_cnt;
   (*init_data)->particles = (t_body*)calloc
     (p_left - 1, sizeof(t_body));
