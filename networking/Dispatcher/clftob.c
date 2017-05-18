@@ -1,25 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   broadcast_worker_msg.c                             :+:      :+:    :+:   */
+/*   clftob.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/16 22:38:04 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/16 22:39:04 by cyildiri         ###   ########.fr       */
+/*   Created: 2017/05/17 22:43:57 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 22:45:14 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-void	broadcast_worker_msg(t_lst *workers, t_msg msg)
+char	*clftob(cl_float4 star)
 {
-	t_lst	*head;
+	char	*string;
 
-	head = workers;
-	while (head)
-	{
-        send_worker_msg((t_worker *)head->data, msg);
-		head = head->next;
-	}
+	string = calloc(1, sizeof(cl_float4));
+	for (unsigned int i = 0; i < sizeof(cl_float4); i++)
+		string[i] = ((char *)(&star))[i];
+	return string;
 }

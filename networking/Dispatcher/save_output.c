@@ -30,8 +30,7 @@ void	save_output(t_dispatcher *dispatcher, char *name)
 	for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
 	{
 		write(fd, &dispatcher->dataset->particles[i].position,
-			sizeof(t_vect3f));
-		write(fd, &dispatcher->dataset->particles[i].mass, sizeof(double));
+			sizeof(cl_float4));
 	}
 	close(fd);
 }
