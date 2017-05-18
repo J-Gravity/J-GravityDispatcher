@@ -1,29 +1,33 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   serialize_returnunit.c                             :+:      :+:    :+:   */
+/*   strbjoin.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/17 21:56:40 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/17 22:39:59 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 22:45:43 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_msg	serialize_returnunit(t_workunit *workunit)
+void	strbjoin(t_msg *msg, char const *s2, size_t size)
 {
-	t_msg	msg;
+	char	*copy;
+	int		i;
 
-	msg.data = calloc(1, sizeof(char));
-	msg.data[0] = workunit->id;
-	msg.size = 4;
-	strbjoin(&msg, itob(workunit->localcount), sizeof(int));
-	for (int i = 0; i < workunit->localcount; i++)
+	i = 0;
+	copy = (char *)malloc(msg->size);
+	for (int x = 0; x < msg->size; x++)
+		copy[x] = msg->data[x];
+	msg->data = (char *)calloc(1, msg->size + size);
+	while (i < msg->size)
 	{
-		strbjoin(&msg, clftob(workunit->local_bodies[i].position), sizeof(float) * 4);
-		strbjoin(&msg, clftob(workunit->local_bodies[i].velocity), sizeof(float) * 4);
+		msg->data[i] = copy[i];
+		i++;
 	}
-	return (msg);
+	for (unsigned int x = 0; x < size; x++)
+		msg->data[i + x] = s2[x];
+	msg->size += size;
 }

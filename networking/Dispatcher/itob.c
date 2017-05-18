@@ -1,29 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   serialize_returnunit.c                             :+:      :+:    :+:   */
+/*   itob.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/17 21:56:40 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/17 22:44:27 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 22:45:28 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_msg	serialize_returnunit(t_workunit *workunit)
+char	*itob(int value)
 {
-	t_msg	msg;
+	char	*string;
 
-	msg.data = calloc(1, sizeof(char));
-	msg.data[0] = workunit->id;
-	msg.size = 4;
-	strbjoin(&msg, itob(workunit->localcount), sizeof(int));
-	for (int i = 0; i < workunit->localcount; i++)
+	string = calloc(1, sizeof(int));
+	for (unsigned int i = 0; i < sizeof(int); i++)
 	{
-		strbjoin(&msg, clftob(workunit->local_bodies[i].position), sizeof(float) * 4);
-		strbjoin(&msg, clftob(workunit->local_bodies[i].velocity), sizeof(float) * 4);
+		string[i] = ((char *)(&value))[i];
+		i++;
 	}
-	return (msg);
+	return string;	
 }

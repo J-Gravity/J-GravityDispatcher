@@ -1,29 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   serialize_returnunit.c                             :+:      :+:    :+:   */
+/*   handle_workunit_req.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/17 21:56:40 by ssmith           ###   ########.fr       */
+/*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
+/*   Updated: 2017/05/17 21:31:36 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_msg	serialize_returnunit(t_workunit *workunit)
+void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 {
-	t_msg	msg;
+	t_lst	*head;
 
-	msg.data = calloc(1, sizeof(char));
-	msg.data[0] = workunit->id;
-	msg.size = 4;
-	strbjoin(&msg, itob(workunit->localcount), sizeof(int));
-	for (int i = 0; i < workunit->localcount; i++)
+	head = dispatcher->workunits;
+	while (head)
 	{
-		strbjoin(&msg, clftob(workunit->local_bodies[i].position), sizeof(float) * 4);
-		strbjoin(&msg, clftob(workunit->local_bodies[i].velocity), sizeof(float) * 4);
+		send_workunit(worker, (t_workunit *)(head->data));
+		break ;
+		head = head->next;
 	}
-	return (msg);
 }

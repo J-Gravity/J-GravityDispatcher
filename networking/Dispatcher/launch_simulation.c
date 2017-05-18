@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 21:38:31 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 00:10:53 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	t_thread_handler	*param;
 
 	param = new_thread_handler(dispatcher, dispatcher->workers);
+	printf("NEED TO TEST WITH WORKERS\n");
 	cur_worker = (t_worker *)dispatcher->workers->data;
-	pthread_create(cur_worker->tid, NULL,
-					handle_worker_connection, param);
+	printf("BREAK\n");
+	pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
 }
