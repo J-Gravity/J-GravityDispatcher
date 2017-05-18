@@ -6,7 +6,7 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/17 23:43:32 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 16:52:03 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,17 +17,20 @@
 void	*connect_worker_thread(void *param)
 {
 	t_lst			*new_worker;
-	t_socket		*server_sock;
+	t_socket		*sin;
 	t_dispatcher	*dispatcher;
 	dispatcher = (t_dispatcher *)param;
-
+	struct sockaddr_storage their_addr;
+	int				fd;
+	
 	while (dispatcher->is_connect)
 	{
+		sin = calloc(1, sizeof(t_socket));
 		new_worker = calloc(1, sizeof(t_worker));
 		new_worker->next = dispatcher->workers;
 		dispatcher->workers = new_worker;
 		new_worker->data = (t_worker *)calloc(1, sizeof(t_worker));
-		((t_worker *)new_worker)->socket.fd = accept(server_sock->fd, (struct sockaddr *)&server_sock->addr, server_sock->addrlen);
+		fd = accept(sin->fd, (struct sockaddr *)&(sin->addr.sin_addr), &(sin->addrlen));
 		if (((t_worker *)new_worker)->socket.fd == -1)
 			return (0);
 		((t_worker *)new_worker)->tid = 0;

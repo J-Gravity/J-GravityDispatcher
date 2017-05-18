@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 19:52:54 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/17 23:51:19 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 16:51:23 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ t_socket		setup_server_socket(int port)
 	t_socket	sin;
  
 	memset(&sin.addr, 0, sizeof(sin.addr));
+	sin.addrlen = sizeof(struct sockaddr_storage);
 	sin.addr.sin_len = sizeof(sin.addr);
 	sin.addr.sin_family = AF_INET; /* Address family */
 	sin.addr.sin_port = htons(port); /* Or a specific port */
