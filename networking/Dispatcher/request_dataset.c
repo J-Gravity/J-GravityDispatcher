@@ -6,7 +6,7 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:41:19 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 17:39:54 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 20:06:29 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,18 @@ void  request_dataset(t_dataset **init_data)
 	/*
 	 *   TODO : Figure out what the hell the file will be called;
 	*/
+	printf("start request_dataset\n");
 	if (NULL == (fp = fopen("./data.jgrv", "rb")))
 	{
 		fprintf(stderr, "Error opening file\n", errno);
 		exit(0);
 	}
 	*init_data = (t_dataset *)calloc(1, sizeof(t_dataset));
+	long *l;
+	l = (long *)malloc(sizeof(long));
+	fread(l, sizeof(long), 1, fp);
 	fread(&(*init_data)->particle_cnt, sizeof(long), 1, fp);
+	printf("particle_cnt: %ld\n", (*init_data)->particle_cnt);
 	fread(&(*init_data)->max_scale, sizeof(double), 1, fp);
 	p_left = 1 + (*init_data)->particle_cnt;
 	(*init_data)->particles = (t_body*)calloc(p_left - 1, sizeof(t_body));
@@ -56,5 +61,6 @@ void  request_dataset(t_dataset **init_data)
 		}
 	}
 	fclose(fp);
+	printf("finished request_dataset\n");
 	return ;
 }
