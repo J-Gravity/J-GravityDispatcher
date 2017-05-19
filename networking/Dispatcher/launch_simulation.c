@@ -85,5 +85,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	param = new_thread_handler(dispatcher, dispatcher->workers);
 	cur_worker = (t_worker *)dispatcher->workers->data;
 	printf("BREAK\n");
+	cur_worker->tid = calloc(1, sizeof(pthread_t));
+	printf("ALLOCCED\n");
 	pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
+	printf("END\n");
 }
