@@ -30,23 +30,24 @@ int   read_into_body(FILE *fp, t_body *particles)
   return (0);
 }
 
+cl_float4 str_to_star(char *str)
+{
+	cl_float4 f;
 
-// typedef struct			s_dataset
-// {
-// 	long				particle_cnt;
-// 	double				max_scale;
-// 	t_body				*particles;
-// }						t_dataset;
+	for(int i = 0; i < sizeof(cl_float4); i++)
+		((char *)(&f))[i] = str[i];
+	//print_float4(f);
+	return f;
+}
 
 void  request_dataset(t_dataset **init_data)
 {
-	FILE  *fp;
-	int   p_left;
+	int fd;
 	/*
 	 *   TODO : Figure out what the hell the file will be called;
 	*/
 	printf("start request_dataset\n");
-	if (NULL == (fp = fopen("./data.jgrv", "rb")))
+	if ((fd = open("./data.jgrv", O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file\n", errno);
 		exit(0);
@@ -54,23 +55,26 @@ void  request_dataset(t_dataset **init_data)
 	*init_data = (t_dataset *)calloc(1, sizeof(t_dataset));
 	long *l;
 	l = malloc(sizeof(long));
-	fread(l, sizeof(long), 1, fp);
+	read(fd, l, sizeof(long));
 	printf("particle_cnt: %ld\n", *l);
-	(*init_data)->particle_cnt = *l;
-	(*init_data)->particles = (t_body*)calloc(p_left - 1, sizeof(t_body));
-	fread(l, sizeof(long), 1, fp);
+	long pcount = *l;
+	(*init_data)->particle_cnt = pcount;
+	(*init_data)->particles = (t_body*)calloc(pcount, sizeof(t_body));
+	read(fd, l, sizeof(long));
 	printf("scale: %ld\n", *l);
 	(*init_data)->max_scale = *l;
 	free(l);
-	while (0 < --p_left)
+	char *star = malloc(sizeof(cl_float4));
+	for(int i = 0; i < pcount; i++)
 	{
-		if (0 > (read_into_body(fp, &(*init_data)->particles[p_left])))
-		{
-			fprintf(stderr, "Error reading file\n");
-			exit(0);
-		}
+		bzero(star, sizeof(cl_float4));
+		read(fd, star, sizeof(cl_float4));
+		(*init_data)->particles[i].position = str_to_star(star);
+		bzero(star, sizeof(cl_float4));
+		read(fd, star, sizeof(cl_float4));
+		(*init_data)->particles[i].velocity = str_to_star(star);
 	}
-	fclose(fp);
+	close(fd);
 	printf("finished request_dataset\n");
 	return ;
 }

@@ -91,7 +91,7 @@ static t_cell *init_cell(t_body **bodies, t_cell *parent, t_bounds bounds)
     //allocates and sets up a cell struct.
     t_cell *c;
 
-    c = (t_cell *)malloc(sizeof(t_cell));
+    c = (t_cell *)calloc(1, sizeof(t_cell));
     c->bodies = bodies;
     c->parent = parent;
     c->children = NULL;
@@ -106,7 +106,7 @@ static t_octree *init_tree(t_body **bodies, size_t n, t_bounds bounds)
     //allocates and sets up a tree and creates its root cell
     t_octree *t;
 
-    t = (t_octree *)malloc(sizeof(t_octree));
+    t = (t_octree *)calloc(1, sizeof(t_octree));
     t->bodies = bodies;
     t->n_bodies = n;
     t->bounds = bounds;
@@ -179,21 +179,21 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
     }
     else if (!(root->children))
     {
-        ret = (t_cell **)malloc(sizeof(t_cell *) * 2);
+        ret = (t_cell **)calloc(2, sizeof(t_cell *));
         ret[0] = root;
         ret[1] = NULL;
         return (ret);
     }
     else
     {
-        returned = (t_cell ***)malloc(sizeof(t_cell **) * 8);
+        returned = (t_cell ***)calloc(8, sizeof(t_cell **));
         int total = 0;
         for (int i = 0; i < 8; i++)
         {
             returned[i] = find_inners_do_outers(cell, root->children[i], t);
             total += count_cell_array(returned[i]);
         }
-        ret = (t_cell **)malloc(sizeof(t_cell *) * (total + 1));
+        ret = (t_cell **)calloc(total + 1, sizeof(t_cell *));
         for (int i = 0; i < total;)
         {
             for (int j = 0; j < 8; j++)
@@ -204,9 +204,9 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
                 {
                     ret[i] = returned[j][k];
                 }
-                free(returned[j]);
+                //free(returned[j]);
             }
-            free(returned);
+            //free(returned);
         }
         ret[total] = NULL;
         return (ret);
@@ -222,7 +222,7 @@ static t_body **bodies_from_cells(t_cell **cells)
     count = 0;
     for (int i = 0; cells[i]; i++)
         count += count_bodies(cells[i]->bodies);
-    bodies = (t_body **)malloc(sizeof(t_body *) * (count + 1));
+    bodies = (t_body **)calloc(count + 1, sizeof(t_body *));
     bodies[count] = NULL;
     int k = 0;
     for (int i = 0; cells[i]; i++)
@@ -239,18 +239,19 @@ static t_workunit *new_workunit(t_body **local, t_body **neighborhood, cl_float4
     //note that memory is copied here.
     t_workunit *w;
 
-    w = (t_workunit *)malloc(sizeof(t_workunit));
+    w = (t_workunit *)calloc(1, sizeof(t_workunit));
     w->id = index;
     w->localcount = count_bodies(local);
     w->neighborcount = count_bodies(neighborhood);
     w->force_bias = force_bias;
-    w->local_bodies = (t_body *)malloc(sizeof(t_body) * w->localcount);
-    w->neighborhood = (t_body *)malloc(sizeof(t_body) * w->neighborcount);
+    w->local_bodies = (t_body *)calloc(w->localcount, sizeof(t_body));
+    w->neighborhood = (t_body *)calloc(w->neighborcount, sizeof(t_body));
     for (int i = 0; i < w->localcount; i++)
         w->local_bodies[i] = local[i][0];
     for (int i = 0; i < w->neighborcount; i++)
-        w->neighborhood[i] = neighborhood[i][0];
-    free(local);
+    {
+        w->neighborhood[i] = *(neighborhood[i]);
+    }
     free(neighborhood);
     return (w);
 
@@ -316,12 +317,12 @@ static void    paint_bodies_octants(t_body **bodies, t_cell *c)
 static t_body ***scoop_octants(t_body **bodies)
 {
     //return 8 arrays of bodies, one for each octant (used after paint_octants)
-    t_body ***ret = (t_body ***)malloc(sizeof(t_body **) * 9);
+    t_body ***ret = (t_body ***)calloc(9, sizeof(t_body **));
     ret[8] = NULL;
     int count = count_bodies(bodies);
     for (int i = 0; i < 8; i++)
     {
-        ret[i] = (t_body **)malloc(sizeof(t_body *) * (count + 1));
+        ret[i] = (t_body **)calloc(count + 1, sizeof(t_body *));
         ret[i][count] = NULL;
     }
     int indices[8] = {0, 0, 0, 0, 0, 0, 0, 0};
@@ -376,7 +377,7 @@ static void divide_cell(t_cell *c)
     //////Numbering is a bit weird here ^ but the idea is that even indices are near, odd far
                                 //0..3 are left, 4..7 are right
                                 //0, 1, 6, 7 bottom, 2345 top
-    t_cell **children = (t_cell **)malloc(sizeof(t_cell *) * 9);
+    t_cell **children = (t_cell **)calloc(9, sizeof(t_cell *));
     paint_bodies_octants(c->bodies, c);
     t_body ***kids = scoop_octants(c->bodies);
     for (int i = 0; i < 8; i++)
@@ -405,19 +406,19 @@ static t_cell **enumerate_leaves(t_cell *root)
 
     if (!root->children)
     {
-        ret = (t_cell **)malloc(sizeof(t_cell *) * 2);
+        ret = (t_cell **)calloc(2, sizeof(t_cell *));
         ret[0] = root;
         ret[1] = NULL;
         return (ret);
     }
-    t_cell ***returned = (t_cell ***)malloc(sizeof(t_cell **) * 8);
+    t_cell ***returned = (t_cell ***)calloc(9, sizeof(t_cell **));
     int total = 0;
     for (int i = 0; i < 8; i++)
     {
         returned[i] = enumerate_leaves(root->children[i]);
         total += count_cell_array(returned[i]);
     }
-    ret = (t_cell **)malloc(sizeof(t_cell *) * (total + 1));
+    ret = (t_cell **)calloc(total + 1, sizeof(t_cell *));
     for (int i = 0; i < total;)
     {
         for (int j = 0; j < 8; j++)
@@ -438,8 +439,8 @@ static t_lst *new_node(t_workunit *w)
 {
     t_lst *n;
 
-    n = (t_lst *)malloc(sizeof(t_lst));
-    n->data_size = sizeof(t_workunit);
+    n = (t_lst *)calloc(1,sizeof(t_lst));
+    n->data_size = sizeof(t_workunit *);
     n->data = w;
     n->next = NULL;
     return (n);
@@ -462,10 +463,11 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
 {
     t_lst *head = NULL;
     t_lst *tail = NULL;
+    t_workunit *w = NULL;
 
     for (int i = 0; leaves[i]; i++)
     {
-        t_workunit *w = make_workunit_for_cell(leaves[i], t, i);
+        w = make_workunit_for_cell(leaves[i], t, i);
         if (w)
         {
             if (!head)
@@ -475,7 +477,7 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
             }
             else
             {
-                tail->next = new_node(make_workunit_for_cell(leaves[i], t, i));
+                tail->next = new_node(w);
                 tail = tail->next;
             }
         }
@@ -490,9 +492,9 @@ static void recursive_tree_free(t_cell *c)
     for (int i = 0; i < 8; i++)
     {
         recursive_tree_free(c->children[i]);
-        free(c->bodies);
         free(c->children[i]);
     }
+    free(c->bodies);
 }
 
 static void free_tree(t_octree *t)
@@ -501,35 +503,84 @@ static void free_tree(t_octree *t)
     free(t->root);
 }
 
+void print_float4(cl_float4 c)
+{
+    printf("x: %f y: %f z: %f w: %f\n", c.x, c.y, c.z, c.w);
+}
+
+void print_body(t_body *b)
+{
+    print_float4(b->position);
+    print_float4(b->velocity);
+}
+
+float magnitude_3(cl_float4 v)
+{
+    //mag function to work on a float4 but treat it as a float3
+    return (sqrt(v.x*v.x + v.y*v.y + v.z*v.z));
+}
+
+float rand_float(float max)
+{
+    //generate random float from 0..max
+    float r;
+
+    r = (float)rand() / (float)(RAND_MAX/max);
+    return r;
+}
+
+cl_float4 rand_sphere(int mag)
+{
+    //this creates a star from a uniform distribution in the sphere with 10^mag radius centered at 0,0,0.
+    //mass is increased the closer to the center it is.
+    double elevation = asin(rand_float(2) - 1);
+    double azimuth = 2 * CL_M_PI * rand_float(1);
+    double radius = cbrt(rand_float(1)) * __exp10(mag);
+    cl_float4 out = (cl_float4){radius * cos(elevation) * cos(azimuth), \
+                                radius * cos(elevation) * sin(azimuth), \
+                                0.3 * radius * sin(elevation), \
+                                1};
+    out.w = out.w * __exp10(mag) / magnitude_3(out);
+    return out;
+}
+
+cl_float4 rotational_vel(cl_float4 p)
+{
+
+    return (cl_float4){0, 0, 0, 0};
+}
+
+t_body **make_fake_bodies(int count, int mag)
+{
+    t_body **bodies = calloc(count + 1, sizeof(t_body *));
+    for (int i = 0; i < count; i++)
+    {
+        bodies[i] = calloc(1, sizeof(t_body));
+        bodies[i]->position = rand_sphere(mag);
+        bodies[i]->velocity = rotational_vel(bodies[i]->position);
+    }
+    bodies[count] = NULL;
+    return bodies;
+}
+
+
+
 void	divide_dataset(t_dispatcher *dispatcher)
 {
-	printf("start divide\n");
-    t_body **bodies = (t_body **)malloc(sizeof(t_body*) * (dispatcher->dataset->particle_cnt + 1));
-    printf("f0\n");
+    t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
-    printf("f1\n");
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
         bodies[i] = &(dispatcher->dataset->particles[i]);
-    printf("f2\n");
+    bodies[dispatcher->dataset->particle_cnt] = NULL;
     t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-    printf("f3\n");
     tree_it_up(t->root);
-    printf("f4\n");
     t_cell **leaves = enumerate_leaves(t->root);
-    printf("f5\n");
     dispatcher->workunits = create_workunits(t, leaves);
-    printf("f6\n");
     int len = lstlen(dispatcher->workunits);
-    printf("f7\n");
     dispatcher->workunits_cnt = len;
-    printf("f8\n");
     dispatcher->workunits_done = 0;
-    printf("f9\n");
     dispatcher->cells = leaves;
-    printf("f10\n");
     dispatcher->cell_count = len;
-    printf("f11\n");
-    free_tree(t); //bodies is freed in here
-	printf("fin divide\n");
+    free_tree(t);
 	return ;
 }
