@@ -23,7 +23,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 	else if (msg.id == WORK_UNIT_DONE)
 		handle_worker_done_msg(dispatcher, worker, msg);
 	else
-		printf("invalid msg id: %d", msg.id);
+		printf("invalid msg id: %d\n", msg.id);
 }
 
 static void	make_new_event_thread(t_dispatcher *disp, t_lst *worker_link)
@@ -44,6 +44,7 @@ static void	*handle_worker_connection(void *input)
 	t_worker			*cur_worker;
 	t_msg				msg;
 
+	printf("Launched worker network handler thread!\n");
 	params = (t_thread_handler *)input;
 	worker = params->worker;
 	cur_worker = (t_worker *)worker->data;
@@ -55,8 +56,17 @@ static void	*handle_worker_connection(void *input)
 			make_new_event_thread(params->dispatcher, worker->next);
 		}
 		msg = get_worker_msg(cur_worker);
+		printf("msg status: %d\n", msg.error);
 		if (msg.error == -1)
 			printf("get worker message failed with err %d\n", errno);
+		else if (msg.error == 0)
+		{
+			printf("worker connection terminated!\n");
+			cur_worker->socket.fd = 0;
+			printf("attempting to reconnect...\n");
+			cur_worker->socket.fd = accept(params->dispatcher->sin.fd, (struct sockaddr *)&(params->dispatcher->sin.addr.sin_addr), &(params->dispatcher->sin.addrlen));
+			printf("reconnected\n");
+		}
 		else
 			handle_worker_msg(params->dispatcher, cur_worker, msg);
 	}
@@ -85,5 +95,9 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	param = new_thread_handler(dispatcher, dispatcher->workers);
 	cur_worker = (t_worker *)dispatcher->workers->data;
 	printf("BREAK\n");
+	cur_worker->tid = calloc(1, sizeof(pthread_t));
+	printf("ALLOCCED\n");
 	pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
+	sleep(999999);
+	printf("END\n");
 }
