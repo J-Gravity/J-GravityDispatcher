@@ -6,7 +6,7 @@
 /*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:41:19 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 16:52:29 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 17:39:54 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,23 +17,16 @@ int   read_into_body(FILE *fp, t_body *particles)
   if (0 >= (fp))
     return (-1);
   /* READ PARTICLE POSITION */
-  fread(&particles->position.x,
-    sizeof(float), 1, fp);
-  fread(&particles->position.y,
-    sizeof(float), 1, fp);
-  fread(&particles->position.z,
-    sizeof(float), 1, fp);
+  fread(&particles->position.x, sizeof(float), 1, fp);
+  fread(&particles->position.y, sizeof(float), 1, fp);
+  fread(&particles->position.z, sizeof(float), 1, fp);
+  fread(&particles->position.w, sizeof(float), 1, fp);
   /* READ PARTICLE VELOCITY */
-  fread(&particles->velocity.x,
-    sizeof(float), 1, fp);
-  fread(&particles->velocity.y,
-    sizeof(float), 1, fp);
-  fread(&particles->velocity.z,
-    sizeof(float), 1, fp);
+  fread(&particles->velocity.x, sizeof(float), 1, fp);
+  fread(&particles->velocity.y, sizeof(float), 1, fp);
+  fread(&particles->velocity.z, sizeof(float), 1, fp);
+  fread(&particles->velocity.w, sizeof(float), 1, fp);
   /* READ PARTICLE MASS */
-  fread(&particles->position.w,
-    sizeof(float), 1, fp);
-  /* PARTICLE HAS BEEN READ */
   return (0);
 }
 
@@ -46,11 +39,9 @@ void  request_dataset(t_dataset **init_data)
 	*/
 	if (NULL == (fp = fopen("./data.jgrv", "rb")))
 	{
-		printf("r3\n");
 		fprintf(stderr, "Error opening file\n", errno);
 		exit(0);
 	}
-	printf("r1\n");
 	*init_data = (t_dataset *)calloc(1, sizeof(t_dataset));
 	fread(&(*init_data)->particle_cnt, sizeof(long), 1, fp);
 	fread(&(*init_data)->max_scale, sizeof(double), 1, fp);
@@ -58,7 +49,6 @@ void  request_dataset(t_dataset **init_data)
 	(*init_data)->particles = (t_body*)calloc(p_left - 1, sizeof(t_body));
 	while (0 < --p_left)
 	{
-		printf("f1\n");
 		if (0 > (read_into_body(fp, &(*init_data)->particles[p_left])))
 		{
 			fprintf(stderr, "Error reading file\n");

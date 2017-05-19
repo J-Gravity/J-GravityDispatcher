@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 16:44:38 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 17:33:58 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,7 @@ typedef struct			s_dispatcher
 	int					workunits_done;
 	t_cell				**cells;
 	int					cell_count;
-	t_socket			server_sock;
+	t_socket			sin;
 	char				is_connect;
 }						t_dispatcher;
 

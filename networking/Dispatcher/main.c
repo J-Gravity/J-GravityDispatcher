@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 16:25:05 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 17:34:13 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	main(void)
 	t_dispatcher	*dispatcher;
 
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
-	dispatcher->server_sock = setup_server_socket(PORT);
+	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 18000;
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
