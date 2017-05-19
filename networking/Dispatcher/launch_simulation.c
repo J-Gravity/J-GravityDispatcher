@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 00:10:53 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 19:58:21 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	int 				timeout;
 	
 	timeout = 120;
+	printf("begin launch_simulation\n");
 	while (!dispatcher->workers)
 	{
 		printf("There are no workers, simulation cannot start!\n");
@@ -80,8 +81,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 			return ;
 		}
 	}
+	printf("flag-0\n");
 	param = new_thread_handler(dispatcher, dispatcher->workers);
-	printf("NEED TO TEST WITH WORKERS\n");
 	cur_worker = (t_worker *)dispatcher->workers->data;
 	printf("BREAK\n");
 	pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);

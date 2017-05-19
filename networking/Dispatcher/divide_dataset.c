@@ -6,7 +6,7 @@
 /*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 16:21:59 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/18 20:01:33 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -503,19 +503,33 @@ static void free_tree(t_octree *t)
 
 void	divide_dataset(t_dispatcher *dispatcher)
 {
+	printf("start divide\n");
     t_body **bodies = (t_body **)malloc(sizeof(t_body*) * (dispatcher->dataset->particle_cnt + 1));
-    bodies[dispatcher->dataset->particle_cnt] = NULL;
+    printf("f0\n");
+	bodies[dispatcher->dataset->particle_cnt] = NULL;
+    printf("f1\n");
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
         bodies[i] = &(dispatcher->dataset->particles[i]);
+    printf("f2\n");
     t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
+    printf("f3\n");
     tree_it_up(t->root);
+    printf("f4\n");
     t_cell **leaves = enumerate_leaves(t->root);
+    printf("f5\n");
     dispatcher->workunits = create_workunits(t, leaves);
+    printf("f6\n");
     int len = lstlen(dispatcher->workunits);
+    printf("f7\n");
     dispatcher->workunits_cnt = len;
+    printf("f8\n");
     dispatcher->workunits_done = 0;
+    printf("f9\n");
     dispatcher->cells = leaves;
+    printf("f10\n");
     dispatcher->cell_count = len;
+    printf("f11\n");
     free_tree(t); //bodies is freed in here
+	printf("fin divide\n");
 	return ;
 }
