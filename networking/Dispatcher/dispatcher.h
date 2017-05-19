@@ -117,7 +117,7 @@ typedef struct			s_serial
 typedef struct			s_dataset
 {
 	long				particle_cnt;
-	double				max_scale;
+	long				max_scale;
 	t_body				*particles;
 }						t_dataset;
 

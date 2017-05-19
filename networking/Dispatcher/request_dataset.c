@@ -30,6 +30,14 @@ int   read_into_body(FILE *fp, t_body *particles)
   return (0);
 }
 
+
+// typedef struct			s_dataset
+// {
+// 	long				particle_cnt;
+// 	double				max_scale;
+// 	t_body				*particles;
+// }						t_dataset;
+
 void  request_dataset(t_dataset **init_data)
 {
 	FILE  *fp;
@@ -45,13 +53,15 @@ void  request_dataset(t_dataset **init_data)
 	}
 	*init_data = (t_dataset *)calloc(1, sizeof(t_dataset));
 	long *l;
-	l = (long *)malloc(sizeof(long));
+	l = malloc(sizeof(long));
 	fread(l, sizeof(long), 1, fp);
-	fread(&(*init_data)->particle_cnt, sizeof(long), 1, fp);
-	printf("particle_cnt: %ld\n", (*init_data)->particle_cnt);
-	fread(&(*init_data)->max_scale, sizeof(double), 1, fp);
-	p_left = 1 + (*init_data)->particle_cnt;
+	printf("particle_cnt: %ld\n", *l);
+	(*init_data)->particle_cnt = *l;
 	(*init_data)->particles = (t_body*)calloc(p_left - 1, sizeof(t_body));
+	fread(l, sizeof(long), 1, fp);
+	printf("scale: %ld\n", *l);
+	(*init_data)->max_scale = *l;
+	free(l);
 	while (0 < --p_left)
 	{
 		if (0 > (read_into_body(fp, &(*init_data)->particles[p_left])))
