@@ -204,9 +204,9 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
                 {
                     ret[i] = returned[j][k];
                 }
-                //free(returned[j]);
+                free(returned[j]);
             }
-            //free(returned);
+            free(returned);
         }
         ret[total] = NULL;
         return (ret);
@@ -252,7 +252,6 @@ static t_workunit *new_workunit(t_body **local, t_body **neighborhood, cl_float4
     {
         w->neighborhood[i] = *(neighborhood[i]);
     }
-    free(neighborhood);
     return (w);
 
 }
@@ -261,6 +260,7 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
 {
     t_cell **inners;
     t_body **direct_bodies;
+    t_workunit *w;
 
     //skip empty cells (yes there are empty cells)
     if (count_bodies(cell->bodies) == 0)
@@ -269,7 +269,10 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
     inners = find_inners_do_outers(cell, t->root, t);
     //use the result to make a list of particles we need to direct compare against
     direct_bodies = bodies_from_cells(inners);
-    return (new_workunit(cell->bodies, direct_bodies, cell->force_bias, index));
+    w = new_workunit(cell->bodies, direct_bodies, cell->force_bias, index);
+    free(inners);
+    free(direct_bodies);
+    return (w);
 }
 
 static void    paint_bodies_octants(t_body **bodies, t_cell *c)
@@ -464,12 +467,14 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
     t_lst *head = NULL;
     t_lst *tail = NULL;
     t_workunit *w = NULL;
+    long sizetotal = 0;
 
     for (int i = 0; leaves[i]; i++)
     {
         w = make_workunit_for_cell(leaves[i], t, i);
         if (w)
         {
+            sizetotal += w->localcount + w->neighborcount;
             if (!head)
             {
                 head = new_node(w);
@@ -482,6 +487,7 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
             }
         }
     }
+    printf("workunits were %ld stars total\n", sizetotal);
     return (head);
 }
 
@@ -503,70 +509,9 @@ static void free_tree(t_octree *t)
     free(t->root);
 }
 
-void print_float4(cl_float4 c)
-{
-    printf("x: %f y: %f z: %f w: %f\n", c.x, c.y, c.z, c.w);
-}
-
-void print_body(t_body *b)
-{
-    print_float4(b->position);
-    print_float4(b->velocity);
-}
-
-float magnitude_3(cl_float4 v)
-{
-    //mag function to work on a float4 but treat it as a float3
-    return (sqrt(v.x*v.x + v.y*v.y + v.z*v.z));
-}
-
-float rand_float(float max)
-{
-    //generate random float from 0..max
-    float r;
-
-    r = (float)rand() / (float)(RAND_MAX/max);
-    return r;
-}
-
-cl_float4 rand_sphere(int mag)
-{
-    //this creates a star from a uniform distribution in the sphere with 10^mag radius centered at 0,0,0.
-    //mass is increased the closer to the center it is.
-    double elevation = asin(rand_float(2) - 1);
-    double azimuth = 2 * CL_M_PI * rand_float(1);
-    double radius = cbrt(rand_float(1)) * __exp10(mag);
-    cl_float4 out = (cl_float4){radius * cos(elevation) * cos(azimuth), \
-                                radius * cos(elevation) * sin(azimuth), \
-                                0.3 * radius * sin(elevation), \
-                                1};
-    out.w = out.w * __exp10(mag) / magnitude_3(out);
-    return out;
-}
-
-cl_float4 rotational_vel(cl_float4 p)
-{
-
-    return (cl_float4){0, 0, 0, 0};
-}
-
-t_body **make_fake_bodies(int count, int mag)
-{
-    t_body **bodies = calloc(count + 1, sizeof(t_body *));
-    for (int i = 0; i < count; i++)
-    {
-        bodies[i] = calloc(1, sizeof(t_body));
-        bodies[i]->position = rand_sphere(mag);
-        bodies[i]->velocity = rotational_vel(bodies[i]->position);
-    }
-    bodies[count] = NULL;
-    return bodies;
-}
-
-
-
 void	divide_dataset(t_dispatcher *dispatcher)
 {
+    printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
@@ -582,5 +527,6 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
     free_tree(t);
+    printf("finished divide_dataset\n");
 	return ;
 }
