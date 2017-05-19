@@ -16,24 +16,38 @@
 
 void	*connect_worker_thread(void *param)
 {
-	t_lst			*new_worker;
-	t_socket		*sin;
-	t_dispatcher	*dispatcher;
+	t_lst					*new_link;
+	t_worker				*new_worker;
+	t_socket				*sin;
+	t_dispatcher			*dispatcher;
+	struct sockaddr_storage	their_addr;
+	int						fd;
+
 	dispatcher = (t_dispatcher *)param;
-	struct sockaddr_storage their_addr;
-	int				fd;
-	
 	while (dispatcher->is_connect)
 	{
 		sin = calloc(1, sizeof(t_socket));
-		new_worker = calloc(1, sizeof(t_worker));
-		new_worker->next = dispatcher->workers;
-		dispatcher->workers = new_worker;
-		new_worker->data = (t_worker *)calloc(1, sizeof(t_worker));
+		printf("1\n");
 		fd = accept(sin->fd, (struct sockaddr *)&(sin->addr.sin_addr), &(sin->addrlen));
-		if (((t_worker *)new_worker)->socket.fd == -1)
+		printf("worker connected fd: %d\n", fd);
+		new_link = calloc(1, sizeof(t_lst));
+		new_link->data = calloc(1, sizeof(t_worker));
+		printf("3\n");
+		new_link->next = dispatcher->workers;
+		printf("4\n");
+		dispatcher->workers = new_link;
+		printf("5\n");
+		new_worker = (t_worker *)new_link->data;
+		printf("6\n");
+		new_worker->socket.fd = fd;
+		printf("7\n");
+		new_worker->tid = 0;
+		printf("8\n");
+		if (new_worker->socket.fd == -1)
+		{
+			printf("worker accept call failed\n");
 			return (0);
-		((t_worker *)new_worker)->tid = 0;
+		}
 	}
 	return (0);
 }
