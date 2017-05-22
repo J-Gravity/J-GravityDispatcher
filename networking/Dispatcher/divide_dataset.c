@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 100000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 13)
+#define LEAF_THRESHOLD pow(2, 15)
 
 static t_bounds bounds_from_bodies(t_body **bodies)
 {
@@ -73,14 +73,16 @@ static int count_cell_array(t_cell **cells)
     return (i);
 }
 
-static cl_float4 center_of_mass(t_cell *c, t_body **bodies)
+static cl_float4 center_of_mass(t_cell *c, t_body **bodies, int *count)
 {
+    //as an optimization, center_of_mass also counts the bodies and stores that
     cl_float4 v;
 
     v = (cl_float4){0,0,0,0};
-
-    for (int i = 0; bodies[i]; i++)
+    int i;
+    for (i = 0; bodies[i]; i++)
         v = vadd(v, bodies[i]->position);
+    *count = i;
     if (v.w == 0)
       	return (cl_float4){xmid, ymid, zmid, 0};
     return ((cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w});
@@ -93,10 +95,11 @@ static t_cell *init_cell(t_body **bodies, t_cell *parent, t_bounds bounds)
 
     c = (t_cell *)calloc(1, sizeof(t_cell));
     c->bodies = bodies;
+    c->bodycount = 0;
     c->parent = parent;
     c->children = NULL;
     c->bounds = bounds;
-    c->center = center_of_mass(c, bodies);
+    c->center = center_of_mass(c, bodies, &(c->bodycount));
     c->force_bias = (cl_float4){0, 0, 0, 0};
     return (c);
 }
@@ -213,27 +216,30 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
     }
 }
 
-static t_body **bodies_from_cells(t_cell **cells)
+static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
 {
     //given a null terminated list of cells, make an array of all the bodies in those cells.
     int count;
     t_body **bodies;
 
+    //printf("entering b_f_c\n");
     count = 0;
     for (int i = 0; cells[i]; i++)
-        count += count_bodies(cells[i]->bodies);
+        count += cells[i]->bodycount;
     bodies = (t_body **)calloc(count + 1, sizeof(t_body *));
     bodies[count] = NULL;
     int k = 0;
     for (int i = 0; cells[i]; i++)
     {
-        for (int j = 0; cells[i]->bodies[j]; j++, k++)
-            bodies[k] = cells[i]->bodies[j];
+        memcpy(&(bodies[k]), cells[i]->bodies, cells[i]->bodycount * sizeof(t_body *));
+        k += cells[i]->bodycount;
     }
+    //printf("leaving b_f_c\n");
+    *neighborcount = count;
     return (bodies);
 }
 
-static t_workunit *new_workunit(t_body **local, t_body **neighborhood, cl_float4 force_bias, int index)
+static t_workunit *new_workunit(t_cell *c, t_body **neighborhood, int neighborcount, int index)
 {
     //constructor for workunit.
     //note that memory is copied here.
@@ -241,17 +247,15 @@ static t_workunit *new_workunit(t_body **local, t_body **neighborhood, cl_float4
 
     w = (t_workunit *)calloc(1, sizeof(t_workunit));
     w->id = index;
-    w->localcount = count_bodies(local);
-    w->neighborcount = count_bodies(neighborhood);
-    w->force_bias = force_bias;
+    w->localcount = c->bodycount;
+    w->neighborcount = neighborcount;
+    w->force_bias = c->force_bias;
     w->local_bodies = (t_body *)calloc(w->localcount, sizeof(t_body));
     w->neighborhood = (t_body *)calloc(w->neighborcount, sizeof(t_body));
     for (int i = 0; i < w->localcount; i++)
-        w->local_bodies[i] = local[i][0];
-    for (int i = 0; i < w->neighborcount; i++)
-    {
-        w->neighborhood[i] = *(neighborhood[i]);
-    }
+        w->local_bodies[i] = c->bodies[i][0];
+    for (int j = 0; j < w->neighborcount; j++)
+        w->neighborhood[j] = *(neighborhood[j]);
     return (w);
 
 }
@@ -261,15 +265,16 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
     t_cell **inners;
     t_body **direct_bodies;
     t_workunit *w;
+    int neighborcount;
 
     //skip empty cells (yes there are empty cells)
-    if (count_bodies(cell->bodies) == 0)
+    if (cell->bodycount == 0)
         return NULL;
     //traverse tree doing faraway calculations and enumerating nearby cells (see above)
     inners = find_inners_do_outers(cell, t->root, t);
     //use the result to make a list of particles we need to direct compare against
-    direct_bodies = bodies_from_cells(inners);
-    w = new_workunit(cell->bodies, direct_bodies, cell->force_bias, index);
+    direct_bodies = bodies_from_cells(inners, &neighborcount);
+    w = new_workunit(cell, direct_bodies, neighborcount, index);
     free(inners);
     free(direct_bodies);
     return (w);
@@ -278,7 +283,7 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
 static void    paint_bodies_octants(t_body **bodies, t_cell *c)
 {
     //mark each body with a value for which octant it will be in after cell is split
-    for (int i = 0; bodies[i]; i++)
+    for (int i = 0; i < c->bodycount; i++)
     {
         if (bodies[i]->position.x < xmid)
         {
@@ -317,19 +322,18 @@ static void    paint_bodies_octants(t_body **bodies, t_cell *c)
     }
 }
 
-static t_body ***scoop_octants(t_body **bodies)
+static t_body ***scoop_octants(t_body **bodies, int count)
 {
     //return 8 arrays of bodies, one for each octant (used after paint_octants)
     t_body ***ret = (t_body ***)calloc(9, sizeof(t_body **));
     ret[8] = NULL;
-    int count = count_bodies(bodies);
     for (int i = 0; i < 8; i++)
     {
         ret[i] = (t_body **)calloc(count + 1, sizeof(t_body *));
         ret[i][count] = NULL;
     }
     int indices[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    for (int i = 0; bodies[i]; i++)
+    for (int i = 0; i < count; i++)
     {
         ret[(int)bodies[i]->velocity.w][indices[(int)bodies[i]->velocity.w]] = bodies[i];
         indices[(int)bodies[i]->velocity.w] += 1;
@@ -382,7 +386,7 @@ static void divide_cell(t_cell *c)
                                 //0, 1, 6, 7 bottom, 2345 top
     t_cell **children = (t_cell **)calloc(9, sizeof(t_cell *));
     paint_bodies_octants(c->bodies, c);
-    t_body ***kids = scoop_octants(c->bodies);
+    t_body ***kids = scoop_octants(c->bodies, c->bodycount);
     for (int i = 0; i < 8; i++)
         children[i] = init_cell(kids[i], c, subbounds[i]);
     children[8] = NULL;
@@ -394,7 +398,7 @@ static void tree_it_up(t_cell *root)
     //recursively flesh out the barnes-hut tree from the root node.
     if (!root)
         return ;
-    if (count_bodies(root->bodies) < LEAF_THRESHOLD)
+    if (root->bodycount < LEAF_THRESHOLD)
         return ;
     divide_cell(root);
     for (int i = 0; i < 8; i++)
@@ -530,3 +534,8 @@ void	divide_dataset(t_dispatcher *dispatcher)
     printf("finished divide_dataset\n");
 	return ;
 }
+
+
+/* optimization checklist:
+reduce calls to count_bodies
+create all workunits before filling them */

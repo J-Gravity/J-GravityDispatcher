@@ -36,14 +36,11 @@ void  request_dataset(t_dataset **init_data)
 	t_dataset *data = (t_dataset *)calloc(1, sizeof(t_dataset));
 	read(fd, &(count), sizeof(count));
 	read(fd, &(scale), sizeof(scale));
-	data->particles = calloc(count, sizeof(t_body));
+	t_body *particles = calloc(count, sizeof(t_body));
 	data->max_scale = scale;
 	data->particle_cnt = count;
-	for (int i = 0; i < count; i++)
-	{
-		read(fd, &(data->particles[i].position), sizeof(cl_float4));
-		read(fd, &(data->particles[i].velocity), sizeof(cl_float4));
-	}
+	read(fd, particles, sizeof(t_body) * count);
+	data->particles = particles;
 	close(fd);
 	*init_data = data;
 	printf("finished request_dataset\n");

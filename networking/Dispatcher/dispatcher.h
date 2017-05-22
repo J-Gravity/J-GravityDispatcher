@@ -75,6 +75,7 @@ typedef struct s_bounds
 typedef struct s_cell
 {
 	t_body **bodies;
+	int bodycount;
 	struct s_cell *parent;
 	struct s_cell **children;
 	cl_float4 center;
