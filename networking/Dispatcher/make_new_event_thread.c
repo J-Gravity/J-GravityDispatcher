@@ -1,31 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   new_message.c                                      :+:      :+:    :+:   */
+/*   make_new_event_thread.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/14 21:27:02 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 14:52:39 by cyildiri         ###   ########.fr       */
+/*   Created: 2017/05/22 13:37:17 by cyildiri          #+#    #+#             */
+/*   Updated: 2017/05/22 14:09:11 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
+#include <pthread.h>
 
-t_msg	new_message(char id, int data_size, char *data)
-{
-	t_msg	message;
+void	make_new_event_thread(t_dispatcher *disp, t_lst *worker_link)
+{ 
+	t_thread_handler	*params;
+	t_worker			*worker;
 
-	printf("A#\n");
-	bzero(&message, sizeof(t_msg));
-	printf("B#\n");
-	message.id = id;
-	printf("C#\n");
-	message.size = data_size;
-	printf("D#\n");
-	message.data = (char *)calloc(1, data_size);
-	printf("E#\n");
-	memcpy(&message.data, data, data_size);
-	printf("F#\n");
-	return (message);
+	params = new_thread_handler(disp, worker_link);
+	worker = (t_worker *)worker_link->data;
+	pthread_create(worker->tid, NULL,
+					handle_worker_connection, params);
 }

@@ -3,17 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   launch_simulation.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 23:40:42 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/22 14:42:01 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 #include "pthread.h"
-
-static void	*handle_worker_connection(void *input);
 
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
@@ -26,18 +24,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 		printf("invalid msg id: %d\n", msg.id);
 }
 
-static void	make_new_event_thread(t_dispatcher *disp, t_lst *worker_link)
-{
-	t_thread_handler	*params;
-	t_worker			*worker;
-
-	params = new_thread_handler(disp, worker_link);
-	worker = (t_worker *)worker_link->data;
-	pthread_create(worker->tid, NULL,
-					handle_worker_connection, params);
-}
-
-static void	*handle_worker_connection(void *input)
+void		*handle_worker_connection(void *input)
 {
 	t_thread_handler	*params;
 	t_lst				*head;
@@ -47,9 +34,14 @@ static void	*handle_worker_connection(void *input)
 
 	printf("Launched worker network handler thread!\n");
 	params = (t_thread_handler *)input;
+	printf("A!\n");
 	worker = params->worker;
+	printf("B!\n");
 	cur_worker = (t_worker *)worker->data;
+	printf("C!\n");
+	//printf("thread for fd: %d", cur_worker->socket.fd);
 	send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 0, ""));
+	printf("D!\n");
 	while (1)
 	{
 		printf("while 1\n");
@@ -59,11 +51,11 @@ static void	*handle_worker_connection(void *input)
 			printf("worker: %d\n", ((t_worker*)(head->data))->socket.fd);
 			head = head->next;
 		}
-		if (worker->next && ((t_worker *)worker->next->data)->tid == 0)
-		{
-			printf("new event thread\n");
-			make_new_event_thread(params->dispatcher, worker->next);
-		}
+		// if (worker->next && ((t_worker *)worker->next->data)->tid == 0)
+		// {
+		// 	printf("new event thread\n");
+		// 	make_new_event_thread(params->dispatcher, worker->next);
+		// }
 		msg = get_worker_msg(cur_worker);
 		printf("msg status: %d\n", msg.error);
 		if (msg.error == -1)
@@ -91,6 +83,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
 	int 				timeout;
+	t_lst				*head;
 	
 	timeout = 120;
 	printf("begin launch_simulation\n");
@@ -105,13 +98,22 @@ void		launch_simulation(t_dispatcher *dispatcher)
 			return ;
 		}
 	}
-	printf("flag-0\n");
-	param = new_thread_handler(dispatcher, dispatcher->workers);
-	cur_worker = (t_worker *)dispatcher->workers->data;
-	printf("BREAK\n");
-	cur_worker->tid = calloc(1, sizeof(pthread_t));
-	printf("ALLOCCED\n");
-	pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
+	dispatcher->is_running = 1;
+	head = dispatcher->workers;
+	while (head)
+	{	
+		cur_worker = (t_worker *)head->data;
+		if (cur_worker->tid == 0)
+		{
+			printf("flag-0\n");
+			param = new_thread_handler(dispatcher, head);
+			printf("BREAK\n");
+			cur_worker->tid = calloc(1, sizeof(pthread_t));
+			printf("ALLOCCED\n");
+			pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
+		}
+		head = head->next;
+	}
 	printf("sleeping\n");
 	sleep(999999);
 	printf("END\n");

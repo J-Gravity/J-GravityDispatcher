@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   connect_workers.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 23:35:08 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/22 14:37:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,17 +36,19 @@ void	*connect_worker_thread(void *param)
 		if (head)
 		{
 			printf("head->next\n");
-			while (head->next)
+			while (head)
+			{
+				if (head->next == NULL)
+					break;
 				head = head->next;
-			head = new_link;
-			head->next = NULL;
+			}
+			head->next = new_link;
 		}
 		else
 		{
 			printf("new list\n");
 			dispatcher->workers = new_link;
 		}
-		printf("finished with connect worker\n");
 		new_worker = (t_worker *)new_link->data;
 		new_worker->socket.fd = fd;
 		new_worker->tid = 0;
@@ -55,6 +57,14 @@ void	*connect_worker_thread(void *param)
 			printf("worker accept call failed\n");
 			return (0);
 		}
+		
+		if (dispatcher->is_running && fd != -1)
+		{
+			printf("launching event thread from connect workers\n");
+			printf("new_link(%p) worker(%p)\n", new_link, new_link->data);
+			make_new_event_thread(dispatcher, new_link);
+		}
+		printf("finished with connect worker\n");
 	}
 	return (0);
 }
