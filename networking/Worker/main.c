@@ -62,37 +62,40 @@ t_msg	wait_for_msg(int socket, int message_code)
 	buffer = (char *)calloc(1, HEADER_SIZE);
 	bytes_read = recv(socket, buffer, HEADER_SIZE, 0);
 	printf("bytes read: %d\n", bytes_read);
-	if (bytes_read == HEADER_SIZE)
+	while (1)
 	{
-		int bodybytes = 0;
-		msg.id = buffer[0];
-		memcpy(&msg.size, &buffer[1], sizeof(int));
-		msg.data = (char *)calloc(1, msg.size);
-		while (bodybytes < msg.size)
+		if (bytes_read == HEADER_SIZE)
 		{
-			bodybytes += recv(socket, msg.data + bodybytes, msg.size, 0);
-		}
-		printf("body bytes read %d\n", bodybytes);
-		printf("total bytes read %d\n", bodybytes + bytes_read);
-		//check_for_errors(bytes_read, &msg.error);
+			int bodybytes = 0;
+			msg.id = buffer[0];
+			memcpy(&msg.size, &buffer[1], sizeof(int));
+			msg.data = (char *)calloc(1, msg.size);
+			while (bodybytes < msg.size)
+			{
+				bodybytes += recv(socket, msg.data + bodybytes, msg.size, 0);
+			}
+			printf("body bytes read %d\n", bodybytes);
+			printf("total bytes read %d\n", bodybytes + bytes_read);
+			//check_for_errors(bytes_read, &msg.error);
 
-	}
-	else
-	{
-		printf("something was wrong with the message\n");
-		printf("we read %d bytes and wanted %d\n",bytes_read, HEADER_SIZE);
-		exit(1);
-	}
-	if (msg.id != message_code)
-	{
-		printf("not the message we were expecting\n");
-		printf("we got %d when we wanted %d\n", msg.id, message_code);
-		exit(1);
-	}
-	else
-	{
-		free(buffer);
-		return msg;
+		}
+		else
+		{
+			printf("something was wrong with the message\n");
+			printf("we read %d bytes and wanted %d\n",bytes_read, HEADER_SIZE);
+			continue ;
+		}
+		if (msg.id != message_code)
+		{
+			printf("not the message we were expecting\n");
+			printf("we got %d when we wanted %d\n", msg.id, message_code);
+			continue ;
+		}
+		else
+		{
+			free(buffer);
+			return msg;
+		}
 	}
 }
 
