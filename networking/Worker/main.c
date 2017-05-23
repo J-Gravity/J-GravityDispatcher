@@ -80,11 +80,13 @@ t_msg	wait_for_msg(int socket, int message_code)
 	else
 	{
 		printf("something was wrong with the message\n");
+		printf("we read %d bytes and wanted %d\n",bytes_read, HEADER_SIZE);
 		exit(1);
 	}
 	if (msg.id != message_code)
 	{
 		printf("not the message we were expecting\n");
+		printf("we got %d when we wanted %d\n", msg.id, message_code);
 		exit(1);
 	}
 	else

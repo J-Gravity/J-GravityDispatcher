@@ -81,7 +81,7 @@ void		*handle_worker_connection(void *input)
 		}
 		else
 			handle_worker_msg(params->dispatcher, cur_worker, msg);
-		free(msg.data);
+		//free(msg.data);
 	}
 	return (0);
 }
