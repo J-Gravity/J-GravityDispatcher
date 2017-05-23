@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/22 18:11:45 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/22 21:28:50 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,19 @@
 
 void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 {
-	t_lst	*head;
+	t_lst	*delete_me;
 
 	printf("A$\n");
-	head = dispatcher->workunits;
-	printf("B$\n");
-	while (head)
+	if (dispatcher->workunits)
 	{
+		printf("B$\n");
+		send_workunit(worker, (t_workunit *)(dispatcher->workunits->data));
 		printf("C$\n");
-		send_workunit(worker, (t_workunit *)(head->data));
+		delete_me = dispatcher->workunits;
 		printf("D$\n");
-		break ;
+		dispatcher->workunits = dispatcher->workunits->next;
 		printf("E$\n");
-		head = head->next;
-		printf("F$\n");
+		clear_unit(&delete_me);
 	}
-		printf("G$\n");
+	printf("F$\n");
 }

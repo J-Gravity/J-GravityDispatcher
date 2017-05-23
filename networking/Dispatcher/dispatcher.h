@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 13:54:18 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/22 21:26:10 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -321,6 +321,11 @@ void		broadcast_worker_msg(t_lst *workers, t_msg msg);
 *	clears the link list of work units.
 */
 void		clear_work_units(t_lst **work_units);
+
+/*
+*	clears the link list of work units.
+*/
+void		clear_unit(t_lst **work_units);
 
 /*******************************************************************************
 ********************************************************************************
