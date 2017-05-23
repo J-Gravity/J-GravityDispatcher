@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_worker_done_msg.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 16:22:44 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/23 00:52:15 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,9 +33,11 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		i++;
 	}
 	printf("copied the bodies\n");
+	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
 	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
 		all_workunits_done(dispatcher);
 	else if (dispatcher->workunits)
 		send_worker_msg(worker, new_message(WORK_UNITS_READY, 0, ""));
+	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 }

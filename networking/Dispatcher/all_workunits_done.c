@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 23:39:47 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 01:00:39 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,15 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Reset work units done
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
-	// re-Divide the dataset into work units
-	divide_dataset(dispatcher);
-	// Inform all workers work units are ready
-	broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
+	if (dispatcher->ticks_done < dispatcher->ticks_cnt)
+	{
+		// re-Divide the dataset into work units
+		divide_dataset(dispatcher);
+		// Inform all workers work units are ready
+		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
+	}
+	else
+	{
+		//simulation complete
+	}
 }
