@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dispatcher.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 17:33:58 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/22 13:54:18 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,6 +75,7 @@ typedef struct s_bounds
 typedef struct s_cell
 {
 	t_body **bodies;
+	int bodycount;
 	struct s_cell *parent;
 	struct s_cell **children;
 	cl_float4 center;
@@ -136,6 +137,7 @@ typedef struct			s_dispatcher
 	int					cell_count;
 	t_socket			sin;
 	char				is_connect;
+	char				is_running;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -143,6 +145,21 @@ typedef struct			s_thread_handler
 	t_dispatcher		*dispatcher;
 	t_lst				*worker;
 }						t_thread_handler;
+
+/*
+*	The function that runs on the network event handler threads.
+*	handles the network events for each worker.
+*		@param	input	A t_thread_handler struct that contains
+*						a pointer to a worker and a pointer to the dispatcher
+*/
+void	*handle_worker_connection(void *input);
+
+/*
+*	Create a network event thread for the provided worker
+*		@param	disp	The dispatcher's main struct
+*		@param	worker_link	A link of the link list of workers
+*/
+void	make_new_event_thread(t_dispatcher *disp, t_lst *worker_link);
 
 /*
 *	Takes an cl_float4 value and converts to a binary string

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 17:34:13 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/22 13:16:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ int	main(void)
 	dispatcher->ticks_cnt = 18000;
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
+	dispatcher->is_running = 0;
 	connect_workers(dispatcher, &dispatcher->workers);
 	request_dataset(&dispatcher->dataset);
 	divide_dataset(dispatcher);
