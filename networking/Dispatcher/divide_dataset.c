@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   divide_dataset.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 20:01:33 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/23 13:24:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,14 @@
 #define xmid c->bounds.xmax - (c->bounds.xmax - c->bounds.xmin) / 2
 #define ymid c->bounds.ymax - (c->bounds.ymax - c->bounds.ymin) / 2
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
-#define SOFTENING 100000
+#define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 15)
+#define LEAF_THRESHOLD pow(2, 14)
+
+void print_cl4(cl_float4 v)
+{
+    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+}
 
 static t_bounds bounds_from_bodies(t_body **bodies)
 {
@@ -119,6 +124,9 @@ static t_octree *init_tree(t_body **bodies, size_t n, t_bounds bounds)
 
 static void pair_force_cell(t_cell *i, t_cell *j)
 {
+
+    if (i == j)
+        return;
     //compute the force between two distant cells, treating them as single particles
     cl_float4 r;
 
@@ -127,10 +135,23 @@ static void pair_force_cell(t_cell *i, t_cell *j)
     r.z = j->center.z - i->center.z;
 
     float distSq = r.x * r.x + r.y * r.y + r.z * r.z + SOFTENING;
+    // printf("the cells are %f apart\n", sqrt(distSq));
+    // printf("distSq was %f\n", distSq);
     float invDist = 1.0 / sqrt(distSq);
+    //printf("invDist is %f\n", invDist);
     float invDistCube = invDist * invDist * invDist;
-    float f = j->center.w * invDistCube * i->center.w > 0 ? 1 : -1;
+    //printf("invDistCube is %f\n", invDistCube);
+    float f = j->center.w * invDistCube;
+    //printf("f is %f\n", f);
+    //printf("this cell weighs %f and the other weighs %f\n", i->center.w, j->center.w);
+    //printf("single contrib\n");
+    //print_cl4((cl_float4){r.x * f, r.y * f, r.z * f});
     i->force_bias = vadd(i->force_bias, (cl_float4){r.x * f, r.y * f, r.z * f});
+}
+
+static cl_float4 midpoint_from_bounds(t_bounds b)
+{
+    return (cl_float4){(b.xmax - b.xmin) / 2, (b.ymax - b.ymin) / 2, (b.zmax - b.zmin) / 2};
 }
 
 static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
@@ -140,15 +161,45 @@ static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
     float s;
     float d;
     cl_float4 r;
+    cl_float4 us_midpoint;
 
+    us_midpoint = midpoint_from_bounds(us->bounds);
     s = them->bounds.xmax - them->bounds.xmin;
-    r.x = them->center.x - us->center.x;
-    r.y = them->center.y - us->center.y;
-    r.z = them->center.z - us->center.z;
+    r.x = them->center.x - us_midpoint.x;
+    r.y = them->center.y - us_midpoint.y;
+    r.z = them->center.z - us_midpoint.z;
     d = sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
     if (d == 0)
         return (0);
+    //d -= (us->bounds.xmax - us->bounds.xmin) / 2; //this is a good idea but not the correct expression
     return (s/d);
+}
+
+// typedef struct s_cell
+// {
+//     t_body **bodies;
+//     int bodycount;
+//     struct s_cell *parent;
+//     struct s_cell **children;
+//     cl_float4 center;
+//     cl_float4 force_bias;
+//     t_bounds bounds;
+// }               t_cell;
+
+static t_cell *single_body_cell(t_cell *cell)
+{
+    //returns a new cell that's just one body. basically just a wrapper for the body,
+    //it would be better to do this differently
+    t_cell *single = (t_cell *)calloc(1, sizeof(t_cell));
+    single->bodies = (t_body **)calloc(2, sizeof(t_body *));
+    single->bodies[0] = (t_body *)calloc(1, sizeof(t_body));
+    single->bodies[0]->position = cell->center;
+    single->bodies[0]->velocity = (cl_float4){0, 0, 0, 0};
+    single->bodies[1] = NULL;
+
+    //NB THIS IS A LEAK, just throwing together for testing
+
+    return (single);
 }
 
 static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
@@ -177,8 +228,10 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
 
     if (root != t->root && multipole_acceptance_criterion(cell, root) < THETA)
     {
-        pair_force_cell(cell, root);
-        return (NULL);
+        ret = (t_cell **)calloc(2, sizeof(t_cell *));
+        ret[0] = single_body_cell(root);
+        ret[1] = NULL;
+        return (ret);
     }
     else if (!(root->children))
     {
@@ -491,7 +544,7 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
             }
         }
     }
-    printf("workunits were %ld stars total\n", sizetotal);
+    //printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
     return (head);
 }
 
@@ -515,13 +568,25 @@ static void free_tree(t_octree *t)
 
 void	divide_dataset(t_dispatcher *dispatcher)
 {
-    printf("starting divide_dataset\n");
+    static t_octree *t;
+
+    if (t != NULL)
+    {
+        //printf("freeing the old tree\n");
+        free_tree(t);
+    }
+    //printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
         bodies[i] = &(dispatcher->dataset->particles[i]);
+    // for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
+    // {
+    //     print_cl4(bodies[i]->position);
+    //     print_cl4(bodies[i]->velocity);
+    // }
     bodies[dispatcher->dataset->particle_cnt] = NULL;
-    t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
+    t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
     dispatcher->workunits = create_workunits(t, leaves);
@@ -530,8 +595,8 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
-    free_tree(t);
-    printf("finished divide_dataset\n");
+    //free_tree(t);
+    //printf("finished divide_dataset\n");
 	return ;
 }
 

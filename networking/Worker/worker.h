@@ -11,21 +11,36 @@
 #include <time.h>
 #include <stdlib.h>
 
+# define PORT 4242
+# define HEADER_SIZE 5
 
-#define LEAF_THRESHOLD pow(2, 14)
-#define BODYCOUNT pow(2, 20)
-#define BOUNDMAG 10
+# define BROADCAST_SUPER_PARTICLE 1
+# define CACHE_REACHED_THREASHOLD 2
+# define WORK_UNIT_REQUEST 3
+# define ACKNOWLEDGED 42
+# define WORK_UNITS_READY 4
+# define WORK_UNIT 6
+# define WORK_UNIT_DONE 7
+
+# include <stdio.h>
+# include <sys/socket.h>
+# include <stdlib.h>
+# include <netinet/in.h>
+# include <sys/types.h>
+# include <netdb.h>
+# include <string.h>
+# include <errno.h>
+# include <OpenCL/opencl.h>
+
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 100000
-#define TIME_STEP 1
+#define TIME_STEP 30000
 #define THREADCOUNT pow(2, 11)
 #define GROUPSIZE 256
 
 # ifndef DEVICE
 # define DEVICE CL_DEVICE_TYPE_DEFAULT
 # endif
-
-#include "err_code.h"
 
 typedef struct s_context
 {
@@ -34,9 +49,48 @@ typedef struct s_context
     cl_command_queue commands;
 }               t_context;
 
-/*
-	takes a workunit and computes forces on local_bodies,
-	updating velocities and positions. returns a completed workunit.
-*/
+typedef struct			s_body
+{
+	cl_float4			position;
+	cl_float4			velocity;
+}						t_body;
 
-t_workunit *do_workunit(t_workunit *w);
+typedef struct			s_workunit
+{
+	int					id;
+	int					localcount;
+	int					neighborcount;
+	t_body				*local_bodies;
+	t_body				*neighborhood;
+	cl_float4			force_bias;
+}						t_workunit;
+
+typedef struct			s_msg
+{
+	char				id;
+	int					size;
+	char				*data;
+	int					error;
+}						t_msg;
+
+typedef	struct			s_socket
+{
+	int					fd;
+	struct sockaddr_in	*addr;
+	socklen_t			*addrlen;
+}						t_socket;
+
+
+
+t_msg serialize_workunit(t_workunit w);
+t_workunit do_workunit(t_workunit w);
+t_workunit deserialize_workunit(t_msg msg);
+
+t_workunit deserialize_workunit2(t_msg msg);
+t_msg serialize_workunit2(t_workunit w);
+
+void print_cl4(cl_float4 v);
+
+void	strbjoin(t_msg *msg, char const *s2, size_t size);
+char	*itob(int value);
+char	*clftob(cl_float4 star);

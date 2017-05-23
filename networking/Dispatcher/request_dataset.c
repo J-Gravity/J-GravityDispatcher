@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   request_dataset.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: scollet <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:41:19 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 20:06:29 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/23 12:31:00 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void  request_dataset(t_dataset **init_data)
 	 *   TODO : Figure out what the hell the file will be called;
 	*/
 	printf("starting request_dataset\n");
-	if ((fd = open("./start.jgrav", O_RDONLY)) < 1)
+	if ((fd = open("./midsize.jgrav", O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file\n", errno);
 		exit(0);

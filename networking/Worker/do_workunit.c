@@ -1,5 +1,5 @@
-#include "dispatcher.h"
 #include "worker.h"
+#include "err_code.h"
 
 static int count_bodies(t_body **bodies)
 {
@@ -10,6 +10,12 @@ static int count_bodies(t_body **bodies)
         i++;
     return (i);
 }
+
+void print_cl4(cl_float4 v)
+{
+    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+}
+
 
 static char *load_cl_file(char *filename)
 {
@@ -59,6 +65,12 @@ static t_context *setup_context(void)
     return (c);
 }
 
+static void free_context(t_context *c)
+{
+    clReleaseCommandQueue(c->commands);
+    clReleaseContext(c->context);
+}
+
 static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
 {
     cl_kernel k;
@@ -86,6 +98,8 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     // Create the compute kernel from the program
     k = clCreateKernel(p, name, &err);
     checkError(err, "Creating kernel");
+    free(source);
+    clReleaseProgram(p);
     return (k);
 }
 
@@ -99,12 +113,14 @@ size_t nearest_mult_256(size_t n)
 static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount, cl_float4 force_bias)
 {
     srand ( time(NULL) ); //before we do anything, seed rand() with the current time
-    t_context   *context;
-    cl_kernel   k_nbody;
+    static t_context   *context;
+    static cl_kernel   k_nbody;
     int err;
 
-    context = setup_context();
-    k_nbody = make_kernel(context, "nxm.cl", "nbody");
+    if (context == NULL)
+        context = setup_context();
+    if (k_nbody == NULL)
+        k_nbody = make_kernel(context, "nxm.cl", "nbody");
 
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
@@ -180,14 +196,19 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clReleaseMemObject(d_V_end);
     clReleaseMemObject(d_A);
 
-    // printf("\n\n\nAFTER\n\n\n");
-    // for (int i = 0; i < ncount; i++)
-    // {
-    //     printf("nx %f ny %f nz %f nw %f vx %f vy %f vz %f\n", output_p[i].x, output_p[i].y, output_p[i].z, output_p[i].w, output_v[i].x, output_v[i].y, output_v[i].z);
-    //     printf("message %f\n", output_v[i].w);
-    // }
+    clReleaseEvent(eN);
+    clReleaseEvent(eM);
+    clReleaseEvent(eA);
+    clReleaseEvent(eV);
+    clReleaseEvent(compute);
+    clReleaseEvent(offN);
+    clReleaseEvent(offV);
 
-    t_body *ret = (t_body *)malloc(sizeof(t_body) * (ncount + 1));
+    // printf("after computation, in output buffers\n");
+    // print_cl4(output_p[0]);
+    // print_cl4(output_v[0]);
+
+    t_body *ret = (t_body *)malloc(sizeof(t_body) * ncount);
     for (int i = 0; i < ncount; i++)
     {
         ret[i].position = output_p[i];
@@ -195,15 +216,20 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     }
     free(output_p);
     free(output_v);
-    free(context);
+    //free_context(context);
+    //clReleaseKernel(k_nbody);
+    free(FB);
     return (ret);
 }
 
-t_workunit *do_workunit(t_workunit *w)
+t_workunit do_workunit(t_workunit w)
 {
-    cl_float4 fb = w->force_bias;
-    size_t ncount = w->localcount;
-    size_t mcount = w->neighborcount;
+    // printf("before computation, from WU\n");
+    // print_cl4(w.local_bodies[0].position);
+    // print_cl4(w.local_bodies[0].velocity);
+    cl_float4 fb = w.force_bias;
+    size_t ncount = w.localcount;
+    size_t mcount = w.neighborcount;
     size_t npadding = nearest_mult_256(ncount) - ncount;
     size_t mpadding = nearest_mult_256(mcount) - mcount;
     cl_float4 *N = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
@@ -211,17 +237,26 @@ t_workunit *do_workunit(t_workunit *w)
     cl_float4 *V = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
     for (int i = 0; i < ncount; i++)
     {
-        N[i] = w->local_bodies[i].position;
-        V[i] = w->local_bodies[i].velocity;
+        N[i] = w.local_bodies[i].position;
+        V[i] = w.local_bodies[i].velocity;
     }
+    // printf("before computation, in input buffers\n");
+    // print_cl4(N[0]);
+    // print_cl4(V[0]);
     for (int i = 0; i < mcount; i++)
     {
-        M[i] = w->neighborhood[i].position;
+        M[i] = w.neighborhood[i].position;
     }
-    free(w->local_bodies);
-    w->local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding, fb);
-    free(w->neighborhood);
-    w->neighborhood = NULL;
-    w->neighborcount = 0;
+    free(w.local_bodies);
+    w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding, fb);
+    free(w.neighborhood);
+    w.neighborhood = NULL;
+    w.neighborcount = 0;
+    free(N);
+    free(M);
+    free(V);
+    // printf("after computation, in WU\n");
+    // print_cl4(w.local_bodies[0].position);
+    // print_cl4(w.local_bodies[0].velocity);
     return (w);
 }

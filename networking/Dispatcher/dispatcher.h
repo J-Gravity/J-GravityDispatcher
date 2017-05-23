@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 13:54:18 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 14:08:18 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # define WORK_UNITS_READY 4
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
+# define NO_WORK_UNITS 8
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -33,6 +34,7 @@
 # include <string.h>
 # include <errno.h>
 # include <OpenCL/opencl.h>
+# include <pthread.h>
 
 typedef struct			s_lst
 {
@@ -124,6 +126,8 @@ typedef struct			s_dataset
 
 typedef struct			s_dispatcher
 {
+	pthread_mutex_t		workunits_mutex;
+	pthread_mutex_t		workunits_done_mutex;
 	char				*name;
 	t_lst				*workers;
 	int					worker_cnt;
@@ -145,6 +149,13 @@ typedef struct			s_thread_handler
 	t_dispatcher		*dispatcher;
 	t_lst				*worker;
 }						t_thread_handler;
+
+
+
+t_msg serialize_workunit2(t_workunit w);
+t_workunit deserialize_workunit2(t_msg msg);
+
+void print_cl4(cl_float4 v);
 
 /*
 *	The function that runs on the network event handler threads.
@@ -316,6 +327,11 @@ void		broadcast_worker_msg(t_lst *workers, t_msg msg);
 *	clears the link list of work units.
 */
 void		clear_work_units(t_lst **work_units);
+
+/*
+*	clears the link list of work units.
+*/
+void		clear_unit(t_lst **work_units);
 
 /*******************************************************************************
 ********************************************************************************
