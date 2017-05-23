@@ -11,6 +11,12 @@ static int count_bodies(t_body **bodies)
     return (i);
 }
 
+void print_cl4(cl_float4 v)
+{
+    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+}
+
+
 static char *load_cl_file(char *filename)
 {
     char *source;
@@ -109,6 +115,9 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
 
+    printf("FB is...\n");
+    print_cl4(force_bias);
+
     cl_float4 *FB = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     for (int i = 0; i < ncount; i++)
         FB[i] = force_bias;
@@ -180,6 +189,10 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clReleaseMemObject(d_V_end);
     clReleaseMemObject(d_A);
 
+    // printf("after computation, in output buffers\n");
+    // print_cl4(output_p[0]);
+    // print_cl4(output_v[0]);
+
     t_body *ret = (t_body *)malloc(sizeof(t_body) * ncount);
     for (int i = 0; i < ncount; i++)
     {
@@ -192,16 +205,11 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     return (ret);
 }
 
-void print_cl4(cl_float4 v)
-{
-    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
-}
-
 t_workunit do_workunit(t_workunit w)
 {
-    printf("before computation\n");
-    print_cl4(w.local_bodies[0].position);
-    print_cl4(w.local_bodies[0].velocity);
+    // printf("before computation, from WU\n");
+    // print_cl4(w.local_bodies[0].position);
+    // print_cl4(w.local_bodies[0].velocity);
     cl_float4 fb = w.force_bias;
     size_t ncount = w.localcount;
     size_t mcount = w.neighborcount;
@@ -215,6 +223,9 @@ t_workunit do_workunit(t_workunit w)
         N[i] = w.local_bodies[i].position;
         V[i] = w.local_bodies[i].velocity;
     }
+    // printf("before computation, in input buffers\n");
+    // print_cl4(N[0]);
+    // print_cl4(V[0]);
     for (int i = 0; i < mcount; i++)
     {
         M[i] = w.neighborhood[i].position;
@@ -224,8 +235,8 @@ t_workunit do_workunit(t_workunit w)
     free(w.neighborhood);
     w.neighborhood = NULL;
     w.neighborcount = 0;
-    printf("after computation\n");
-    print_cl4(w.local_bodies[0].position);
-    print_cl4(w.local_bodies[0].velocity);
+    // printf("after computation, in WU\n");
+    // print_cl4(w.local_bodies[0].position);
+    // print_cl4(w.local_bodies[0].velocity);
     return (w);
 }

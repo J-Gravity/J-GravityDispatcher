@@ -32,9 +32,6 @@
 # include <errno.h>
 # include <OpenCL/opencl.h>
 
-#define LEAF_THRESHOLD pow(2, 14)
-#define BODYCOUNT pow(2, 20)
-#define BOUNDMAG 10
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 100000
 #define TIME_STEP 1
@@ -91,6 +88,8 @@ t_workunit deserialize_workunit(t_msg msg);
 
 t_workunit deserialize_workunit2(t_msg msg);
 t_msg serialize_workunit2(t_workunit w);
+
+void print_cl4(cl_float4 v);
 
 void	strbjoin(t_msg *msg, char const *s2, size_t size);
 char	*itob(int value);

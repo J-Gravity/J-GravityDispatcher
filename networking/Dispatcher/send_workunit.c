@@ -12,11 +12,6 @@
 
 #include "dispatcher.h"
 
-static void print_cl4(cl_float4 v)
-{
-    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
-}
-
 int		send_workunit(t_worker *worker, t_workunit *work_unit)
 {
 	t_msg	msg;

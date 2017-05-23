@@ -20,17 +20,14 @@ void	save_output(t_dispatcher *dispatcher, char *name)
 	char	*filename;
 
 	asprintf(&filename, "%s-%d.jgrav", name, dispatcher->ticks_done);
-	if ((fd = open(filename, O_WRONLY | O_CREAT | O_APPEND)) == -1)
+	if ((fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP)) == -1)
 	{
 		printf("*fire* the world is burning *fire* failed to create\n"
-		" the output file '%s'", filename);
+		" the output file '%s'\n", filename);
 	}
 	write(fd, &dispatcher->dataset->particle_cnt, 4);
 	write(fd, &dispatcher->dataset->max_scale, 4);
-	for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
-	{
-		write(fd, &dispatcher->dataset->particles[i].position,
-			sizeof(cl_float4));
-	}
+	write(fd, &dispatcher->dataset->particles,
+			sizeof(t_body) * dispatcher->dataset->particle_cnt);
 	close(fd);
 }

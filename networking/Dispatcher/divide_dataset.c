@@ -20,6 +20,11 @@
 #define THETA 1.5
 #define LEAF_THRESHOLD pow(2, 15)
 
+void print_cl4(cl_float4 v)
+{
+    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+}
+
 static t_bounds bounds_from_bodies(t_body **bodies)
 {
     float xmin = 0, xmax = 0;
@@ -119,6 +124,9 @@ static t_octree *init_tree(t_body **bodies, size_t n, t_bounds bounds)
 
 static void pair_force_cell(t_cell *i, t_cell *j)
 {
+
+    if (i == j)
+        return;
     //compute the force between two distant cells, treating them as single particles
     cl_float4 r;
 
@@ -127,9 +135,17 @@ static void pair_force_cell(t_cell *i, t_cell *j)
     r.z = j->center.z - i->center.z;
 
     float distSq = r.x * r.x + r.y * r.y + r.z * r.z + SOFTENING;
+    // printf("the cells are %f apart\n", sqrt(distSq));
+    // printf("distSq was %f\n", distSq);
     float invDist = 1.0 / sqrt(distSq);
+    //printf("invDist is %f\n", invDist);
     float invDistCube = invDist * invDist * invDist;
-    float f = j->center.w * invDistCube * i->center.w > 0 ? 1 : -1;
+    //printf("invDistCube is %f\n", invDistCube);
+    float f = j->center.w * invDistCube;
+    //printf("f is %f\n", f);
+    //printf("this cell weighs %f and the other weighs %f\n", i->center.w, j->center.w);
+    //printf("single contrib\n");
+    //print_cl4((cl_float4){r.x * f, r.y * f, r.z * f});
     i->force_bias = vadd(i->force_bias, (cl_float4){r.x * f, r.y * f, r.z * f});
 }
 
@@ -520,6 +536,11 @@ void	divide_dataset(t_dispatcher *dispatcher)
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
         bodies[i] = &(dispatcher->dataset->particles[i]);
+    // for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
+    // {
+    //     print_cl4(bodies[i]->position);
+    //     print_cl4(bodies[i]->velocity);
+    // }
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
