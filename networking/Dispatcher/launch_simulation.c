@@ -18,12 +18,12 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 {
 	if (msg.id == WORK_UNIT_REQUEST)
 	{
-		printf("RECIEVED: WORK_UNIT_REQUEST\n");
+		//printf("RECIEVED: WORK_UNIT_REQUEST\n");
 		handle_workunit_req(dispatcher, worker, msg);
 	}
 	else if (msg.id == WORK_UNIT_DONE)
 	{
-		printf("RECIEVED: WORK_UNIT_DONE\n");
+		//printf("RECIEVED: WORK_UNIT_DONE\n");
 		handle_worker_done_msg(dispatcher, worker, msg);
 	}
 	else
@@ -50,11 +50,11 @@ void		*handle_worker_connection(void *input)
 	//printf("D!\n");
 	while (1)
 	{
-		printf("while 1\n");
+		//printf("while 1\n");
 		head = params->dispatcher->workers;
 		while (head)
 		{
-			printf("worker: %d\n", ((t_worker*)(head->data))->socket.fd);
+			//printf("worker: %d\n", ((t_worker*)(head->data))->socket.fd);
 			head = head->next;
 		}
 		// if (worker->next && ((t_worker *)worker->next->data)->tid == 0)
@@ -63,8 +63,8 @@ void		*handle_worker_connection(void *input)
 		// 	make_new_event_thread(params->dispatcher, worker->next);
 		// }
 		msg = get_worker_msg(cur_worker);
-		printf("msg status: %d\n", msg.error);
-		printf("MSG RECIEVED: [id]=%d [size]=%d [body]='%s'\n", msg.id, msg.size, msg.data);
+		//printf("msg status: %d\n", msg.error);
+		//printf("MSG RECIEVED: [id]=%d [size]=%d [body]='%s'\n", msg.id, msg.size, msg.data);
 		if (msg.error == -1)
 		{
 			printf("get worker message failed with err %d\n", errno);

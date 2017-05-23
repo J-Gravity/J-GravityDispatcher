@@ -113,18 +113,17 @@ size_t nearest_mult_256(size_t n)
 static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount, cl_float4 force_bias)
 {
     srand ( time(NULL) ); //before we do anything, seed rand() with the current time
-    t_context   *context;
-    cl_kernel   k_nbody;
+    static t_context   *context;
+    static cl_kernel   k_nbody;
     int err;
 
-    context = setup_context();
-    k_nbody = make_kernel(context, "nxm.cl", "nbody");
+    if (context == NULL)
+        context = setup_context();
+    if (k_nbody == NULL)
+        k_nbody = make_kernel(context, "nxm.cl", "nbody");
 
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
-
-    printf("FB is...\n");
-    print_cl4(force_bias);
 
     cl_float4 *FB = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     for (int i = 0; i < ncount; i++)
@@ -217,8 +216,8 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     }
     free(output_p);
     free(output_v);
-    free_context(context);
-    clReleaseKernel(k_nbody);
+    //free_context(context);
+    //clReleaseKernel(k_nbody);
     free(FB);
     return (ret);
 }

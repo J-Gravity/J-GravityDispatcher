@@ -39,7 +39,7 @@ t_msg serialize_workunit2(t_workunit w)
 	offset += sizeof(t_body) * w.neighborcount;
 	memcpy(msg.data + offset, &(w.force_bias), sizeof(cl_float4));
 	offset += sizeof(cl_float4);
-	printf("these should be the same: %d, %d\n", wu_size(w), offset);
+	//printf("these should be the same: %d, %d\n", wu_size(w), offset);
 	msg.size = wu_size(w);
 
 	return (msg);

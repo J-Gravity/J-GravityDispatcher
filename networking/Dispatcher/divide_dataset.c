@@ -16,9 +16,9 @@
 #define xmid c->bounds.xmax - (c->bounds.xmax - c->bounds.xmin) / 2
 #define ymid c->bounds.ymax - (c->bounds.ymax - c->bounds.ymin) / 2
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
-#define SOFTENING 100000
+#define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 15)
+#define LEAF_THRESHOLD pow(2, 14)
 
 void print_cl4(cl_float4 v)
 {
@@ -149,6 +149,11 @@ static void pair_force_cell(t_cell *i, t_cell *j)
     i->force_bias = vadd(i->force_bias, (cl_float4){r.x * f, r.y * f, r.z * f});
 }
 
+static cl_float4 midpoint_from_bounds(t_bounds b)
+{
+    return (cl_float4){(b.xmax - b.xmin) / 2, (b.ymax - b.ymin) / 2, (b.zmax - b.zmin) / 2};
+}
+
 static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
 {
     //assess whether a cell is "near" or "far" for the sake of barnes-hut
@@ -156,15 +161,45 @@ static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
     float s;
     float d;
     cl_float4 r;
+    cl_float4 us_midpoint;
 
+    us_midpoint = midpoint_from_bounds(us->bounds);
     s = them->bounds.xmax - them->bounds.xmin;
-    r.x = them->center.x - us->center.x;
-    r.y = them->center.y - us->center.y;
-    r.z = them->center.z - us->center.z;
+    r.x = them->center.x - us_midpoint.x;
+    r.y = them->center.y - us_midpoint.y;
+    r.z = them->center.z - us_midpoint.z;
     d = sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
     if (d == 0)
         return (0);
+    //d -= (us->bounds.xmax - us->bounds.xmin) / 2; //this is a good idea but not the correct expression
     return (s/d);
+}
+
+// typedef struct s_cell
+// {
+//     t_body **bodies;
+//     int bodycount;
+//     struct s_cell *parent;
+//     struct s_cell **children;
+//     cl_float4 center;
+//     cl_float4 force_bias;
+//     t_bounds bounds;
+// }               t_cell;
+
+static t_cell *single_body_cell(t_cell *cell)
+{
+    //returns a new cell that's just one body. basically just a wrapper for the body,
+    //it would be better to do this differently
+    t_cell *single = (t_cell *)calloc(1, sizeof(t_cell));
+    single->bodies = (t_body **)calloc(2, sizeof(t_body *));
+    single->bodies[0] = (t_body *)calloc(1, sizeof(t_body));
+    single->bodies[0]->position = cell->center;
+    single->bodies[0]->velocity = (cl_float4){0, 0, 0, 0};
+    single->bodies[1] = NULL;
+
+    //NB THIS IS A LEAK, just throwing together for testing
+
+    return (single);
 }
 
 static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
@@ -193,8 +228,10 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
 
     if (root != t->root && multipole_acceptance_criterion(cell, root) < THETA)
     {
-        pair_force_cell(cell, root);
-        return (NULL);
+        ret = (t_cell **)calloc(2, sizeof(t_cell *));
+        ret[0] = single_body_cell(root);
+        ret[1] = NULL;
+        return (ret);
     }
     else if (!(root->children))
     {
@@ -507,7 +544,7 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
             }
         }
     }
-    printf("workunits were %ld stars total\n", sizetotal);
+    printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
     return (head);
 }
 
