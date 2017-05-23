@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_worker_msg.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/16 11:02:19 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/23 01:55:24 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,5 +45,6 @@ t_msg	get_worker_msg(t_worker *worker)
 		check_for_errors(bytes_read, &msg.error);
 	}
 	check_for_errors(bytes_read, &msg.error);
+	free(buffer);
 	return (msg);
 }

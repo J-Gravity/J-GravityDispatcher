@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:42:08 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/22 18:15:18 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 02:01:14 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,5 +26,7 @@ int		send_workunit(t_worker *worker, t_workunit *work_unit)
 	printf("C]\n");
 	send_worker_msg(worker, msg);
 	printf("D]\n");
+	free(msg.data);
+	printf("E]\n");
 	return (0);
 }

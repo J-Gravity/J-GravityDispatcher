@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 17:43:41 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 01:59:00 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ void		*handle_worker_connection(void *input)
 		}
 		else
 			handle_worker_msg(params->dispatcher, cur_worker, msg);
+		free(msg.data);
 	}
 	return (0);
 }
