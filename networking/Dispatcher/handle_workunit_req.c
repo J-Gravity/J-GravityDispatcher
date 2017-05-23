@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/22 21:28:50 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/22 23:36:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 	t_lst	*delete_me;
 
 	printf("A$\n");
+	pthread_mutex_lock(&dispatcher->workunits_mutex);
 	if (dispatcher->workunits)
 	{
 		printf("B$\n");
@@ -28,5 +29,6 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 		printf("E$\n");
 		clear_unit(&delete_me);
 	}
+	pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	printf("F$\n");
 }

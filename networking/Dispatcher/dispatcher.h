@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 21:26:10 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/22 23:36:00 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@
 # include <string.h>
 # include <errno.h>
 # include <OpenCL/opencl.h>
+# include <pthread.h>
 
 typedef struct			s_lst
 {
@@ -124,6 +125,7 @@ typedef struct			s_dataset
 
 typedef struct			s_dispatcher
 {
+	pthread_mutex_t		workunits_mutex;
 	char				*name;
 	t_lst				*workers;
 	int					worker_cnt;

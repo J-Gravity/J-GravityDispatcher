@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   all_workunits_done.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 15:40:18 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/22 23:39:47 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);
 	// Clear Work Units
-	clear_work_units(&dispatcher->workunits);
+	//clear_work_units(&dispatcher->workunits);
 	// Reset work units done
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
