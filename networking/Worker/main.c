@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 22:29:46 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 12:57:07 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,12 +140,12 @@ int main(int argc, char **argsv)
     {
     	t_msg msg;
     	msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-    	//printf("got WU_READY\n");
+    	printf("got WU_READY\n");
     	free(msg.data);
     	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-    	//printf("sent WU_REQ\n");
+    	printf("sent WU_REQ\n");
     	msg = wait_for_msg(conn_socket, WORK_UNIT);
-    	//printf("got WU\n");
+    	printf("got WU\n");
     	t_workunit w = deserialize_workunit2(msg);
     	//printf("workunit deserialized\n");
     	free(msg.data);
@@ -155,7 +155,7 @@ int main(int argc, char **argsv)
     	//printf("serialized\n");
     	//printf("msg.id %d, msg.size %d\n", msg.id, msg.size);
     	send_msg(conn_socket, msg);
-    	//printf("sent completed unit\n");
+    	printf("sent completed unit\n");
     	free(w.local_bodies);
     }
 

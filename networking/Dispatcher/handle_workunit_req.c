@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/22 23:36:25 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 14:08:26 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,8 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 		//printf("E$\n");
 		clear_unit(&delete_me);
 	}
+	// else
+	// 	send_worker_msg(worker, new_message(NO_WORK_UNITS, 1, " "));
 	pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	//printf("F$\n");
 }

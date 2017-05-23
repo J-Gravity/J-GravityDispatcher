@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 00:50:09 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 14:08:18 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # define WORK_UNITS_READY 4
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
+# define NO_WORK_UNITS 8
 
 # include <stdio.h>
 # include <sys/socket.h>

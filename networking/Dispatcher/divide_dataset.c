@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   divide_dataset.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pmclaugh <pmclaugh@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/18 20:01:33 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/23 13:24:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -544,7 +544,7 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
             }
         }
     }
-    printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
+    //printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
     return (head);
 }
 
@@ -572,10 +572,10 @@ void	divide_dataset(t_dispatcher *dispatcher)
 
     if (t != NULL)
     {
-        printf("freeing the old tree\n");
+        //printf("freeing the old tree\n");
         free_tree(t);
     }
-    printf("starting divide_dataset\n");
+    //printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
@@ -596,7 +596,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
     //free_tree(t);
-    printf("finished divide_dataset\n");
+    //printf("finished divide_dataset\n");
 	return ;
 }
 
