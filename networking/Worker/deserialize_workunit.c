@@ -10,47 +10,27 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../Dispatcher/dispatcher.h"
+#include "worker.h"
 
-int			btoi(char *str)
+t_workunit deserialize_workunit2(t_msg msg)
 {
-	int		ret;
+	t_workunit w;
 
-	for (unsigned int i = 0; i < sizeof(int); i++)
-		((char *)(&ret))[i] = str[i];
-	return (ret);
-}
+	int offset = 0;
+	memcpy(&(w.id), msg.data, sizeof(int));
+	offset += sizeof(int);
+	memcpy(&(w.localcount), msg.data + offset, sizeof(int));
+	offset += sizeof(int);
+	w.local_bodies = (t_body *)calloc(w.localcount, sizeof(t_body));
+	memcpy(w.local_bodies, msg.data + offset, sizeof(t_body) * w.localcount);
+	offset += sizeof(t_body) * w.localcount;
+	memcpy(&(w.neighborcount), msg.data + offset, sizeof(int));
+	offset += sizeof(int);
+	w.neighborhood = (t_body *)calloc(w.neighborcount, sizeof(t_body));
+	memcpy(w.neighborhood, msg.data + offset, sizeof(t_body) * w.neighborcount);
+	offset += sizeof(t_body) * w.neighborcount;
+	memcpy(&(w.force_bias), msg.data + offset, sizeof(cl_float4));
+	offset += sizeof(cl_float4);
 
-cl_float4	btoclf(char *str)
-{
-	cl_float4	ret;
-
-	for (unsigned int i = 0; i < sizeof(cl_float4); i++)
-		((char *)(&ret))[i] = str[i];
-	return (ret);
-}
-
-t_workunit	deserialize_workunit(t_msg msg)
-{
-	int			i;
-	t_workunit	workunit;
-
-	i = 0;
-	workunit.id = btoi(msg.data);
-	workunit.localcount = btoi(msg.data += 4);
-	workunit.local_bodies = (t_body *)malloc(sizeof(t_body) * workunit.localcount);
-	for (int i = 0; i < workunit.localcount; i++)
-	{
-		workunit.local_bodies[i].position = btoclf(msg.data += 16);
-		workunit.local_bodies[i].velocity = btoclf(msg.data += 16);
-	}
-	workunit.neighborcount = btoi(msg.data += 4);
-	workunit.neighborhood = (t_body *)malloc(sizeof(t_body) * workunit.neighborcount);
-	for (int i = 0; i < workunit.neighborcount; i++)
-	{
-		workunit.neighborhood[i].position = btoclf(msg.data += 16);
-		workunit.neighborhood[i].velocity = btoclf(msg.data += 16);
-	}
-	workunit.force_bias = btoclf(msg.data += 4);
-	return (workunit);
+	return (w);
 }

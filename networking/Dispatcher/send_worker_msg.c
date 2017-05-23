@@ -25,8 +25,11 @@ void	send_worker_msg(t_worker *worker, t_msg msg)
 	buffer[0] = msg.id;
 	printf("D*\n");
 	memcpy(&buffer[1], &msg.size, sizeof(int));
+
+	printf("msg_size %d\n", msg_size);
+
 	printf("E*\n");
-	memcpy(&buffer[5], &msg.data, msg.size);
+	memcpy(&buffer[5], msg.data, msg.size);
 	printf("F*\n");
 	send(worker->socket.fd, buffer, msg_size, 0);
 	printf("G*\n");

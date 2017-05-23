@@ -146,6 +146,11 @@ typedef struct			s_thread_handler
 	t_lst				*worker;
 }						t_thread_handler;
 
+
+
+t_msg serialize_workunit2(t_workunit w);
+t_workunit deserialize_workunit2(t_msg msg);
+
 /*
 *	The function that runs on the network event handler threads.
 *	handles the network events for each worker.

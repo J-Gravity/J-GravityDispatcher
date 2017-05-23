@@ -12,6 +12,11 @@
 
 #include "dispatcher.h"
 
+void print_cl4(cl_float4 v)
+{
+	printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+}
+
 void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		t_msg msg)
 {
@@ -19,15 +24,20 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	t_cell		*local_cell;
 	int			i;
 
-	new_workunit = deserialize_workunit(msg);
+	new_workunit = deserialize_workunit2(msg);
+	printf("deserialized returned WU\n");
+	printf("localcount %d, neighborcount %d, id %d\n", new_workunit.localcount, new_workunit.neighborcount, new_workunit.id);
 	local_cell = dispatcher->cells[new_workunit.id];
 	i = 0;
+	printf("first body\n");
+	print_cl4(new_workunit.local_bodies[0].position);
+	print_cl4(new_workunit.local_bodies[0].velocity);
 	while (i < new_workunit.localcount)
 	{
-		memcpy(local_cell->bodies[i], &new_workunit.local_bodies[i],
-				sizeof(t_body));
+		local_cell->bodies[i][0] = new_workunit.local_bodies[i];
 		i++;
 	}
+	printf("copied the bodies\n");
 	dispatcher->workunits_done++;
 	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
 		all_workunits_done(dispatcher);

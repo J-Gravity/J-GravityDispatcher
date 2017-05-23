@@ -34,8 +34,12 @@ t_msg	get_worker_msg(t_worker *worker)
 		msg.id = buffer[0];
 		memcpy(&msg.size, &buffer[1], sizeof(int));
 		msg.data = (char *)calloc(1, msg.size);
-		bytes_read = recv(worker->socket.fd, msg.data, msg.size, 0);
-		if (bytes_read != msg.size)
+		int bodybytes = 0;
+		while (bodybytes < msg.size)
+		{
+			bodybytes += recv(worker->socket.fd, msg.data + bodybytes, msg.size, 0);
+		}
+		if (bodybytes != msg.size)
 			printf("msg size should be %d bytes,"
 			"but is only %d bytes!\n", msg.size, bytes_read);
 		check_for_errors(bytes_read, &msg.error);

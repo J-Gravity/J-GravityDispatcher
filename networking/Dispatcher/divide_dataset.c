@@ -530,7 +530,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
-    free_tree(t);
+    //free_tree(t);
     printf("finished divide_dataset\n");
 	return ;
 }

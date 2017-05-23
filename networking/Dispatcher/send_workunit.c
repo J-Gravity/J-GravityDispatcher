@@ -12,14 +12,22 @@
 
 #include "dispatcher.h"
 
+static void print_cl4(cl_float4 v)
+{
+    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+}
+
 int		send_workunit(t_worker *worker, t_workunit *work_unit)
 {
 	t_msg	msg;
 
 	printf("A]\n");
-	msg = serialize_workunit(work_unit);
+	print_cl4(work_unit->local_bodies[0].position);
+	print_cl4(work_unit->local_bodies[0].velocity);
+	msg = serialize_workunit2(*work_unit);
 	printf("B]\n");
-	msg.id = 1;
+	msg.id = WORK_UNIT;
+	printf("size being sent: %d\n", msg.size + 5);
 	printf("C]\n");
 	send_worker_msg(worker, msg);
 	printf("D]\n");
