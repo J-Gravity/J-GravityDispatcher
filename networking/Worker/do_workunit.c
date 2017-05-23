@@ -65,6 +65,12 @@ static t_context *setup_context(void)
     return (c);
 }
 
+static void free_context(t_context *c)
+{
+    clReleaseCommandQueue(c->commands);
+    clReleaseContext(c->context);
+}
+
 static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
 {
     cl_kernel k;
@@ -92,6 +98,8 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     // Create the compute kernel from the program
     k = clCreateKernel(p, name, &err);
     checkError(err, "Creating kernel");
+    free(source);
+    clReleaseProgram(p);
     return (k);
 }
 
@@ -189,6 +197,14 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clReleaseMemObject(d_V_end);
     clReleaseMemObject(d_A);
 
+    clReleaseEvent(eN);
+    clReleaseEvent(eM);
+    clReleaseEvent(eA);
+    clReleaseEvent(eV);
+    clReleaseEvent(compute);
+    clReleaseEvent(offN);
+    clReleaseEvent(offV);
+
     // printf("after computation, in output buffers\n");
     // print_cl4(output_p[0]);
     // print_cl4(output_v[0]);
@@ -201,7 +217,9 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     }
     free(output_p);
     free(output_v);
-    free(context);
+    free_context(context);
+    clReleaseKernel(k_nbody);
+    free(FB);
     return (ret);
 }
 
@@ -235,6 +253,9 @@ t_workunit do_workunit(t_workunit w)
     free(w.neighborhood);
     w.neighborhood = NULL;
     w.neighborcount = 0;
+    free(N);
+    free(M);
+    free(V);
     // printf("after computation, in WU\n");
     // print_cl4(w.local_bodies[0].position);
     // print_cl4(w.local_bodies[0].velocity);

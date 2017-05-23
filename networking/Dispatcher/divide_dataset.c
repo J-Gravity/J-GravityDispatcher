@@ -531,6 +531,13 @@ static void free_tree(t_octree *t)
 
 void	divide_dataset(t_dispatcher *dispatcher)
 {
+    static t_octree *t;
+
+    if (t != NULL)
+    {
+        printf("freeing the old tree\n");
+        free_tree(t);
+    }
     printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
@@ -542,7 +549,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
     //     print_cl4(bodies[i]->velocity);
     // }
     bodies[dispatcher->dataset->particle_cnt] = NULL;
-    t_octree *t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
+    t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
     dispatcher->workunits = create_workunits(t, leaves);

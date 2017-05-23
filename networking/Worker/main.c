@@ -88,7 +88,10 @@ t_msg	wait_for_msg(int socket, int message_code)
 		exit(1);
 	}
 	else
+	{
+		free(buffer);
 		return msg;
+	}
 }
 
 int main(int argc, char **argsv)
@@ -96,9 +99,7 @@ int main(int argc, char **argsv)
 	int err;
 	int conn_socket;
 	struct sockaddr_in serv_addr;
-	char	*header;
 	int		buff_size;
-	char 	*buffer;
 
 	conn_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (conn_socket == -1)
@@ -127,29 +128,22 @@ int main(int argc, char **argsv)
     	t_msg msg;
     	msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
     	printf("got WU_READY\n");
+    	free(msg.data);
     	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
     	printf("sent WU_REQ\n");
     	msg = wait_for_msg(conn_socket, WORK_UNIT);
     	printf("got WU\n");
-
     	t_workunit w = deserialize_workunit2(msg);
     	printf("workunit deserialized\n");
+    	free(msg.data);
     	w = do_workunit(w);
     	printf("did workunit\n");
     	msg = serialize_workunit2(w);
     	printf("serialized\n");
-
-//     	typedef struct			s_msg
-// {
-// 	char				id;
-// 	int					size;
-// 	char				*data;
-// 	int					error;
-// }						t_msg;
-
     	printf("msg.id %d, msg.size %d\n", msg.id, msg.size);
     	send_msg(conn_socket, msg);
     	printf("sent completed unit\n");
+    	free(w.local_bodies);
     }
 
 	return (0);

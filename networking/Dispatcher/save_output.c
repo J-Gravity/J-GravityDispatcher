@@ -27,7 +27,7 @@ void	save_output(t_dispatcher *dispatcher, char *name)
 		" the output file '%s'\n", filename);
 	}
 	write(fd, &dispatcher->dataset->particle_cnt, sizeof(long));
-	write(fd, &dispatcher->dataset->max_scale, sizeof(long));
+	//write(fd, &dispatcher->dataset->max_scale, sizeof(long));
 	bigbuff = (char *)calloc(dispatcher->dataset->particle_cnt, sizeof(cl_float4));
 	for(int i = 0; i < dispatcher->dataset->particle_cnt; i++)
 		memcpy(bigbuff + i * sizeof(cl_float4), &dispatcher->dataset->particles[i].position, sizeof(cl_float4));
