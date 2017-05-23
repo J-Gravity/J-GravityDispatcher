@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/22 14:37:22 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/22 17:24:43 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,7 @@ void	*connect_worker_thread(void *param)
 		}
 		printf("finished with connect worker\n");
 	}
+	printf("connect worker thread terminated! No more workers will be added to the pool\n");
 	return (0);
 }
 
