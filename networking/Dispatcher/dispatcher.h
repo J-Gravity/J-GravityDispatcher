@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 14:08:18 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 16:04:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,14 +98,14 @@ typedef struct			s_workunit
 	int					id;
 	int					localcount;
 	int					neighborcount;
-	t_body				*local_bodies;
-	t_body				*neighborhood;
+	t_body				**local_bodies;
+	t_body				**neighborhood;
 	cl_float4			force_bias;
 }						t_workunit;
 
 typedef struct			s_worker
 {
-	int					*workunit_id;
+	t_lst				*workunit_link;
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
