@@ -22,4 +22,5 @@ void	broadcast_worker_msg(t_lst *workers, t_msg msg)
         send_worker_msg((t_worker *)head->data, msg);
 		head = head->next;
 	}
+	free(msg.data);
 }

@@ -33,7 +33,7 @@ void	send_worker_msg(t_worker *worker, t_msg msg)
 	printf("F*\n");
 	send(worker->socket.fd, buffer, msg_size, 0);
 	printf("G*\n");
-	free(msg.data);
+	//free(msg.data);
 	printf("H*\n");
 	free(buffer);
 }
