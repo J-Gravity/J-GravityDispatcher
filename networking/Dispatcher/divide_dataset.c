@@ -175,17 +175,6 @@ static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
     return (s/d);
 }
 
-// typedef struct s_cell
-// {
-//     t_body **bodies;
-//     int bodycount;
-//     struct s_cell *parent;
-//     struct s_cell **children;
-//     cl_float4 center;
-//     cl_float4 force_bias;
-//     t_bounds bounds;
-// }               t_cell;
-
 static t_cell *single_body_cell(t_cell *cell)
 {
     //returns a new cell that's just one body. basically just a wrapper for the body,
@@ -303,12 +292,8 @@ static t_workunit *new_workunit(t_cell *c, t_body **neighborhood, int neighborco
     w->localcount = c->bodycount;
     w->neighborcount = neighborcount;
     w->force_bias = c->force_bias;
-    w->local_bodies = (t_body *)calloc(w->localcount, sizeof(t_body));
-    w->neighborhood = (t_body *)calloc(w->neighborcount, sizeof(t_body));
-    for (int i = 0; i < w->localcount; i++)
-        w->local_bodies[i] = c->bodies[i][0];
-    for (int j = 0; j < w->neighborcount; j++)
-        w->neighborhood[j] = *(neighborhood[j]);
+    w->local_bodies = c->bodies;
+    w->neighborhood = neighborhood;
     return (w);
 
 }

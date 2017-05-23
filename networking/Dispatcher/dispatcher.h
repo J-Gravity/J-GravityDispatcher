@@ -151,10 +151,6 @@ typedef struct			s_thread_handler
 }						t_thread_handler;
 
 
-
-t_msg serialize_workunit2(t_workunit w);
-t_workunit deserialize_workunit2(t_msg msg);
-
 void print_cl4(cl_float4 v);
 
 /*
@@ -283,7 +279,7 @@ int			send_workunit(t_worker *worker, t_workunit *workunit);
 *		@param	workunit	The work unit that will be stored in the msg
 *		@return message struct conataining the serialized work unit
 */
-t_msg		serialize_workunit(t_workunit *workunit);
+t_msg		serialize_workunit(t_workunit w);
 
 /*
 *	Parse the data of a worker message and write it to t_workunit struct

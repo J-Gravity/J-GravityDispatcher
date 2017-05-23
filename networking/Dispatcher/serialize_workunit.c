@@ -17,11 +17,10 @@ int wu_size(t_workunit w)
 	int total = 12; //id, localcount, neighborcount
 	total += w.localcount * sizeof(t_body);
 	total += w.neighborcount * sizeof(t_body);
-	total += sizeof(cl_float4);
 	return total;
 }
 
-t_msg serialize_workunit2(t_workunit w)
+t_msg serialize_workunit(t_workunit w)
 {
 	t_msg msg;
 
@@ -31,15 +30,16 @@ t_msg serialize_workunit2(t_workunit w)
 	offset += sizeof(int);
 	memcpy(msg.data + offset, &(w.localcount), sizeof(int));
 	offset += sizeof(int);
-	memcpy(msg.data + offset, w.local_bodies, sizeof(t_body) * w.localcount);
-	offset += sizeof(t_body) * w.localcount;
+	for (int i = 0; i < w.localcount; i++, offset += sizeof(t_body))
+	{
+		memcpy(msg.data + offset, w.local_bodies[i], sizeof(t_body));
+	}
 	memcpy(msg.data + offset, &(w.neighborcount), sizeof(int));
 	offset += sizeof(int);
-	memcpy(msg.data + offset, w.neighborhood, sizeof(t_body) * w.neighborcount);
-	offset += sizeof(t_body) * w.neighborcount;
-	memcpy(msg.data + offset, &(w.force_bias), sizeof(cl_float4));
-	offset += sizeof(cl_float4);
-	//printf("these should be the same: %d, %d\n", wu_size(w), offset);
+	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(t_body))
+	{
+		memcpy(msg.data + offset, w.neighborhood[i], sizeof(t_body));
+	}
 	msg.size = wu_size(w);
 
 	return (msg);

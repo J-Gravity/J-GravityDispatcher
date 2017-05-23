@@ -19,7 +19,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	t_cell		*local_cell;
 	int			i;
 
-	new_workunit = deserialize_workunit2(msg);
+	new_workunit = deserialize_workunit(msg);
 	//printf("deserialized returned WU\n");
 	//printf("localcount %d, neighborcount %d, id %d\n", new_workunit.localcount, new_workunit.neighborcount, new_workunit.id);
 	local_cell = dispatcher->cells[new_workunit.id];

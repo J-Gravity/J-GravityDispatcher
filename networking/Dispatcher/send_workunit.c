@@ -19,7 +19,7 @@ int		send_workunit(t_worker *worker, t_workunit *work_unit)
 	//printf("A]\n");
 	//print_cl4(work_unit->local_bodies[0].position);
 	//print_cl4(work_unit->local_bodies[0].velocity);
-	msg = serialize_workunit2(*work_unit);
+	msg = serialize_workunit(*work_unit);
 	//printf("B]\n");
 	msg.id = WORK_UNIT;
 	//printf("size being sent: %d\n", msg.size + 5);
