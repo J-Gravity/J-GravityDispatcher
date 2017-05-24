@@ -28,7 +28,7 @@ void  request_dataset(t_dispatcher *dispatcher)
 	 *   TODO : Figure out what the hell the file will be called;
 	*/
 	printf("starting request_dataset\n");
-	if ((fd = open("./data.jgrv", O_RDONLY)) < 1)
+	if ((fd = open("./midsize.jgrav", O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file\n", errno);
 		exit(0);

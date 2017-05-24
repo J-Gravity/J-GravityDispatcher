@@ -185,8 +185,8 @@ static t_cell *single_body_cell(t_cell *cell)
     single->bodies[0]->position = cell->center;
     single->bodies[0]->velocity = (cl_float4){0, 0, 0, 0};
     single->bodies[1] = NULL;
-
-    //NB THIS IS A LEAK, just throwing together for testing
+    //single->bodycount = 1;
+    //single->bounds = (t_bounds){0,0,0,0,0,0}; // this is the signal that this was a SBC and should be freed ASAP
 
     return (single);
 }
@@ -258,6 +258,15 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
     }
 }
 
+static int boundequ(t_bounds a, t_bounds b)
+{
+    if (a.xmin == b.xmin && a.xmax == b.xmax)
+        if (a.ymin == b.ymin && a.ymax == b.ymax)
+            if (a.zmin == b.zmin && a.zmax == b.zmax)
+                return (1);
+    return (0);
+}
+
 static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
 {
     //given a null terminated list of cells, make an array of all the bodies in those cells.
@@ -275,6 +284,12 @@ static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
     {
         memcpy(&(bodies[k]), cells[i]->bodies, cells[i]->bodycount * sizeof(t_body *));
         k += cells[i]->bodycount;
+        // if (boundequ(cells[i]->bounds, (t_bounds){0, 0, 0, 0, 0, 0}))
+        // {
+        //     free(cells[i]->bodies[0]);
+        //     free(cells[i]->bodies);
+        //     free(cells[i]);
+        // }
     }
     //printf("leaving b_f_c\n");
     *neighborcount = count;
@@ -312,9 +327,8 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
     inners = find_inners_do_outers(cell, t->root, t);
     //use the result to make a list of particles we need to direct compare against
     direct_bodies = bodies_from_cells(inners, &neighborcount);
+    free(inners);
     w = new_workunit(cell, direct_bodies, neighborcount, index);
-    //free(inners);
-    //free(direct_bodies);
     return (w);
 }
 
@@ -428,6 +442,7 @@ static void divide_cell(t_cell *c)
     for (int i = 0; i < 8; i++)
         children[i] = init_cell(kids[i], c, subbounds[i]);
     children[8] = NULL;
+    free(kids);
     c->children = children;
 }
 
@@ -456,7 +471,7 @@ static t_cell **enumerate_leaves(t_cell *root)
         ret[1] = NULL;
         return (ret);
     }
-    t_cell ***returned = (t_cell ***)calloc(9, sizeof(t_cell **));
+    t_cell ***returned = (t_cell ***)calloc(8, sizeof(t_cell **));
     int total = 0;
     for (int i = 0; i < 8; i++)
     {
@@ -535,6 +550,7 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
 
 static void recursive_tree_free(t_cell *c)
 {
+    //the bodies** array in leaf cells is freed elsewhere. still needs to be freed in inner cells.
     if (!c->children)
         return;
     for (int i = 0; i < 8; i++)
@@ -542,11 +558,13 @@ static void recursive_tree_free(t_cell *c)
         recursive_tree_free(c->children[i]);
         free(c->children[i]);
     }
+    free(c->children);
     free(c->bodies);
 }
 
 static void free_tree(t_octree *t)
 {
+    printf("freeing the tree\n");
     recursive_tree_free(t->root);
     free(t->root);
 }

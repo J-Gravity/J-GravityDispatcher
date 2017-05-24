@@ -20,7 +20,7 @@ static void print_debug(t_worker *worker, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
-	printf("RECIEVED '%s' FROM worker %d\n", line, worker->socket.fd);
+	//printf("RECIEVED '%s' FROM worker %d\n", line, worker->socket.fd);
 }
 
 static void	check_for_errors(int bytes_read, int *error)

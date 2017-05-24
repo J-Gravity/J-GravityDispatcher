@@ -22,7 +22,8 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Reset work units done
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
-
+	free(dispatcher->cells);
+	printf("about to free dataset stuff\n");
 	//move new_dataset to dataset
 	free(dispatcher->dataset->particles);
 	free(dispatcher->dataset);
