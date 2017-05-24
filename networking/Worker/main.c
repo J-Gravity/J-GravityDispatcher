@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 12:57:07 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 18:51:45 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,9 +45,7 @@ void	send_msg(int fd, t_msg msg)
 	buffer[0] = msg.id;
 	memcpy(&buffer[1], &msg.size, sizeof(int));
 	memcpy(&buffer[5], msg.data, msg.size);
-	//printf("fd %d, size %d\n", fd, msg_size);
 	send(fd, buffer, msg_size, 0);
-	//printf("finished send\n");
 	free(msg.data);
 	free(buffer);
 }
@@ -64,7 +62,6 @@ t_msg	wait_for_msg(int socket, int message_code)
 	while (1)
 	{
 		bytes_read = recv(socket, buffer, HEADER_SIZE, 0);
-		//printf("bytes read: %d\n", bytes_read);
 		if (bytes_read == HEADER_SIZE)
 		{
 			int bodybytes = 0;
@@ -75,10 +72,6 @@ t_msg	wait_for_msg(int socket, int message_code)
 			{
 				bodybytes += recv(socket, msg.data + bodybytes, msg.size, 0);
 			}
-			//printf("body bytes read %d\n", bodybytes);
-			//printf("total bytes read %d\n", bodybytes + bytes_read);
-			//check_for_errors(bytes_read, &msg.error);
-
 		}
 		else
 		{
@@ -114,6 +107,11 @@ int main(int argc, char **argsv)
 	struct sockaddr_in serv_addr;
 	int		buff_size;
 
+	if (argc == 1)
+	{
+		printf("Usage ./a.out [IP Address]\n");
+		exit(1);
+	}
 	conn_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (conn_socket == -1)
 		write(1, "sock error occured\n", 19);
@@ -147,13 +145,9 @@ int main(int argc, char **argsv)
     	msg = wait_for_msg(conn_socket, WORK_UNIT);
     	printf("got WU\n");
     	t_workunit w = deserialize_workunit(msg);
-    	//printf("workunit deserialized\n");
     	free(msg.data);
     	w = do_workunit(w);
-    	//printf("did workunit\n");
     	msg = serialize_workunit(w);
-    	//printf("serialized\n");
-    	//printf("msg.id %d, msg.size %d\n", msg.id, msg.size);
     	send_msg(conn_socket, msg);
     	printf("sent completed unit\n");
     	free(w.local_bodies);
