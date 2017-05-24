@@ -297,7 +297,7 @@ t_msg		serialize_workunit(t_workunit w);
 *		@param	msg	The message from the worker that contains a complete
 					work unit
 */
-t_WU		deserialize_workunit(t_msg msg);
+t_WU		deserialize_WU(t_msg msg);
 
 /*
 *	Handles the worker's request for a work unit to process

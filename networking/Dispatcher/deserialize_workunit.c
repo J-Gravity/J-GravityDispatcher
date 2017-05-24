@@ -12,7 +12,7 @@
 
 #include "dispatcher.h"
 
-t_WU	deserialize_workunit(t_msg msg)
+t_WU	deserialize_WU(t_msg msg)
 {
 	t_WU	WU;
 
