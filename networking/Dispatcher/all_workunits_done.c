@@ -22,6 +22,15 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Reset work units done
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
+
+	//move new_dataset to dataset
+	free(dispatcher->dataset->particles);
+	free(dispatcher->dataset);
+	dispatcher->dataset = dispatcher->new_dataset;
+	dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
+	dispatcher->new_dataset->particles = calloc(dispatcher->dataset->particle_cnt, sizeof(t_body));
+	dispatcher->new_dataset->particle_cnt = dispatcher->dataset->particle_cnt;
+	dispatcher->new_dataset->max_scale = dispatcher->dataset->max_scale;
 	if (dispatcher->ticks_done < dispatcher->ticks_cnt)
 	{
 		// re-Divide the dataset into work units

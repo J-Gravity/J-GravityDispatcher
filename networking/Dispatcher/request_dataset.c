@@ -45,9 +45,11 @@ void  request_dataset(t_dispatcher *dispatcher)
 	dispatcher->dataset = data;
 	dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
 	dispatcher->new_dataset->particles = calloc(count, sizeof(t_body));
+	dispatcher->new_dataset->particle_cnt = dispatcher->dataset->particle_cnt;
+	dispatcher->new_dataset->max_scale = dispatcher->dataset->max_scale;
 
 	//this isn't necessary in the final product, but good for making sure we're mapping correctly.
-	memcpy(dispatcher->new_dataset->particles, dispatcher->dataset->particles, count * sizeof(t_body));
+	//memcpy(dispatcher->new_dataset->particles, dispatcher->dataset->particles, count * sizeof(t_body));
 	printf("finished request_dataset\n");
 	return ;
 }

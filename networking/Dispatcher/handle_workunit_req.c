@@ -27,7 +27,7 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 		//printf("D$\n");
 		dispatcher->workunits = dispatcher->workunits->next;
 		//printf("E$\n");
-		clear_unit(&delete_me);
+		//clear_unit(&delete_me);
 	}
 	// else
 	// 	send_worker_msg(worker, new_message(NO_WORK_UNITS, 1, " "));

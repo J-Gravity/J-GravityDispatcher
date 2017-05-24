@@ -17,21 +17,20 @@ t_body *translate_to_new_dataset(t_dispatcher *d, t_body **old, int index)
 	t_body *ref;
 
 	ref = old[index];
-	printf("the body we're trying to map to:\n")
-	print_cl4(ref->position);
-	print_cl4(ref->velocity);
-	ref = ref - &(d->dataset->particles[0])
-	ref = ref + &(d->new_dataset->particles[0]);
-	printf("did we get it?\n")
-	print_cl4(ref->position);
-	print_cl4(ref->velocity);
+	// printf("the body we're trying to map to:\n");
+	// print_cl4(ref->position);
+	// print_cl4(ref->velocity);
+	ref = (t_body *)(ref - d->dataset->particles + d->new_dataset->particles);
+	// printf("did we get it?\n");
+	// print_cl4(ref->position);
+	// print_cl4(ref->velocity);
 	return ref;
 }
 
 void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		t_msg msg)
 {
-	t_workunit	new_workunit;
+	t_WU		new_workunit;
 	t_cell		*local_cell;
 	int			i;
 
@@ -45,7 +44,10 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	// print_cl4(new_workunit.local_bodies[0].velocity);
 	while (i < new_workunit.localcount)
 	{
-		local_cell->bodies[i] = new_workunit.local_bodies[i];
+		t_body *dest;
+
+		dest = translate_to_new_dataset(dispatcher, local_cell->bodies, i);
+		*dest = new_workunit.local_bodies[i];
 		i++;
 	}
 	free(new_workunit.local_bodies);

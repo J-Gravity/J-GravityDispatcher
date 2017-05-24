@@ -313,8 +313,8 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
     //use the result to make a list of particles we need to direct compare against
     direct_bodies = bodies_from_cells(inners, &neighborcount);
     w = new_workunit(cell, direct_bodies, neighborcount, index);
-    free(inners);
-    free(direct_bodies);
+    //free(inners);
+    //free(direct_bodies);
     return (w);
 }
 
@@ -556,20 +556,11 @@ void	divide_dataset(t_dispatcher *dispatcher)
     static t_octree *t;
 
     if (t != NULL)
-    {
-        //printf("freeing the old tree\n");
         free_tree(t);
-    }
-    //printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
         bodies[i] = &(dispatcher->dataset->particles[i]);
-    // for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
-    // {
-    //     print_cl4(bodies[i]->position);
-    //     print_cl4(bodies[i]->velocity);
-    // }
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
@@ -580,12 +571,5 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
-    //free_tree(t);
-    //printf("finished divide_dataset\n");
 	return ;
 }
-
-
-/* optimization checklist:
-reduce calls to count_bodies
-create all workunits before filling them */
