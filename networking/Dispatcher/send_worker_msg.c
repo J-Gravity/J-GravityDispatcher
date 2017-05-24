@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:38:19 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 13:26:21 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 19:24:46 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ void	send_worker_msg(t_worker *worker, t_msg msg)
 	char	*buffer;
 	int		msg_size;
 
+	if (worker->socket.fd == 0)
+		return ;
 	//printf("A*\n");
 	msg_size = HEADER_SIZE + msg.size;
 	//printf("B*\n");
