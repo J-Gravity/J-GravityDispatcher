@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 18:30:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 19:40:12 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ void		*handle_worker_connection(void *input)
 	cur_worker = (t_worker *)worker->data;
 	//printf("C!\n");
 	//printf("thread for fd: %d", cur_worker->socket.fd);
-	send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 0, ""));
+	send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 1, " "));
 	//printf("D!\n");
 	while (1)
 	{
@@ -75,15 +75,23 @@ void		*handle_worker_connection(void *input)
 			printf("worker connection terminated!\n");
 			close(cur_worker->socket.fd);
 			cur_worker->socket.fd = 0;
-			printf("adding lost worker's work unit back to the pool!\n");
-			pthread_mutex_lock(&params->dispatcher->workunits_mutex);
-			cur_worker->workunit_link->next = params->dispatcher->workunits;
-			params->dispatcher->workunits = cur_worker->workunit_link;
-			pthread_mutex_unlock(&params->dispatcher->workunits_mutex);
+			if (cur_worker->workunit_link)
+			{
+				printf("adding lost worker's work unit back to the pool!\n");
+				pthread_mutex_lock(&params->dispatcher->workunits_mutex);
+				printf("mutex locked!\n");
+				cur_worker->workunit_link->next = params->dispatcher->workunits;
+				printf("link->next = list head!\n");
+				params->dispatcher->workunits = cur_worker->workunit_link;
+				printf("list head = link!\n");
+				pthread_mutex_unlock(&params->dispatcher->workunits_mutex);
+				printf("mutex unlocked!\n");
+			}
 			cur_worker->workunit_link = NULL;
 			printf("attempting to reconnect...\n");
 			cur_worker->socket.fd = accept(params->dispatcher->sin.fd, (struct sockaddr *)&(params->dispatcher->sin.addr.sin_addr), &(params->dispatcher->sin.addrlen));
 			printf("reconnected\n");
+			send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 1, " "));
 		}
 		else
 			handle_worker_msg(params->dispatcher, cur_worker, msg);
