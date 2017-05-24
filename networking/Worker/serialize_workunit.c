@@ -21,7 +21,7 @@ int wu_size(t_workunit w)
 	return total;
 }
 
-t_msg serialize_workunit2(t_workunit w)
+t_msg serialize_workunit(t_workunit w)
 {
 	t_msg msg;
 

@@ -19,7 +19,7 @@
 // 	t_body				*particles;
 // }						t_dataset;
 
-void  request_dataset(t_dataset **init_data)
+void  request_dataset(t_dispatcher *dispatcher)
 {
 	int fd;
 	long count;
@@ -42,7 +42,12 @@ void  request_dataset(t_dataset **init_data)
 	read(fd, particles, sizeof(t_body) * count);
 	data->particles = particles;
 	close(fd);
-	*init_data = data;
+	dispatcher->dataset = data;
+	dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
+	dispatcher->new_dataset->particles = calloc(count, sizeof(t_body));
+
+	//this isn't necessary in the final product, but good for making sure we're mapping correctly.
+	memcpy(dispatcher->new_dataset->particles, dispatcher->dataset->particles, count * sizeof(t_body));
 	printf("finished request_dataset\n");
 	return ;
 }

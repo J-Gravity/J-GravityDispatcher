@@ -132,6 +132,7 @@ typedef struct			s_dispatcher
 	t_lst				*workers;
 	int					worker_cnt;
 	t_dataset			*dataset;
+	t_dataset			*new_dataset;
 	int					ticks_cnt;
 	int					ticks_done;
 	t_lst				*workunits;
@@ -243,7 +244,7 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 *		@param	init_data	Pointer to the initial dataset ptr in the dispatcher
 *							struct
 */
-void		request_dataset(t_dataset **init_data);
+void		request_dataset(t_dispatcher *dispatcher);
 
 /*
 *	Divide up the dataset into workunits and store them in the

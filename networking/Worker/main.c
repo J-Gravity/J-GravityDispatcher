@@ -146,12 +146,12 @@ int main(int argc, char **argsv)
     	printf("sent WU_REQ\n");
     	msg = wait_for_msg(conn_socket, WORK_UNIT);
     	printf("got WU\n");
-    	t_workunit w = deserialize_workunit2(msg);
+    	t_workunit w = deserialize_workunit(msg);
     	//printf("workunit deserialized\n");
     	free(msg.data);
     	w = do_workunit(w);
     	//printf("did workunit\n");
-    	msg = serialize_workunit2(w);
+    	msg = serialize_workunit(w);
     	//printf("serialized\n");
     	//printf("msg.id %d, msg.size %d\n", msg.id, msg.size);
     	send_msg(conn_socket, msg);
