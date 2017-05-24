@@ -81,13 +81,10 @@ typedef	struct			s_socket
 }						t_socket;
 
 
-
-t_msg serialize_workunit(t_workunit w);
 t_workunit do_workunit(t_workunit w);
-t_workunit deserialize_workunit(t_msg msg);
 
-t_workunit deserialize_workunit2(t_msg msg);
-t_msg serialize_workunit2(t_workunit w);
+t_workunit deserialize_workunit(t_msg msg);
+t_msg serialize_workunit(t_workunit w);
 
 void print_cl4(cl_float4 v);
 

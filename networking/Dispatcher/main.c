@@ -29,7 +29,7 @@ int	main(void)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	}
 	connect_workers(dispatcher, &dispatcher->workers);
-	request_dataset(&dispatcher->dataset);
+	request_dataset(dispatcher);
 	divide_dataset(dispatcher);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	//dump_all_workers_cache(dispatcher);

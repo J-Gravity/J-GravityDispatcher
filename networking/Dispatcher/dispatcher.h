@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 16:04:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/23 17:54:28 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,16 @@ typedef struct s_octree
 	t_bounds bounds;
 }				t_octree;
 
+typedef struct			s_WU
+{
+	int					id;
+	int					localcount;
+	int					neighborcount;
+	t_body				*local_bodies;
+	t_body				*neighborhood;
+	cl_float4			force_bias;
+}						t_WU;
+
 typedef struct			s_workunit
 {
 	int					id;
@@ -132,6 +142,7 @@ typedef struct			s_dispatcher
 	t_lst				*workers;
 	int					worker_cnt;
 	t_dataset			*dataset;
+	t_dataset			*new_dataset;
 	int					ticks_cnt;
 	int					ticks_done;
 	t_lst				*workunits;
@@ -150,10 +161,6 @@ typedef struct			s_thread_handler
 	t_lst				*worker;
 }						t_thread_handler;
 
-
-
-t_msg serialize_workunit2(t_workunit w);
-t_workunit deserialize_workunit2(t_msg msg);
 
 void print_cl4(cl_float4 v);
 
@@ -247,7 +254,7 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 *		@param	init_data	Pointer to the initial dataset ptr in the dispatcher
 *							struct
 */
-void		request_dataset(t_dataset **init_data);
+void		request_dataset(t_dispatcher *dispatcher);
 
 /*
 *	Divide up the dataset into workunits and store them in the
@@ -283,14 +290,14 @@ int			send_workunit(t_worker *worker, t_workunit *workunit);
 *		@param	workunit	The work unit that will be stored in the msg
 *		@return message struct conataining the serialized work unit
 */
-t_msg		serialize_workunit(t_workunit *workunit);
+t_msg		serialize_workunit(t_workunit w);
 
 /*
 *	Parse the data of a worker message and write it to t_workunit struct
 *		@param	msg	The message from the worker that contains a complete
 					work unit
 */
-t_workunit	deserialize_workunit(t_msg msg);
+t_WU		deserialize_workunit(t_msg msg);
 
 /*
 *	Handles the worker's request for a work unit to process

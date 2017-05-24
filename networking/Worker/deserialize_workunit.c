@@ -12,7 +12,7 @@
 
 #include "worker.h"
 
-t_workunit deserialize_workunit2(t_msg msg)
+t_workunit deserialize_workunit(t_msg msg)
 {
 	t_workunit w;
 
@@ -29,8 +29,5 @@ t_workunit deserialize_workunit2(t_msg msg)
 	w.neighborhood = (t_body *)calloc(w.neighborcount, sizeof(t_body));
 	memcpy(w.neighborhood, msg.data + offset, sizeof(t_body) * w.neighborcount);
 	offset += sizeof(t_body) * w.neighborcount;
-	memcpy(&(w.force_bias), msg.data + offset, sizeof(cl_float4));
-	offset += sizeof(cl_float4);
-
 	return (w);
 }
