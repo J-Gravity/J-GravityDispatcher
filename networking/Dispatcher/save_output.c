@@ -21,6 +21,7 @@ void	save_output(t_dispatcher *dispatcher, char *name)
 	char *bigbuff;
 
 	asprintf(&filename, "%s-%d.jgrav", name, dispatcher->ticks_done);
+
 	if ((fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP)) == -1)
 	{
 		printf("*fire* the world is burning *fire* failed to create\n"
@@ -33,5 +34,6 @@ void	save_output(t_dispatcher *dispatcher, char *name)
 		memcpy(bigbuff + i * sizeof(cl_float4), &dispatcher->dataset->particles[i].position, sizeof(cl_float4));
 	write(fd, bigbuff, dispatcher->dataset->particle_cnt * sizeof(cl_float4));
 	free(bigbuff);
+	free(filename);
 	close(fd);
 }

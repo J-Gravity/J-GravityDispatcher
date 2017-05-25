@@ -42,5 +42,6 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	else
 	{
 		//simulation complete
+		exit(1);
 	}
 }

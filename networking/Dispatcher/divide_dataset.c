@@ -183,11 +183,10 @@ static t_cell *single_body_cell(t_cell *cell)
     single->bodies = (t_body **)calloc(2, sizeof(t_body *));
     single->bodies[0] = (t_body *)calloc(1, sizeof(t_body));
     single->bodies[0]->position = cell->center;
-    single->bodies[0]->velocity = (cl_float4){0, 0, 0, 0};
+    single->bodies[0]->velocity = (cl_float4){0, 0, 0, -1};
     single->bodies[1] = NULL;
-    //single->bodycount = 1;
-    //single->bounds = (t_bounds){0,0,0,0,0,0}; // this is the signal that this was a SBC and should be freed ASAP
-
+    single->bodycount = 1;
+    single->bounds = (t_bounds){0,0,0,0,0,0}; // this is the signal that this was a SBC and should be freed ASAP
     return (single);
 }
 
@@ -284,12 +283,11 @@ static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
     {
         memcpy(&(bodies[k]), cells[i]->bodies, cells[i]->bodycount * sizeof(t_body *));
         k += cells[i]->bodycount;
-        // if (boundequ(cells[i]->bounds, (t_bounds){0, 0, 0, 0, 0, 0}))
-        // {
-        //     free(cells[i]->bodies[0]);
-        //     free(cells[i]->bodies);
-        //     free(cells[i]);
-        // }
+        if (cells[i]->bodycount == 1 && boundequ(cells[i]->bounds, (t_bounds){0, 0, 0, 0, 0, 0}))
+        {
+            free(cells[i]->bodies);
+            free(cells[i]);
+        }
     }
     //printf("leaving b_f_c\n");
     *neighborcount = count;
@@ -377,8 +375,7 @@ static void    paint_bodies_octants(t_body **bodies, t_cell *c)
 static t_body ***scoop_octants(t_body **bodies, int count)
 {
     //return 8 arrays of bodies, one for each octant (used after paint_octants)
-    t_body ***ret = (t_body ***)calloc(9, sizeof(t_body **));
-    ret[8] = NULL;
+    t_body ***ret = (t_body ***)calloc(8, sizeof(t_body **));
     for (int i = 0; i < 8; i++)
     {
         ret[i] = (t_body **)calloc(count + 1, sizeof(t_body *));
@@ -436,12 +433,11 @@ static void divide_cell(t_cell *c)
     //////Numbering is a bit weird here ^ but the idea is that even indices are near, odd far
                                 //0..3 are left, 4..7 are right
                                 //0, 1, 6, 7 bottom, 2345 top
-    t_cell **children = (t_cell **)calloc(9, sizeof(t_cell *));
+    t_cell **children = (t_cell **)calloc(8, sizeof(t_cell *));
     paint_bodies_octants(c->bodies, c);
     t_body ***kids = scoop_octants(c->bodies, c->bodycount);
     for (int i = 0; i < 8; i++)
         children[i] = init_cell(kids[i], c, subbounds[i]);
-    children[8] = NULL;
     free(kids);
     c->children = children;
 }
@@ -552,7 +548,11 @@ static void recursive_tree_free(t_cell *c)
 {
     //the bodies** array in leaf cells is freed elsewhere. still needs to be freed in inner cells.
     if (!c->children)
+    {
+        if (c->bodycount == 0)
+            free(c->bodies);
         return;
+    }
     for (int i = 0; i < 8; i++)
     {
         recursive_tree_free(c->children[i]);
@@ -567,6 +567,7 @@ static void free_tree(t_octree *t)
     printf("freeing the tree\n");
     recursive_tree_free(t->root);
     free(t->root);
+    free(t);
 }
 
 void	divide_dataset(t_dispatcher *dispatcher)
@@ -575,6 +576,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
 
     if (t != NULL)
         free_tree(t);
+    printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
@@ -583,11 +585,13 @@ void	divide_dataset(t_dispatcher *dispatcher)
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
+    printf("tree is made\n");
     dispatcher->workunits = create_workunits(t, leaves);
     int len = lstlen(dispatcher->workunits);
     dispatcher->workunits_cnt = len;
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
+    printf("workunits made, done divide_dataset\n");
 	return ;
 }
