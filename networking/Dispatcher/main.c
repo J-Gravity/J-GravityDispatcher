@@ -6,16 +6,21 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 00:52:44 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/25 14:48:37 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-int	main(void)
+int	main(int ac, char **av)
 {
 	t_dispatcher	*dispatcher;
 
+	if (ac != 2)
+	{
+		printf("Usage ./a.out [File name]\n");
+		return (0);
+	}
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 1000;
@@ -29,7 +34,7 @@ int	main(void)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	}
 	connect_workers(dispatcher, &dispatcher->workers);
-	request_dataset(dispatcher);
+	request_dataset(dispatcher, av[1]);
 	divide_dataset(dispatcher);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	//dump_all_workers_cache(dispatcher);
