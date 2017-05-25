@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:41:19 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/23 20:00:51 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/25 14:49:24 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 // 	t_body				*particles;
 // }						t_dataset;
 
-void  request_dataset(t_dispatcher *dispatcher)
+void  request_dataset(t_dispatcher *dispatcher, char *file)
 {
 	int fd;
 	long count;
@@ -28,9 +28,10 @@ void  request_dataset(t_dispatcher *dispatcher)
 	 *   TODO : Figure out what the hell the file will be called;
 	*/
 	printf("starting request_dataset\n");
-	if ((fd = open("./215.jgrav", O_RDONLY)) < 1)
+	if ((fd = open(file, O_RDONLY)) < 1)
 	{
-		fprintf(stderr, "Error opening file\n", errno);
+		fprintf(stderr, "Error opening file %s\n", file, errno);
+		free(file);
 		exit(0);
 	}
 	t_dataset *data = (t_dataset *)calloc(1, sizeof(t_dataset));

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 17:54:28 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/25 14:45:46 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -252,9 +252,10 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 *	Get the next dataset (t_dataset) from the web server and store it in the
 *	dispatcher struct
 *		@param	init_data	Pointer to the initial dataset ptr in the dispatcher
+*		@param	file		The name of the input file
 *							struct
 */
-void		request_dataset(t_dispatcher *dispatcher);
+void		request_dataset(t_dispatcher *dispatcher, char *file);
 
 /*
 *	Divide up the dataset into workunits and store them in the
