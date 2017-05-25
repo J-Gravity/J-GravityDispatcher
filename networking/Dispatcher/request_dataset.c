@@ -31,7 +31,6 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	if ((fd = open(file, O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file %s\n", file, errno);
-		free(file);
 		exit(0);
 	}
 	t_dataset *data = (t_dataset *)calloc(1, sizeof(t_dataset));
