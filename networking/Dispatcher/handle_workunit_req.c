@@ -33,4 +33,5 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 	// 	send_worker_msg(worker, new_message(NO_WORK_UNITS, 1, " "));
 	pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	//printf("F$\n");
+	free(msg.data);
 }

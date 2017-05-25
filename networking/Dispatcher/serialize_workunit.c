@@ -39,6 +39,8 @@ t_msg serialize_workunit(t_workunit w)
 	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(t_body))
 	{
 		memcpy(msg.data + offset, w.neighborhood[i], sizeof(t_body));
+		if (w.neighborhood[i]->velocity.w == -1)
+			free(w.neighborhood[i]);
 	}
 	msg.size = wu_size(w);
 
