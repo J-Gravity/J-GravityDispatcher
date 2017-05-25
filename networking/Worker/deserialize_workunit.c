@@ -16,6 +16,9 @@ t_workunit deserialize_workunit(t_msg msg)
 {
 	t_workunit w;
 
+	clock_t start, end;
+	start = clock();
+
 	int offset = 0;
 	memcpy(&(w.id), msg.data, sizeof(int));
 	offset += sizeof(int);
@@ -26,8 +29,12 @@ t_workunit deserialize_workunit(t_msg msg)
 	offset += sizeof(t_body) * w.localcount;
 	memcpy(&(w.neighborcount), msg.data + offset, sizeof(int));
 	offset += sizeof(int);
-	w.neighborhood = (t_body *)calloc(w.neighborcount, sizeof(t_body));
-	memcpy(w.neighborhood, msg.data + offset, sizeof(t_body) * w.neighborcount);
-	offset += sizeof(t_body) * w.neighborcount;
+	w.neighborhood = (cl_float4 *)calloc(w.neighborcount, sizeof(cl_float4));
+	memcpy(w.neighborhood, msg.data + offset, sizeof(cl_float4) * w.neighborcount);
+	offset += sizeof(cl_float4) * w.neighborcount;
+	end = clock() - start;
+	printf("DS took %lu for %d\n", end, msg.size);
+	if (msg.size != offset)
+		printf("SIZE MISMATCH! %d, %d\n", msg.size, offset);
 	return (w);
 }

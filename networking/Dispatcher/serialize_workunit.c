@@ -16,7 +16,7 @@ int wu_size(t_workunit w)
 {
 	int total = 12; //id, localcount, neighborcount
 	total += w.localcount * sizeof(t_body);
-	total += w.neighborcount * sizeof(t_body);
+	total += w.neighborcount * sizeof(cl_float4);
 	return total;
 }
 
@@ -36,9 +36,9 @@ t_msg serialize_workunit(t_workunit w)
 	}
 	memcpy(msg.data + offset, &(w.neighborcount), sizeof(int));
 	offset += sizeof(int);
-	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(t_body))
+	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(cl_float4))
 	{
-		memcpy(msg.data + offset, w.neighborhood[i], sizeof(t_body));
+		memcpy(msg.data + offset, &(w.neighborhood[i]->position), sizeof(cl_float4));
 		if (w.neighborhood[i]->velocity.w == -1)
 			free(w.neighborhood[i]);
 	}

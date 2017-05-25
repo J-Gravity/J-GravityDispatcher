@@ -61,8 +61,7 @@ typedef struct			s_workunit
 	int					localcount;
 	int					neighborcount;
 	t_body				*local_bodies;
-	t_body				*neighborhood;
-	cl_float4			force_bias;
+	cl_float4			*neighborhood;
 }						t_workunit;
 
 typedef struct			s_msg
