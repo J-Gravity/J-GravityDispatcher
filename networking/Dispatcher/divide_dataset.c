@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 14)
+#define LEAF_THRESHOLD pow(2, 17)
 
 void print_cl4(cl_float4 v)
 {
@@ -372,26 +372,48 @@ static void    paint_bodies_octants(t_body **bodies, t_cell *c)
     }
 }
 
+// static t_body ***scoop_octants(t_body **bodies, int count)
+// {
+//     //return 8 arrays of bodies, one for each octant (used after paint_octants)
+//     t_body ***ret = (t_body ***)calloc(8, sizeof(t_body **));
+//     for (int i = 0; i < 8; i++)
+//     {
+//         ret[i] = (t_body **)calloc(count + 1, sizeof(t_body *));
+//         ret[i][count] = NULL;
+//     }
+//     int indices[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+//     for (int i = 0; i < count; i++)
+//     {
+//         ret[(int)bodies[i]->velocity.w][indices[(int)bodies[i]->velocity.w]] = bodies[i];
+//         indices[(int)bodies[i]->velocity.w] += 1;
+//     }
+//     int sum = 0;
+//     for (int i = 0; i < 8; i++)
+//     {
+//         ret[i][indices[i]] = NULL;
+//         sum += indices[i];
+//     }
+//     return (ret);
+// }
+
+
 static t_body ***scoop_octants(t_body **bodies, int count)
 {
     //return 8 arrays of bodies, one for each octant (used after paint_octants)
+    int counts[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    for (int i = 0; i < count; i++)
+        counts[(int)bodies[i]->velocity.w] += 1;
     t_body ***ret = (t_body ***)calloc(8, sizeof(t_body **));
     for (int i = 0; i < 8; i++)
     {
-        ret[i] = (t_body **)calloc(count + 1, sizeof(t_body *));
-        ret[i][count] = NULL;
+        ret[i] = (t_body **)calloc(counts[i] + 1, sizeof(t_body *));
+        ret[i][counts[i]] = NULL;
     }
     int indices[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     for (int i = 0; i < count; i++)
     {
         ret[(int)bodies[i]->velocity.w][indices[(int)bodies[i]->velocity.w]] = bodies[i];
         indices[(int)bodies[i]->velocity.w] += 1;
-    }
-    int sum = 0;
-    for (int i = 0; i < 8; i++)
-    {
-        ret[i][indices[i]] = NULL;
-        sum += indices[i];
     }
     return (ret);
 }
@@ -583,6 +605,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
         bodies[i] = &(dispatcher->dataset->particles[i]);
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
+    printf("tree init done\n");
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
     printf("tree is made\n");

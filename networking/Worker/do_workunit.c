@@ -110,7 +110,7 @@ size_t nearest_mult_256(size_t n)
 
 // vvv N CROSS M vvv
 
-static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount, cl_float4 force_bias)
+static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount)
 {
     srand ( time(NULL) ); //before we do anything, seed rand() with the current time
     static t_context   *context;
@@ -125,14 +125,9 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
 
-    cl_float4 *FB = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
-    for (int i = 0; i < ncount; i++)
-        FB[i] = force_bias;
-
     //device-side data
     cl_mem      d_N_start;
     cl_mem      d_M;
-    cl_mem      d_A;
     cl_mem      d_V_start;
     cl_mem      d_V_end;
     cl_mem      d_N_end;
@@ -141,20 +136,18 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     d_M = clCreateBuffer(context->context, CL_MEM_READ_ONLY, sizeof(cl_float4) * mcount, NULL, NULL);
     d_V_start = clCreateBuffer(context->context, CL_MEM_READ_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
     //outputs
-    d_A = clCreateBuffer(context->context, CL_MEM_READ_WRITE, sizeof(cl_float4) * ncount, NULL, NULL);
     d_V_end = clCreateBuffer(context->context, CL_MEM_WRITE_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
     d_N_end = clCreateBuffer(context->context, CL_MEM_WRITE_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
 
     //all of that happens instantly and therefore we don't need events involved
 
     //copy over initial data to device locations
-    cl_event eN, eM, eA, eV;
+    cl_event eN, eM, eV;
     clEnqueueWriteBuffer(context->commands, d_N_start, CL_TRUE, 0, sizeof(cl_float4) * ncount, N, 0, NULL, &eN);
     clEnqueueWriteBuffer(context->commands, d_M, CL_TRUE, 0, sizeof(cl_float4) * mcount, M, 0, NULL, &eM);
-    clEnqueueWriteBuffer(context->commands, d_A, CL_TRUE, 0, sizeof(cl_float4) * ncount, FB, 0, NULL, &eA);
     clEnqueueWriteBuffer(context->commands, d_V_start, CL_TRUE, 0, sizeof(cl_float4) * ncount, V, 0, NULL, &eV);
 
-    cl_event loadevents[4] = {eN, eM, eA, eV};
+    cl_event loadevents[3] = {eN, eM, eV};
 
     size_t global = ncount;
     size_t mscale = mcount;
@@ -169,36 +162,36 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clSetKernelArg(k_nbody, 2, sizeof(cl_mem), &d_M);
     clSetKernelArg(k_nbody, 3, sizeof(cl_mem), &d_V_start);
     clSetKernelArg(k_nbody, 4, sizeof(cl_mem), &d_V_end);
-    clSetKernelArg(k_nbody, 5, sizeof(cl_mem), &d_A);
-    clSetKernelArg(k_nbody, 6, sizeof(cl_float4) * GROUPSIZE, NULL);
-    clSetKernelArg(k_nbody, 7, sizeof(float), &soften);
-    clSetKernelArg(k_nbody, 8, sizeof(float), &timestep);
-    clSetKernelArg(k_nbody, 9, sizeof(float), &grav);
-    clSetKernelArg(k_nbody, 10, sizeof(unsigned int), &global);
-    clSetKernelArg(k_nbody, 11, sizeof(unsigned int), &mscale);
+    clSetKernelArg(k_nbody, 5, sizeof(cl_float4) * GROUPSIZE, NULL);
+    clSetKernelArg(k_nbody, 6, sizeof(float), &soften);
+    clSetKernelArg(k_nbody, 7, sizeof(float), &timestep);
+    clSetKernelArg(k_nbody, 8, sizeof(float), &grav);
+    clSetKernelArg(k_nbody, 9, sizeof(unsigned int), &global);
+    clSetKernelArg(k_nbody, 10, sizeof(unsigned int), &mscale);
     
     //printf("global is %zu, local is %zu\n", global, local);
     //printf("going onto the GPU\n");
     
+    printf("running kernel\n");
+
     cl_event compute;
     cl_event offN, offV;
-    err = clEnqueueNDRangeKernel(context->commands, k_nbody, 1, NULL, &global, &local, 4, loadevents, &compute);
+    err = clEnqueueNDRangeKernel(context->commands, k_nbody, 1, NULL, &global, &local, 3, loadevents, &compute);
     checkError(err, "Enqueueing kernel");
     clEnqueueReadBuffer(context->commands, d_N_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_p, 1, &compute, &offN);
     clEnqueueReadBuffer(context->commands, d_V_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_v, 1, &compute, &offV);
     clFinish(context->commands);
 
+    printf("finished kernel\n");
     //these will have to happen elsewhere in final but here is good for now
     clReleaseMemObject(d_N_start);
     clReleaseMemObject(d_N_end);
     clReleaseMemObject(d_M);
     clReleaseMemObject(d_V_start);
     clReleaseMemObject(d_V_end);
-    clReleaseMemObject(d_A);
 
     clReleaseEvent(eN);
     clReleaseEvent(eM);
-    clReleaseEvent(eA);
     clReleaseEvent(eV);
     clReleaseEvent(compute);
     clReleaseEvent(offN);
@@ -218,7 +211,6 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     free(output_v);
     //free_context(context);
     //clReleaseKernel(k_nbody);
-    free(FB);
     return (ret);
 }
 
@@ -227,7 +219,6 @@ t_workunit do_workunit(t_workunit w)
     // printf("before computation, from WU\n");
     // print_cl4(w.local_bodies[0].position);
     // print_cl4(w.local_bodies[0].velocity);
-    cl_float4 fb = w.force_bias;
     size_t ncount = w.localcount;
     size_t mcount = w.neighborcount;
     size_t npadding = nearest_mult_256(ncount) - ncount;
@@ -248,7 +239,7 @@ t_workunit do_workunit(t_workunit w)
         M[i] = w.neighborhood[i].position;
     }
     free(w.local_bodies);
-    w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding, fb);
+    w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);
     free(w.neighborhood);
     w.neighborhood = NULL;
     w.neighborcount = 0;

@@ -146,6 +146,7 @@ int main(int argc, char **argsv)
     	printf("got WU\n");
     	t_workunit w = deserialize_workunit(msg);
     	free(msg.data);
+    	printf("deserialied\n");
     	w = do_workunit(w);
     	msg = serialize_workunit(w);
     	send_msg(conn_socket, msg);

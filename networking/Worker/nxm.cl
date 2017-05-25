@@ -26,7 +26,6 @@ kernel void nbody(
     __global float4* m,
     __global float4* v_start,
     __global float4* v_end,
-    __global float4* a,
     __local float4 *cached_stars,
     const float softening,
     const float timestep,
@@ -41,7 +40,7 @@ kernel void nbody(
     
     float4 pos = n_start[globalid];
     float4 vel = v_start[globalid];
-    float4 force = a[globalid];
+    float4 force = {0,0,0,0};
 
     int chunk = 0;
     for (int i = 0; i < M; i += chunksize, chunk++)
