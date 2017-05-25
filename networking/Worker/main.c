@@ -146,9 +146,11 @@ int main(int argc, char **argsv)
     	printf("got WU\n");
     	t_workunit w = deserialize_workunit(msg);
     	free(msg.data);
-    	printf("deserialied\n");
+    	printf("deserialized\n");
     	w = do_workunit(w);
+    	printf("done\n");
     	msg = serialize_workunit(w);
+    	printf("serialized\n");
     	send_msg(conn_socket, msg);
     	printf("sent completed unit\n");
     	free(w.local_bodies);

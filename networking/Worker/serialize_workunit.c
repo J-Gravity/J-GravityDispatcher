@@ -23,8 +23,6 @@ int wu_size(t_workunit w)
 t_msg serialize_workunit(t_workunit w)
 {
 	t_msg msg;
-	clock_t start, end;
-	start = clock();
 
 	msg.data = calloc(1, wu_size(w));
 	int offset = 0;
@@ -34,15 +32,11 @@ t_msg serialize_workunit(t_workunit w)
 	offset += sizeof(int);
 	memcpy(msg.data + offset, w.local_bodies, sizeof(t_body) * w.localcount);
 	offset += sizeof(t_body) * w.localcount;
-	//printf("returning %d bodies (localcount)\n", w.localcount);
 	memcpy(msg.data + offset, &(w.neighborcount), sizeof(int));
 	offset += sizeof(int);
 	memcpy(msg.data + offset, w.neighborhood, sizeof(t_body) * w.neighborcount);
 	offset += sizeof(t_body) * w.neighborcount;
-	//printf("these should be the same: %d, %d\n", wu_size(w), offset);
 	msg.size = wu_size(w);
 	msg.id = WORK_UNIT_DONE;
-	end = clock() - start;
-	printf("S took %lu for %d\n", end, msg.id);
 	return (msg);
 }
