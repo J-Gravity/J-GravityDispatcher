@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:41:19 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/25 14:49:24 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/25 16:14:32 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	if ((fd = open(file, O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file %s\n", file, errno);
-		free(file);
 		exit(0);
 	}
 	t_dataset *data = (t_dataset *)calloc(1, sizeof(t_dataset));
