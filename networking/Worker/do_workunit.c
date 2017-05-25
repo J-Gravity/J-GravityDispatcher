@@ -236,7 +236,7 @@ t_workunit do_workunit(t_workunit w)
     // print_cl4(V[0]);
     for (int i = 0; i < mcount; i++)
     {
-        M[i] = w.neighborhood[i].position;
+        M[i] = w.neighborhood[i];
     }
     free(w.local_bodies);
     w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);

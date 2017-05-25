@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 17)
+#define LEAF_THRESHOLD pow(2, 10)
 
 void print_cl4(cl_float4 v)
 {
@@ -27,6 +27,7 @@ void print_cl4(cl_float4 v)
 
 static t_bounds bounds_from_bodies(t_body **bodies)
 {
+    //at the start of making the tree, we need a box that bounds all the bodies.
     float xmin = 0, xmax = 0;
     float ymin = 0, ymax = 0;
     float zmin = 0, zmax = 0;
@@ -122,33 +123,6 @@ static t_octree *init_tree(t_body **bodies, size_t n, t_bounds bounds)
     return (t);
 }
 
-static void pair_force_cell(t_cell *i, t_cell *j)
-{
-
-    if (i == j)
-        return;
-    //compute the force between two distant cells, treating them as single particles
-    cl_float4 r;
-
-    r.x = j->center.x - i->center.x;
-    r.y = j->center.y - i->center.y;
-    r.z = j->center.z - i->center.z;
-
-    float distSq = r.x * r.x + r.y * r.y + r.z * r.z + SOFTENING;
-    // printf("the cells are %f apart\n", sqrt(distSq));
-    // printf("distSq was %f\n", distSq);
-    float invDist = 1.0 / sqrt(distSq);
-    //printf("invDist is %f\n", invDist);
-    float invDistCube = invDist * invDist * invDist;
-    //printf("invDistCube is %f\n", invDistCube);
-    float f = j->center.w * invDistCube;
-    //printf("f is %f\n", f);
-    //printf("this cell weighs %f and the other weighs %f\n", i->center.w, j->center.w);
-    //printf("single contrib\n");
-    //print_cl4((cl_float4){r.x * f, r.y * f, r.z * f});
-    i->force_bias = vadd(i->force_bias, (cl_float4){r.x * f, r.y * f, r.z * f});
-}
-
 static cl_float4 midpoint_from_bounds(t_bounds b)
 {
     return (cl_float4){(b.xmax - b.xmin) / 2, (b.ymax - b.ymin) / 2, (b.zmax - b.zmin) / 2};
@@ -163,30 +137,37 @@ static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
     cl_float4 r;
     cl_float4 us_midpoint;
 
+    if (us == them)
+        return (THETA);
     us_midpoint = midpoint_from_bounds(us->bounds);
     s = them->bounds.xmax - them->bounds.xmin;
     r.x = them->center.x - us_midpoint.x;
     r.y = them->center.y - us_midpoint.y;
     r.z = them->center.z - us_midpoint.z;
     d = sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
-    if (d == 0)
-        return (0);
-    //d -= (us->bounds.xmax - us->bounds.xmin) / 2; //this is a good idea but not the correct expression
+
+    //in normal Barnes-Hut, the MAC is evaluated for every body vs every cell. 
+    //we're evaluating it cell to cell for speed and to build good workunits.
+    //this could result in some comparisons that should be near being done as far.
+    //subtracting half of our cell's width from the measured distance compensates for this adequately.
+    //basically, we are measuring as if all the bodies in our cell are right up against the nearest side of our cell.
+    d -= (us->bounds.xmax - us->bounds.xmin) / 2;
     return (s/d);
 }
 
 static t_cell *single_body_cell(t_cell *cell)
 {
     //returns a new cell that's just one body. basically just a wrapper for the body,
-    //it would be better to do this differently
+    //it's a little inelegant to do this rather than just make a body, but it fits in the existing code well.
+    //when this is rewritten for GPU i'll do it differently.
     t_cell *single = (t_cell *)calloc(1, sizeof(t_cell));
     single->bodies = (t_body **)calloc(2, sizeof(t_body *));
     single->bodies[0] = (t_body *)calloc(1, sizeof(t_body));
     single->bodies[0]->position = cell->center;
-    single->bodies[0]->velocity = (cl_float4){0, 0, 0, -1};
+    single->bodies[0]->velocity = (cl_float4){0, 0, 0, -1}; //this is a signal so we can free it appropriately
     single->bodies[1] = NULL;
     single->bodycount = 1;
-    single->bounds = (t_bounds){0,0,0,0,0,0}; // this is the signal that this was a SBC and should be freed ASAP
+    single->bounds = (t_bounds){0,0,0,0,0,0}; // this is also an anti-leak signal
     return (single);
 }
 
@@ -200,7 +181,7 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
         the cell we're currently considering. We skip the root.
         
         If the cell is far away (m_a_c < THETA), that cell is far enough away to treat as 1 particle.
-        we compute that force and add it to the total force on our cell (force_bias).
+        we create a copy of it as 1 particle and add that to the neighborhood.
         
         if the cell is nearby and childless (ie leaf), it is near enough that direct calculation is necessary,
         so it returns a null-terminated array just containing a pointer to the cell.
@@ -209,9 +190,7 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
         we make space for the 8 arrays that will be returned (some might be null)
         then we copy them into one final array and return it.
 
-        in this way, we end up with all necessary distant calculations done
-        (and the net resulting force stored in cell->force_bias)
-        and we have a nice handy list of all the cells whose bodies we'll need to compare against.
+        in this way, we enumerate the "Neighborhood" of the cell, ie the bodies we'll need to compare with on the GPU.
     */
 
     if (root != t->root && multipole_acceptance_criterion(cell, root) < THETA)
@@ -259,6 +238,7 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
 
 static int boundequ(t_bounds a, t_bounds b)
 {
+    //simple helper function to determine if two t_bounds are equal.
     if (a.xmin == b.xmin && a.xmax == b.xmax)
         if (a.ymin == b.ymin && a.ymax == b.ymax)
             if (a.zmin == b.zmin && a.zmax == b.zmax)
@@ -268,7 +248,8 @@ static int boundequ(t_bounds a, t_bounds b)
 
 static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
 {
-    //given a null terminated list of cells, make an array of all the bodies in those cells.
+    //given a null terminated list of cells, make a null terminated array of all the bodies in those cells.
+    //also sets neighborcount to the length of the array.
     int count;
     t_body **bodies;
 
@@ -297,7 +278,6 @@ static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
 static t_workunit *new_workunit(t_cell *c, t_body **neighborhood, int neighborcount, int index)
 {
     //constructor for workunit.
-    //note that memory is copied here.
     t_workunit *w;
 
     w = (t_workunit *)calloc(1, sizeof(t_workunit));
@@ -318,10 +298,10 @@ static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
     t_workunit *w;
     int neighborcount;
 
-    //skip empty cells (yes there are empty cells)
+    //skip empty cells
     if (cell->bodycount == 0)
         return NULL;
-    //traverse tree doing faraway calculations and enumerating nearby cells (see above)
+    //traverse tree and assemble its neighborhood (here "inners," I need to do a sweep to unify naming)
     inners = find_inners_do_outers(cell, t->root, t);
     //use the result to make a list of particles we need to direct compare against
     direct_bodies = bodies_from_cells(inners, &neighborcount);
@@ -371,31 +351,6 @@ static void    paint_bodies_octants(t_body **bodies, t_cell *c)
         }
     }
 }
-
-// static t_body ***scoop_octants(t_body **bodies, int count)
-// {
-//     //return 8 arrays of bodies, one for each octant (used after paint_octants)
-//     t_body ***ret = (t_body ***)calloc(8, sizeof(t_body **));
-//     for (int i = 0; i < 8; i++)
-//     {
-//         ret[i] = (t_body **)calloc(count + 1, sizeof(t_body *));
-//         ret[i][count] = NULL;
-//     }
-//     int indices[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-//     for (int i = 0; i < count; i++)
-//     {
-//         ret[(int)bodies[i]->velocity.w][indices[(int)bodies[i]->velocity.w]] = bodies[i];
-//         indices[(int)bodies[i]->velocity.w] += 1;
-//     }
-//     int sum = 0;
-//     for (int i = 0; i < 8; i++)
-//     {
-//         ret[i][indices[i]] = NULL;
-//         sum += indices[i];
-//     }
-//     return (ret);
-// }
-
 
 static t_body ***scoop_octants(t_body **bodies, int count)
 {
@@ -455,6 +410,7 @@ static void divide_cell(t_cell *c)
     //////Numbering is a bit weird here ^ but the idea is that even indices are near, odd far
                                 //0..3 are left, 4..7 are right
                                 //0, 1, 6, 7 bottom, 2345 top
+    //note: I made up this numbering scheme but it's actually not used anywhere ever.
     t_cell **children = (t_cell **)calloc(8, sizeof(t_cell *));
     paint_bodies_octants(c->bodies, c);
     t_body ***kids = scoop_octants(c->bodies, c->bodycount);
@@ -467,6 +423,7 @@ static void divide_cell(t_cell *c)
 static void tree_it_up(t_cell *root)
 {
     //recursively flesh out the barnes-hut tree from the root node.
+    //just keep splitting into 8 sub-octants and recursing on them until the number of stars in the cell is manageable.
     if (!root)
         return ;
     if (root->bodycount < LEAF_THRESHOLD)
@@ -478,7 +435,7 @@ static void tree_it_up(t_cell *root)
 
 static t_cell **enumerate_leaves(t_cell *root)
 {
-    //goal is to return a linear t_cell** that's all the leaf nodes in the tree
+    //return a linear t_cell** that's all the leaf nodes (ie childless nodes) in the tree
 
     t_cell **ret;
 
@@ -568,7 +525,8 @@ static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
 
 static void recursive_tree_free(t_cell *c)
 {
-    //the bodies** array in leaf cells is freed elsewhere. still needs to be freed in inner cells.
+    //the bodies** array in non-empty leaf cells is freed elsewhere (where workunits are freed). 
+    //still needs to be freed in inner cells and empty leaves. (technically the bodies** in an empty leaf is size 0 but its still good practice)
     if (!c->children)
     {
         if (c->bodycount == 0)
@@ -592,6 +550,30 @@ static void free_tree(t_octree *t)
     free(t);
 }
 
+static int unit_size(t_workunit *w)
+{
+    int total = 12; //id, localcount, neighborcount
+    total += w->localcount * sizeof(t_body);
+    total += w->neighborcount * sizeof(cl_float4);
+    return total;
+}
+
+static void tally_workunits(t_lst *units)
+{
+    int total = 0;
+    int local = 0;
+    while (units)
+    {
+        int this = unit_size((t_workunit *)units->data);
+        total += this;
+        local += ((t_workunit *)units->data)->localcount;
+        //printf("WU %d was %dKB\n",((t_workunit *)units->data)->id, this / 1024);
+        units = units->next;
+    }
+    printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
+    //printf("total localcount is %d\n", local);
+}
+
 void	divide_dataset(t_dispatcher *dispatcher)
 {
     static t_octree *t;
@@ -610,7 +592,9 @@ void	divide_dataset(t_dispatcher *dispatcher)
     t_cell **leaves = enumerate_leaves(t->root);
     printf("tree is made\n");
     dispatcher->workunits = create_workunits(t, leaves);
+    tally_workunits(dispatcher->workunits);
     int len = lstlen(dispatcher->workunits);
+    //printf("2^%d stars, max 2^%d per leaf, resulted in %d units\n", (int)log2(dispatcher->dataset->particle_cnt), (int)log2(LEAF_THRESHOLD), len);
     dispatcher->workunits_cnt = len;
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;

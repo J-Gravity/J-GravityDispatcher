@@ -28,7 +28,7 @@ void  request_dataset(t_dispatcher *dispatcher)
 	 *   TODO : Figure out what the hell the file will be called;
 	*/
 	printf("starting request_dataset\n");
-	if ((fd = open("./good21.jgrav", O_RDONLY)) < 1)
+	if ((fd = open("./215.jgrav", O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file\n", errno);
 		exit(0);
@@ -47,9 +47,6 @@ void  request_dataset(t_dispatcher *dispatcher)
 	dispatcher->new_dataset->particles = calloc(count, sizeof(t_body));
 	dispatcher->new_dataset->particle_cnt = dispatcher->dataset->particle_cnt;
 	dispatcher->new_dataset->max_scale = dispatcher->dataset->max_scale;
-
-	//this isn't necessary in the final product, but good for making sure we're mapping correctly.
-	//memcpy(dispatcher->new_dataset->particles, dispatcher->dataset->particles, count * sizeof(t_body));
 	printf("finished request_dataset\n");
 	return ;
 }

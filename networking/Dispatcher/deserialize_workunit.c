@@ -29,8 +29,5 @@ t_WU	deserialize_WU(t_msg msg)
 	WU.neighborhood = (t_body *)calloc(WU.neighborcount, sizeof(t_body));
 	memcpy(WU.neighborhood, msg.data + offset, sizeof(t_body) * WU.neighborcount);
 	offset += sizeof(t_body) * WU.neighborcount;
-	memcpy(&(WU.force_bias), msg.data + offset, sizeof(cl_float4));
-	offset += sizeof(cl_float4);
-
 	return (WU);
 }
