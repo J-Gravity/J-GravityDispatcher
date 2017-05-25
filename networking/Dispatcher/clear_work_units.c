@@ -31,9 +31,8 @@ void	clear_unit(t_lst **work_units)
 		free((*work_units)->data);
 		(*work_units)->data = 0;
 	}
-	if ((t_lst *)(*work_units)->next)
+	if ((*work_units)->next)
 	{
-		free((t_lst *)(*work_units)->next);
 		(*work_units)->next = 0;
 	}
 	if (*work_units)
