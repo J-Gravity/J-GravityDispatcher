@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 10)
+#define LEAF_THRESHOLD pow(2, 16)
 
 void print_cl4(cl_float4 v)
 {
@@ -587,7 +587,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
         bodies[i] = &(dispatcher->dataset->particles[i]);
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-    printf("tree init done\n");
+    //printf("tree init done\n");
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
     printf("tree is made\n");

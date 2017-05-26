@@ -1,6 +1,76 @@
 #include "worker.h"
 #include "err_code.h"
 
+char *thesource = "static float4 pair_force(\n" \
+"    float4 pi,\n" \
+"    float4 pj,\n" \
+"    float4 ai,\n" \
+"    const float softening)\n" \
+"{\n" \
+"    float4 r;\n" \
+"    r.x = pj.x - pi.x;\n" \
+"    r.y = pj.y - pi.y;\n" \
+"    r.z = pj.z - pi.z;\n" \
+"    r.w = copysign(1, pi.w);\n" \
+"\n" \
+"    float distSquare = r.x * r.x + r.y * r.y + r.z * r.z + softening;\n" \
+"    float invDist = native_rsqrt(distSquare);\n" \
+"    float invDistCube = invDist * invDist * invDist;\n" \
+"    float s = pj.w * invDistCube * r.w;\n" \
+"    ai.x += r.x * s;\n" \
+"    ai.y += r.y * s;\n" \
+"    ai.z += r.z * s;\n" \
+"    return ai;\n" \
+"}\n" \
+"\n" \
+"kernel void nbody(\n" \
+"    __global float4* n_start,\n" \
+"    __global float4* n_end,\n" \
+"    __global float4* m,\n" \
+"    __global float4* v_start,\n" \
+"    __global float4* v_end,\n" \
+"    __local float4 *cached_stars,\n" \
+"    const float softening,\n" \
+"    const float timestep,\n" \
+"    const float G,\n" \
+"    const int N,\n" \
+"    const int M)\n" \
+"{\n" \
+"    int globalid = get_global_id(0);\n" \
+"    int threadcount = get_global_size(0);\n" \
+"    int chunksize = get_local_size(0);\n" \
+"    int localid = get_local_id(0);\n" \
+"    \n" \
+"    float4 pos = n_start[globalid];\n" \
+"    float4 vel = v_start[globalid];\n" \
+"    float4 force = {0,0,0,0};\n" \
+"\n" \
+"    int chunk = 0;\n" \
+"    for (int i = 0; i < M; i += chunksize, chunk++)\n" \
+"    {\n" \
+"        int local_pos = chunk * chunksize + localid;\n" \
+"        cached_stars[localid] = m[local_pos];\n" \
+"\n" \
+"        barrier(CLK_LOCAL_MEM_FENCE);\n" \
+"        for (int j = 0; j < chunksize;)\n" \
+"        {\n" \
+"            force = pair_force(pos, cached_stars[j++], force, softening);\n" \
+"        }\n" \
+"        barrier(CLK_LOCAL_MEM_FENCE);\n" \
+"    }\n" \
+"\n" \
+"    vel.x += force.x * G * timestep;\n" \
+"    vel.y += force.y * G * timestep;\n" \
+"    vel.z += force.z * G * timestep;\n" \
+"\n" \
+"    pos.x += vel.x * timestep;\n" \
+"    pos.y += vel.y * timestep;\n" \
+"    pos.z += vel.z * timestep;\n" \
+"\n" \
+"    n_end[globalid] = pos;\n" \
+"    v_end[globalid] = vel;\n" \
+"}";
+
 static int count_bodies(t_body **bodies)
 {
     int i = 0;
@@ -24,6 +94,11 @@ static char *load_cl_file(char *filename)
 
     source = (char *)calloc(1,8192);
     fd = open(filename, O_RDONLY);
+    if (fd < 0)
+    {
+        printf("could not find file\n");
+        exit(1);
+    }
     read(fd, source, 8192);
     return (source);
 }
@@ -78,8 +153,8 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     int err;
     char *source;
 
-    source = load_cl_file(sourcefile);
-    p = clCreateProgramWithSource(c->context, 1, (const char **) & source, NULL, &err);
+    //source = load_cl_file(sourcefile);
+    p = clCreateProgramWithSource(c->context, 1, (const char **) & thesource, NULL, &err);
     checkError(err, "Creating program");
 
     // Build the program
@@ -172,7 +247,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     //printf("global is %zu, local is %zu\n", global, local);
     //printf("going onto the GPU\n");
     
-    printf("running kernel\n");
+    //printf("running kernel\n");
 
     cl_event compute;
     cl_event offN, offV;
@@ -182,7 +257,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clEnqueueReadBuffer(context->commands, d_V_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_v, 1, &compute, &offV);
     clFinish(context->commands);
 
-    printf("finished kernel\n");
+    //printf("finished kernel\n");
     //these will have to happen elsewhere in final but here is good for now
     clReleaseMemObject(d_N_start);
     clReleaseMemObject(d_N_end);

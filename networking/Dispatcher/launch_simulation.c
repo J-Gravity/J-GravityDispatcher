@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 19:40:12 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/25 16:48:03 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,14 +16,13 @@
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
+	//printf("handle worker done msg\n");
 	if (msg.id == WORK_UNIT_REQUEST)
 	{
-		//printf("RECIEVED: WORK_UNIT_REQUEST\n");
 		handle_workunit_req(dispatcher, worker, msg);
 	}
 	else if (msg.id == WORK_UNIT_DONE)
 	{
-		//printf("RECIEVED: WORK_UNIT_DONE\n");
 		handle_worker_done_msg(dispatcher, worker, msg);
 	}
 	else
@@ -64,7 +63,9 @@ void		*handle_worker_connection(void *input)
 		// }
 		msg = get_worker_msg(cur_worker);
 		//printf("msg status: %d\n", msg.error);
-		//printf("MSG RECIEVED: [id]=%d [size]=%d [body]='%s'\n", msg.id, msg.size, msg.data);
+		// printf("MSG RECIEVED: [id]=%d", msg.id);
+		// printf(" size '%d'\n", msg.size);
+		// printf(" body '%s'\n", msg.data);
 		if (msg.error == -1)
 		{
 			printf("get worker message failed with err %d\n", errno);
