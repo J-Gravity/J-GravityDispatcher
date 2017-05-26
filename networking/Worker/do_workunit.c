@@ -172,7 +172,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     //printf("global is %zu, local is %zu\n", global, local);
     //printf("going onto the GPU\n");
     
-    printf("running kernel\n");
+    //printf("running kernel\n");
 
     cl_event compute;
     cl_event offN, offV;
@@ -182,7 +182,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clEnqueueReadBuffer(context->commands, d_V_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_v, 1, &compute, &offV);
     clFinish(context->commands);
 
-    printf("finished kernel\n");
+    //printf("finished kernel\n");
     //these will have to happen elsewhere in final but here is good for now
     clReleaseMemObject(d_N_start);
     clReleaseMemObject(d_N_end);

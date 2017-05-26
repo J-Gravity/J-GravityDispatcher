@@ -32,10 +32,10 @@ void	*connect_worker_thread(void *param)
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
 		head = dispatcher->workers;
-		printf("f0\n");
+		//printf("f0\n");
 		if (head)
 		{
-			printf("head->next\n");
+			//printf("head->next\n");
 			while (head)
 			{
 				if (head->next == NULL)
@@ -46,7 +46,7 @@ void	*connect_worker_thread(void *param)
 		}
 		else
 		{
-			printf("new list\n");
+			//printf("new list\n");
 			dispatcher->workers = new_link;
 		}
 		new_worker = (t_worker *)new_link->data;

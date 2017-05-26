@@ -37,7 +37,7 @@ t_msg	get_worker_msg(t_worker *worker)
 	int		bytes_read;
 	t_msg	msg;
 
-	printf("START get_worker_msg\n");
+	//printf("START get_worker_msg\n");
 	msg.error = 42;
 	msg.id = 0;
 	msg.size = 0;
@@ -59,6 +59,6 @@ t_msg	get_worker_msg(t_worker *worker)
 	}
 	check_for_errors(bytes_read, &msg.error);
 	free(buffer);
-	printf("gwm10\n");
+	//printf("gwm10\n");
 	return (msg);
 }

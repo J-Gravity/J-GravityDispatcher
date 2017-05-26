@@ -16,11 +16,11 @@ int		send_workunit(t_worker *worker, t_workunit *work_unit)
 {
 	t_msg	msg;
 
-	printf("START send_work_unit\n");
+	//printf("START send_work_unit\n");
 	msg = serialize_workunit(*work_unit);
 	msg.id = WORK_UNIT;
 	send_worker_msg(worker, msg);
 	free(msg.data);
-	printf("f\n");
+	//printf("f\n");
 	return (0);
 }

@@ -24,7 +24,7 @@ t_msg serialize_workunit(t_workunit w)
 {
 	t_msg msg;
 
-	printf("serialize workunit %d\n", w.id);
+	//printf("serialize workunit %d\n", w.id);
 	msg.data = calloc(1, wu_size(w));
 	int offset = 0;
 	memcpy(msg.data, &(w.id), sizeof(int));
@@ -46,6 +46,6 @@ t_msg serialize_workunit(t_workunit w)
 		}
 	}
 	msg.size = wu_size(w);
-	printf("END serialize_workunit\n");
+	//printf("END serialize_workunit\n");
 	return (msg);
 }
