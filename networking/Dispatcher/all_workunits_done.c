@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 01:00:39 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/25 19:29:42 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	else
 	{
 		//simulation complete
+		printf("simulation complete\n");
 		exit(1);
 	}
 }

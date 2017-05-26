@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 13:26:22 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/25 19:36:22 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,11 @@ t_msg	get_worker_msg(t_worker *worker)
 	int		bytes_read;
 	t_msg	msg;
 
+	printf("START get_worker_msg\n");
 	msg.error = 42;
+	msg.id = 0;
+	msg.size = 0;
+	msg.data = calloc(1, 1);
 	buffer = (char *)calloc(1, HEADER_SIZE);
 	bytes_read = recv(worker->socket.fd, buffer, HEADER_SIZE, 0);
 	if (bytes_read == HEADER_SIZE)
@@ -48,15 +52,13 @@ t_msg	get_worker_msg(t_worker *worker)
 		msg.data = (char *)calloc(1, msg.size);
 		int bodybytes = 0;
 		while (bodybytes < msg.size)
-		{
 			bodybytes += recv(worker->socket.fd, msg.data + bodybytes, msg.size, 0);
-		}
 		if (bodybytes != msg.size)
-			printf("msg size should be %d bytes,"
-			"but is only %d bytes!\n", msg.size, bytes_read);
+			printf("msg size should be %d bytes, but is only %d bytes!\n", msg.size, bytes_read);
 		check_for_errors(bytes_read, &msg.error);
 	}
 	check_for_errors(bytes_read, &msg.error);
 	free(buffer);
+	printf("gwm10\n");
 	return (msg);
 }
