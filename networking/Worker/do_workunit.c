@@ -24,6 +24,11 @@ static char *load_cl_file(char *filename)
 
     source = (char *)calloc(1,8192);
     fd = open(filename, O_RDONLY);
+    if (fd < 0)
+    {
+        printf("could not find file\n");
+        exit(1);
+    }
     read(fd, source, 8192);
     return (source);
 }
