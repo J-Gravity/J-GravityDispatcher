@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/22 17:24:43 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/26 23:18:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,18 @@ void	*connect_worker_thread(void *param)
 	while (dispatcher->is_connect)
 	{
 		fd = accept(dispatcher->sin.fd, (struct sockaddr *)&(dispatcher->sin.addr.sin_addr), &(dispatcher->sin.addrlen));
+		if (fd == 0)
+		{
+			printf("accept returned 0!");
+			continue;
+		}
 		printf("worker connected fd: %d\n", fd);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
+
+		pthread_mutex_lock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex locked!\n");
 		head = dispatcher->workers;
 		//printf("f0\n");
 		if (head)
@@ -52,6 +60,8 @@ void	*connect_worker_thread(void *param)
 		new_worker = (t_worker *)new_link->data;
 		new_worker->socket.fd = fd;
 		new_worker->tid = 0;
+		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex unlocked!\n");
 		if (new_worker->socket.fd == -1)
 		{
 			printf("worker accept call failed\n");

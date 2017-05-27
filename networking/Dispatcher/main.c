@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 19:29:25 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/27 01:02:54 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ int	main(int ac, char **av)
 		printf("Usage ./a.out [File name]\n");
 		return (0);
 	}
+	signal(SIGPIPE, SIG_IGN);
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 1000;
@@ -29,6 +30,7 @@ int	main(int ac, char **av)
 	dispatcher->is_running = 0;
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
+	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	connect_workers(dispatcher, &dispatcher->workers);
