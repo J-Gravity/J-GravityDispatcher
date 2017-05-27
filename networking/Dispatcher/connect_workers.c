@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/26 19:57:13 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/26 23:18:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ void	*connect_worker_thread(void *param)
 		new_link->next = NULL;
 
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex locked!\n");
 		head = dispatcher->workers;
 		//printf("f0\n");
 		if (head)
@@ -60,6 +61,7 @@ void	*connect_worker_thread(void *param)
 		new_worker->socket.fd = fd;
 		new_worker->tid = 0;
 		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex unlocked!\n");
 		if (new_worker->socket.fd == -1)
 		{
 			printf("worker accept call failed\n");
