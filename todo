@@ -1,0 +1,5 @@
+TEST ALL OPTIMIZATIONS ONE AT A TIME
+
+test speed after implementing hash map method (vs allocating new bodies method)
+multithread tree creation (create a thread for each of the children)
+multithread enumerate_leaves
