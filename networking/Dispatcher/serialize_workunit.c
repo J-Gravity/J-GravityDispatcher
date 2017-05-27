@@ -20,7 +20,7 @@ char *compress_locals(t_workunit w, int *loclen)
 	char *uncompressed = malloc(w.localcount * sizeof(t_body));
 	int offset = 0;
 	for (int i = 0; i < w.localcount; i++, offset += sizeof(t_body))
-		memcpy(uncompressed, w.local_bodies[i], sizeof(t_body));
+		memcpy(uncompressed + offset, w.local_bodies[i], sizeof(t_body));
 
 	//byte transpose using TurboTranspose
 	char *transposed = malloc(w.localcount * sizeof(t_body));
@@ -30,8 +30,10 @@ char *compress_locals(t_workunit w, int *loclen)
 	//allocate that much, compress into it. It returns an int representing how big the result actually was.
 	int max_compressed_size = LZ4_compressBound(w.localcount * sizeof(t_body));
 	char *compressed = malloc(max_compressed_size);
+	//compress with LZ4
 	int result_compressed_size = LZ4_compress_default(transposed, compressed, w.localcount * sizeof(t_body), max_compressed_size);
 	*loclen = result_compressed_size;
+	//printf("locals compressed to %d from %lu, %.f%% of original size\n", result_compressed_size, w.localcount * sizeof(t_body), (float)result_compressed_size * 100.0  / ((float)w.localcount * sizeof(t_body)));
 	free(transposed);
 	free(uncompressed);
 	return(compressed);
@@ -44,7 +46,7 @@ char *compress_neighbors(t_workunit w, int *neighblen)
 	int offset = 0;
 	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(cl_float4))
 	{
-		memcpy(uncompressed, &(w.neighborhood[i]->position), sizeof(cl_float4));
+		memcpy(uncompressed + offset, &(w.neighborhood[i]->position), sizeof(cl_float4));
 		if (w.neighborhood[i]->velocity.w == -1)
 			free(w.neighborhood[i]); //getting rid of this soon
 	}
@@ -57,8 +59,11 @@ char *compress_neighbors(t_workunit w, int *neighblen)
 	//allocate that much, compress into it. It returns an int representing how big the result actually was.
 	int max_compressed_size = LZ4_compressBound(w.neighborcount * sizeof(cl_float4));
 	char *compressed = malloc(max_compressed_size);
+	//compress with LZ4
 	int result_compressed_size = LZ4_compress_default(transposed, compressed, w.neighborcount * sizeof(cl_float4), max_compressed_size);
+	//printf("max_c_s %d vs result_c_s %d\n", max_compressed_size, result_compressed_size);
 	*neighblen = result_compressed_size;
+	//printf("neighbors compressed to %d bytes, originally %lu bytes, %.f%% of original size\n", result_compressed_size, w.neighborcount * sizeof(cl_float4), (float)result_compressed_size * 100.0  / ((float)w.neighborcount * sizeof(cl_float4)));
 	free(transposed);
 	free(uncompressed);
 	return(compressed);
@@ -99,10 +104,12 @@ t_msg serialize_workunit(t_workunit w)
 	memcpy(msg.data + offset, neighborblob, neighborhood_compressed_size);
 	offset += neighborhood_compressed_size;
 
-	if (offset == msg.size)
-		printf("sizes matched as expected\n");
-	else
-		printf("size mismatch, wtf\n");
+	// if (offset == msg.size)
+	// 	printf("sizes matched as expected\n");
+	// else
+	// 	printf("size mismatch, wtf\n");
+
+	printf("the first neighbor body of unit %d has position %f %f %f %f\n", w.id, w.neighborhood[0]->position.x, w.neighborhood[0]->position.y, w.neighborhood[0]->position.z, w.neighborhood[0]->position.w);
 
 	free(localblob);
 	free(neighborblob);
