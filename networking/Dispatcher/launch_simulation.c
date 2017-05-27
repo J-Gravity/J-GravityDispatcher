@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/26 21:21:54 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/26 22:49:26 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "pthread.h"
 
 
-void 		remove_link(t_lst **list, void *data)
+t_lst 		*remove_link(t_lst **list, void *data)
 {
 	t_lst	*head;
 	t_lst	*last;
@@ -24,18 +24,19 @@ void 		remove_link(t_lst **list, void *data)
 	if (head && head->data == data)
 	{
 		*list = head->next;
-		return;
+		return (head);
 	}
 	while (head)
 	{
 		if (head->data == data)
 		{
 			last->next = head->next;
-			return;
+			return (head);
 		}
 		last = head;
 		head = head->next;
 	}
+	return (NULL);
 }
 
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
@@ -76,6 +77,8 @@ void		*handle_worker_connection(void *input)
 	while (1)
 	{
 		//printf("while 1\n");
+		pthread_mutex_lock(&params->dispatcher->worker_list_mutex);
+				printf("worker list mutex locked!\n");
 		head = params->dispatcher->workers;
 		printf("-------------\n");
 		while (head)
@@ -84,6 +87,8 @@ void		*handle_worker_connection(void *input)
 			head = head->next;
 		}
 		printf("-------------\n");
+		pthread_mutex_unlock(&params->dispatcher->worker_list_mutex);
+				printf("worker list mutex unlocked!\n");
 		// if (worker->next && ((t_worker *)worker->next->data)->tid == 0)
 		// {
 		// 	printf("new event thread\n");
@@ -97,27 +102,27 @@ void		*handle_worker_connection(void *input)
 		if (msg.error == -1)
 		{
 			printf("get worker message failed with err %d\n", errno);
-			break ;
 		}
-		else if (msg.error == 0 || msg.error == -1)
+		if (msg.error == 0 || msg.error == -1)
 		{
 			printf("worker connection terminated! %d\n", cur_worker->socket.fd);
 			if (cur_worker->workunit_link)
 			{
 				printf("adding lost worker's work unit back to the pool!\n");
 				pthread_mutex_lock(&params->dispatcher->workunits_mutex);
-				printf("mutex locked!\n");
+				printf("|work units mutex locked!\n");
 				cur_worker->workunit_link->next = params->dispatcher->workunits;
 				printf("link->next = list head!\n");
 				params->dispatcher->workunits = cur_worker->workunit_link;
 				printf("list head = link!\n");
 				pthread_mutex_unlock(&params->dispatcher->workunits_mutex);
-				printf("mutex unlocked!\n");
+				printf("|work units mutex unlocked!\n");
 			}
 			cur_worker->workunit_link = NULL;
 			//cleanup thread and worker link
 			//detach worker link from the list
 			pthread_mutex_lock(&params->dispatcher->worker_list_mutex);
+				printf("worker list mutex locked!\n");
 			// head = params->dispatcher->workers;
 			// t_lst	*last = head;
 			// while (head)
@@ -131,17 +136,18 @@ void		*handle_worker_connection(void *input)
 			// }
 			remove_link(&params->dispatcher->workers, worker->data);
 			pthread_mutex_unlock(&params->dispatcher->worker_list_mutex);
-			printf("free worker link\n");
-			//free(worker);
-			printf("close the socket fd\n");
+				printf("worker list mutex unlocked!\n");
+			//printf("free worker link\n");
+			free(worker);
+			//printf("close the socket fd\n");
 			if (cur_worker->socket.fd)
 				close(cur_worker->socket.fd);
 			kill_me = *cur_worker->tid;
-			printf("free the pthread struct\n");
+			//printf("free the pthread struct\n");
 			free(cur_worker->tid);
-			printf("free the worker struct\n");
-			//free(cur_worker);
-			printf("free the params\n");
+			//printf("free the worker struct\n");
+			free(cur_worker);
+			//printf("free the params\n");
 			free(params);
 			printf("killing this thread...\n");
 			return (0);
@@ -176,6 +182,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	dispatcher->is_running = 1;
 
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex locked!\n");
 	head = dispatcher->workers;
 	while (head)
 	{	
@@ -192,6 +199,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		head = head->next;
 	}
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex unlocked!\n");
 	printf("sleeping\n");
 	sleep(999999);
 	printf("END\n");
