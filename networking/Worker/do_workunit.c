@@ -173,7 +173,8 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     // Create the compute kernel from the program
     k = clCreateKernel(p, name, &err);
     checkError(err, "Creating kernel");
-    free(source);
+    if (source)
+      free(source);
     clReleaseProgram(p);
     return (k);
 }
@@ -243,10 +244,10 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clSetKernelArg(k_nbody, 8, sizeof(float), &grav);
     clSetKernelArg(k_nbody, 9, sizeof(unsigned int), &global);
     clSetKernelArg(k_nbody, 10, sizeof(unsigned int), &mscale);
-    
+
     //printf("global is %zu, local is %zu\n", global, local);
     //printf("going onto the GPU\n");
-    
+
     //printf("running kernel\n");
 
     cl_event compute;
@@ -282,8 +283,8 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
         ret[i].position = output_p[i];
         ret[i].velocity = output_v[i];
     }
-    free(output_p);
-    free(output_v);
+    if (output_p) free(output_p);
+    if (output_v) free(output_v);
     //free_context(context);
     //clReleaseKernel(k_nbody);
     return (ret);
@@ -313,14 +314,14 @@ t_workunit do_workunit(t_workunit w)
     {
         M[i] = w.neighborhood[i];
     }
-    free(w.local_bodies);
+    if (w.local_bodies) free(w.local_bodies);
     w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);
-    free(w.neighborhood);
+    if (w.neighborhood) free(w.neighborhood);
     w.neighborhood = NULL;
     w.neighborcount = 0;
-    free(N);
-    free(M);
-    free(V);
+    if (N) free(N);
+    if (M) free(M);
+    if (V) free(V);
     // printf("after computation, in WU\n");
     // print_cl4(w.local_bodies[0].position);
     // print_cl4(w.local_bodies[0].velocity);
