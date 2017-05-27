@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 19:29:42 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/26 23:08:48 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 {
 	printf("all workunits done!\n");
 	// Output tick to file
-	save_output(dispatcher, dispatcher->name);
+//	save_output(dispatcher, dispatcher->name);
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
 	// Reset work units done
@@ -35,7 +35,9 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (dispatcher->ticks_done < dispatcher->ticks_cnt)
 	{
 		// re-Divide the dataset into work units
+		printf("s divide dataset\n");
 		divide_dataset(dispatcher);
+		printf("e divide dataset\n");
 		// Inform all workers work units are ready
 		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
 	}

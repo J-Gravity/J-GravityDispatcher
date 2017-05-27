@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 19:36:22 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/26 23:57:39 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ static void print_debug(t_worker *worker, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
-	//printf("RECIEVED '%s' FROM worker %d\n", line, worker->socket.fd);
+	printf("RECIEVED '%s' FROM worker %d\n", line, worker->socket.fd);
 }
 
 static void	check_for_errors(int bytes_read, int *error)
@@ -37,6 +37,8 @@ t_msg	get_worker_msg(t_worker *worker)
 	int		bytes_read;
 	t_msg	msg;
 
+
+	printf("%lu gwm START\n", (unsigned long)worker->tid);
 	//printf("START get_worker_msg\n");
 	msg.error = 42;
 	msg.id = 0;
@@ -52,13 +54,16 @@ t_msg	get_worker_msg(t_worker *worker)
 		msg.data = (char *)calloc(1, msg.size);
 		int bodybytes = 0;
 		while (bodybytes < msg.size)
+		{
+			printf("bodybytes: %d", bodybytes);
 			bodybytes += recv(worker->socket.fd, msg.data + bodybytes, msg.size, 0);
+		}
 		if (bodybytes != msg.size)
 			printf("msg size should be %d bytes, but is only %d bytes!\n", msg.size, bytes_read);
 		check_for_errors(bytes_read, &msg.error);
 	}
 	check_for_errors(bytes_read, &msg.error);
 	free(buffer);
-	//printf("gwm10\n");
+	printf("%lu gwm COMPLETE\n", (unsigned long)worker->tid);
 	return (msg);
 }
