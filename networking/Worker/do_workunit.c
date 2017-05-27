@@ -153,7 +153,7 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     int err;
     char *source;
 
-    //source = load_cl_file(sourcefile);
+    source = load_cl_file(sourcefile);
     p = clCreateProgramWithSource(c->context, 1, (const char **) & thesource, NULL, &err);
     checkError(err, "Creating program");
 
