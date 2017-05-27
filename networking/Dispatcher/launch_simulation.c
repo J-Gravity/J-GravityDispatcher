@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 16:48:03 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/26 23:02:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,42 +37,23 @@ void		*handle_worker_connection(void *input)
 	t_worker			*cur_worker;
 	t_msg				msg;
 
-	//printf("Launched worker network handler thread!\n");
 	params = (t_thread_handler *)input;
-	//printf("A!\n");
 	worker = params->worker;
-	//printf("B!\n");
 	cur_worker = (t_worker *)worker->data;
-	//printf("C!\n");
-	//printf("thread for fd: %d", cur_worker->socket.fd);
 	send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 1, " "));
-	//printf("D!\n");
 	while (1)
 	{
-		//printf("while 1\n");
 		head = params->dispatcher->workers;
 		while (head)
-		{
-			//printf("worker: %d\n", ((t_worker*)(head->data))->socket.fd);
 			head = head->next;
-		}
-		// if (worker->next && ((t_worker *)worker->next->data)->tid == 0)
-		// {
-		// 	printf("new event thread\n");
-		// 	make_new_event_thread(params->dispatcher, worker->next);
-		// }
 		msg = get_worker_msg(cur_worker);
-		//printf("msg status: %d\n", msg.error);
-		// printf("MSG RECIEVED: [id]=%d", msg.id);
-		// printf(" size '%d'\n", msg.size);
-		// printf(" body '%s'\n", msg.data);
-		if (msg.error == -1)
+		if (msg.error == 0 || msg.error == -1)
 		{
-			printf("get worker message failed with err %d\n", errno);
-			break ;
-		}
-		else if (msg.error == 0)
-		{
+			if (msg.error == -1)
+			{
+				printf("msg.error == -1\n");
+				sleep(5);
+			}
 			printf("worker connection terminated!\n");
 			close(cur_worker->socket.fd);
 			cur_worker->socket.fd = 0;
