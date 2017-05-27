@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 18:51:45 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/27 01:15:40 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,8 @@ t_msg	wait_for_msg(int socket, int message_code)
 			while (bodybytes < msg.size)
 			{
 				bodybytes += recv(socket, msg.data + bodybytes, msg.size, 0);
+				// if (msg.id == WORK_UNIT)
+				// 	exit(1); //INVOKE SIGPIPE ON SERVER
 			}
 		}
 		else

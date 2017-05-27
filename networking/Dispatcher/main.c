@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/26 18:05:10 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/27 01:02:54 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ int	main(int ac, char **av)
 		printf("Usage ./a.out [File name]\n");
 		return (0);
 	}
+	signal(SIGPIPE, SIG_IGN);
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 1000;

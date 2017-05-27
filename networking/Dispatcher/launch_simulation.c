@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/27 00:18:18 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/27 01:07:55 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,8 @@ void		*handle_worker_connection(void *input)
 	t_msg				msg;
 	pthread_t			kill_me;
 
+
+	signal(SIGPIPE, SIG_IGN);
 	//printf("Launched worker network handler thread!\n");
 	params = (t_thread_handler *)input;
 	//printf("A!\n");
