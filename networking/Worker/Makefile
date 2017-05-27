@@ -10,26 +10,27 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME = launch_dispatcher
+NAME = launch_worker # Pending possible changes
 
-SRCS = *.c \
+SRCS = *.c # Pending updates
 
 CC = gcc
 FLAGS = -o
+FRAMEWORK = -framework OpenCL # Required for Workers to function
 
-BIN = *.o
+BIN = *.o # Pending updates
 
 .PHONY: all clean fclean re
 
 all: $(NAME)
 
 $(NAME):
-	@$(CC) $(FLAGS) $(NAME) $(SRCS)
-	@echo " *** Executable compiled as $(NAME) ***"
+	@$(CC) $(FLAGS) $(NAME) $(SRCS) $(FRAMEWORK)
+	@echo "*** Executable compiled as $(NAME) ***"
 
 clean:
 	@/bin/rm -f $(BIN)
-	@echo " *** $(BIN) Cleaned ***"
+	@echo "*** $(BIN)Cleaned *** "
 
 fclean: clean
 	@/bin/rm -f $(NAME)
