@@ -12,18 +12,25 @@
 
 NAME = launch_dispatcher
 
+SRCS = *.c \
+
+CC = gcc
+FLAGS = -o
 
 .PHONY: all clean fclean re
 
 all: $(NAME)
 
 $(NAME):
-	@gcc -o launch_dispatcher *.c
+	@$(CC) $(FLAGS) hello $(SRCS)
+	@echo "Executable compiled as $(NAME)"
 
 clean:
 	@/bin/rm -f $(BINS)
+	@echo "Files Cleaned"
 
 fclean: clean
 	@/bin/rm -f $(NAME)
 
 re: fclean all
+	@echo "Executable recompiled as $(NAME)"
