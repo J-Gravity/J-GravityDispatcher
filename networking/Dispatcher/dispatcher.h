@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 14:45:46 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/26 18:04:31 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,6 +137,7 @@ typedef struct			s_dataset
 typedef struct			s_dispatcher
 {
 	pthread_mutex_t		workunits_mutex;
+	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
 	char				*name;
 	t_lst				*workers;

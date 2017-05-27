@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 19:29:25 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/26 18:05:10 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ int	main(int ac, char **av)
 	dispatcher->is_running = 0;
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
+	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	connect_workers(dispatcher, &dispatcher->workers);
