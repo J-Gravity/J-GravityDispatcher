@@ -560,7 +560,7 @@ static int unit_size(t_workunit *w)
 
 static void tally_workunits(t_lst *units)
 {
-    int total = 0;
+    long total = 0;
     int local = 0;
     while (units)
     {
@@ -570,7 +570,7 @@ static void tally_workunits(t_lst *units)
         //printf("WU %d was %dKB\n",((t_workunit *)units->data)->id, this / 1024);
         units = units->next;
     }
-    printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
+    printf("total size of all workunits: %ldMB\n", total / (1024 * 1024));
     //printf("total localcount is %d\n", local);
 }
 

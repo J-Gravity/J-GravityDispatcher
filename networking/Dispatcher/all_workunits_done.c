@@ -38,10 +38,10 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		divide_dataset(dispatcher);
 		// Inform all workers work units are ready
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-				printf("worker list mutex locked!\n");
+				//printf("worker list mutex locked!\n");
 		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
 		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
-				printf("worker list mutex unlocked!\n");
+				//printf("worker list mutex unlocked!\n");
 	}
 	else
 	{
