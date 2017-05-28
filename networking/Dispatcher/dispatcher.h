@@ -33,8 +33,11 @@
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
-# include <OpenCL/opencl.h>
+# include <CL/opencl.h>
 # include <pthread.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <signal.h>
 
 typedef struct			s_lst
 {
