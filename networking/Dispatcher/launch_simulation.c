@@ -42,7 +42,7 @@ t_lst 		*remove_link(t_lst **list, void *data)
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
-	//printf("handle worker done msg\n");
+	printf("handling request %d\n", worker->socket.fd);
 	if (msg.id == WORK_UNIT_REQUEST)
 	{
 		handle_workunit_req(dispatcher, worker, msg);
@@ -99,6 +99,7 @@ void		*handle_worker_connection(void *input)
 
 		//printf("getting worker msg: worker %d\n", cur_worker->socket.fd);
 		msg = get_worker_msg(cur_worker);
+		printf("done receiving message, %d\n", cur_worker->socket.fd);
 		//printf("msg status: %d\n", msg.error);
 		// printf("MSG RECIEVED: [id]=%d", msg.id);
 		// printf(" size '%d'\n", msg.size);
