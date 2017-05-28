@@ -42,6 +42,12 @@
 # define DEVICE CL_DEVICE_TYPE_DEFAULT
 # endif
 
+typedef struct	s_workargs
+{
+	t_workunit	*w;
+	int			conn_socket;
+}				t_workargs;
+
 typedef struct s_context
 {
     cl_device_id device_id;

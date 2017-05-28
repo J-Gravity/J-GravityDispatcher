@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 18:51:45 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/27 17:46:46 by smifsud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,11 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 
 #include "worker.h"
+
+int		threadcount;
 
 t_msg	new_message(char id, int data_size, char *data)
 {
@@ -100,12 +103,30 @@ t_msg	wait_for_msg(int socket, int message_code)
 	}
 }
 
+void	workthread(t_workargs *args)
+{
+		t_msg	msg;
+
+    	*(args->w) = do_workunit(*(args->w));
+    	msg = serialize_workunit(*(args->w));
+    	send_msg(args->conn_socket, msg);
+    	printf("sent completed unit\n");
+    	free(args->w->local_bodies);
+		free(args->w->neighborhood);
+		free(args->w);
+		free(args);
+		threadcount++;
+		return ;
+}
+
 int main(int argc, char **argsv)
 {
 	int err;
 	int conn_socket;
 	struct sockaddr_in serv_addr;
 	int		buff_size;
+	pthread_t	threadpool[4];
+	t_workargs	*args;
 
 	if (argc == 1)
 	{
@@ -134,6 +155,7 @@ int main(int argc, char **argsv)
         return -1;
     }
 
+	threadcount = 4;
     while (1)
     {
     	t_msg msg;
@@ -146,11 +168,14 @@ int main(int argc, char **argsv)
     	printf("got WU\n");
     	t_workunit w = deserialize_workunit(msg);
     	free(msg.data);
-    	w = do_workunit(w);
-    	msg = serialize_workunit(w);
-    	send_msg(conn_socket, msg);
-    	printf("sent completed unit\n");
-    	free(w.local_bodies);
+		while (threadcount == 0)
+		{
+		}
+		args = (t_workargs*)malloc(sizeof(t_workargs));
+		args->w = &w;
+		args->conn_socket = conn_socket;
+		strerror(pthread_create(&threadpool[threadcount], 0, (void*)workthread, (void*)args));
+		threadcount--;
     }
 
 	return (0);
