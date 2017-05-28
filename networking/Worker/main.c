@@ -174,7 +174,7 @@ int main(int argc, char **argsv)
 		args = (t_workargs*)malloc(sizeof(t_workargs));
 		args->w = &w;
 		args->conn_socket = conn_socket;
-		strerror(pthread_create(&threadpool[threadcount], 0, (void*)workthread, (void*)args));
+		strerror(pthread_create(&threadpool[threadcount], 0, workthread, (void*)args));
 		threadcount--;
     }
 
