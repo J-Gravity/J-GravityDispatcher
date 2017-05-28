@@ -50,6 +50,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	//printf("copied the bodies\n");
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
+	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 	//printf("done %d of %d workunits\n", dispatcher->workunits_done, dispatcher->workunits_cnt);
 	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
 		all_workunits_done(dispatcher);
@@ -59,5 +60,5 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		send_worker_msg(worker, m);
 		free(m.data);
 	}
-	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
+	
 }
