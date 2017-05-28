@@ -67,15 +67,12 @@ t_workunit deserialize_workunit(t_msg msg)
 	char *neighborblob = malloc(neighbor_compressed_size);
 	memcpy(neighborblob, msg.data + offset, neighbor_compressed_size);
 	offset += neighbor_compressed_size;
-	w.neighborhood = decompress_neighbors(neighborblob, neighbor_compressed_size, w.localcount);
+	w.neighborhood = decompress_neighbors(neighborblob, neighbor_compressed_size, w.neighborcount);
 
 	// if (offset == msg.size)
 	// 	printf("size matched as expected\n");
 	// else
 	// 	printf("size mismatch, wtf\n");
-
-	printf("the first neighbor body of unit %d has position %f %f %f %f\n", w.id, w.neighborhood[0].x, w.neighborhood[0].y, w.neighborhood[0].z, w.neighborhood[0].w);
-
 
 	return (w);
 }

@@ -172,7 +172,6 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     //printf("global is %zu, local is %zu\n", global, local);
     //printf("going onto the GPU\n");
     
-    printf("running kernel\n");
 
     cl_event compute;
     cl_event offN, offV;
@@ -182,7 +181,6 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clEnqueueReadBuffer(context->commands, d_V_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_v, 1, &compute, &offV);
     clFinish(context->commands);
 
-    printf("finished kernel\n");
     //these will have to happen elsewhere in final but here is good for now
     clReleaseMemObject(d_N_start);
     clReleaseMemObject(d_N_end);
@@ -226,13 +224,11 @@ t_workunit do_workunit(t_workunit w)
     cl_float4 *N = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
     cl_float4 *M = (cl_float4 *)calloc(mcount + mpadding, sizeof(cl_float4));
     cl_float4 *V = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
-    printf("did the basics\n");
     for (int i = 0; i < ncount; i++)
     {
         N[i] = w.local_bodies[i].position;
         V[i] = w.local_bodies[i].velocity;
     }
-    printf("copied locals\n");
     // printf("before computation, in input buffers\n");
     // print_cl4(N[0]);
     // print_cl4(V[0]);
@@ -240,7 +236,6 @@ t_workunit do_workunit(t_workunit w)
     {
         M[i] = w.neighborhood[i];
     }
-    printf("copied neighbors\n");
     free(w.local_bodies);
     w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);
     free(w.neighborhood);

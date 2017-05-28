@@ -108,9 +108,8 @@ t_msg serialize_workunit(t_workunit w)
 	// 	printf("sizes matched as expected\n");
 	// else
 	// 	printf("size mismatch, wtf\n");
-
-	printf("the first neighbor body of unit %d has position %f %f %f %f\n", w.id, w.neighborhood[0]->position.x, w.neighborhood[0]->position.y, w.neighborhood[0]->position.z, w.neighborhood[0]->position.w);
-
+	int origsize = w.localcount * sizeof(t_body) + w.neighborcount *sizeof(cl_float4) + 5 * sizeof(int);
+	printf("msg.size ended up %d, would have been %d without compression, %.2f%%\n", msg.size, origsize, (float)msg.size * 100.0 / (float)origsize);
 	free(localblob);
 	free(neighborblob);
 	return (msg);
