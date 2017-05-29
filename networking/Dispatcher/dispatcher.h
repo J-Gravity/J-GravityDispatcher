@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 17:35:57 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/28 19:27:42 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@
 /* *********** */
 # define DEBUG 1
 # define MSG_DEBUG 0
+# define MUTEX_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -121,6 +122,7 @@ typedef struct			s_workunit
 
 typedef struct			s_worker
 {
+	char				active;
 	t_lst				*workunit_link;
 	char				compute_class;
 	pthread_t			*tid;

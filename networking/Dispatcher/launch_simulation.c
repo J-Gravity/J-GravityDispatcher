@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 18:50:24 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/28 19:11:50 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,8 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	printf("-------------\n");
 	while (head)
 	{
-		printf("(%p)worker: %d -> (%p)\n", head, ((t_worker*)(head->data))->socket.fd, head->next);
+		printf("(%p)worker: %d -> (%p)\n", head,
+			((t_worker*)(head->data))->socket.fd, head->next);
 		head = head->next;
 	}
 	printf("-------------\n");
@@ -114,8 +115,9 @@ void		*handle_worker_connection(void *input)
 	params = (t_thread_handler *)input;
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;
+	worker->active = 1;
 	send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
-	while (1)
+	while (worker->active)
 	{
 		if (DEBUG)
 			print_worker_fds(params->dispatcher);
@@ -137,16 +139,16 @@ void		*handle_worker_connection(void *input)
 		{
 			if (DEBUG)
 				printf("worker connection terminated! %d\n", worker->socket.fd);
-			cleanup_worker(params->dispatcher, worker_link);
-			free(params);
-			if (DEBUG)
-				printf("killing this thread...\n");
-			return (0);
+			worker->active = 0;
 		}
 		else
 			handle_worker_msg(params->dispatcher, worker, msg);
 		//free(msg.data);
 	}
+	cleanup_worker(params->dispatcher, worker_link);
+	free(params);
+	if (DEBUG)
+		printf("killing this thread...\n");
 	return (0);
 }
 
@@ -165,7 +167,8 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 		{
 			param = new_thread_handler(dispatcher, head);
 			cur_worker->tid = calloc(1, sizeof(pthread_t));
-			pthread_create(cur_worker->tid, NULL, handle_worker_connection, param);
+			pthread_create(cur_worker->tid, NULL, handle_worker_connection,
+				param);
 		}
 		head = head->next;
 	}
