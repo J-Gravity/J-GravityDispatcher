@@ -1,4 +1,4 @@
-/* ************************************************************************** */
+ /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   serialize_workunit.c                               :+:      :+:    :+:   */
@@ -11,32 +11,52 @@
 /* ************************************************************************** */
 
 #include "worker.h"
+#include "lz4.h"
+#include "transpose.h"
 
-int wu_size(t_workunit w)
+char *compress_locals(t_workunit w, int *loclen)
 {
-	int total = 12; //id, localcount, neighborcount
-	total += w.localcount * sizeof(t_body);
-	total += w.neighborcount * sizeof(t_body);
-	return total;
+	//fill a buffer with all the local bodies.
+	char *uncompressed = malloc(w.localcount * sizeof(t_body));
+	memcpy(uncompressed, w.local_bodies, sizeof(t_body) * w.localcount);
+
+	//byte transpose using TurboTranspose
+	char *transposed = malloc(w.localcount * sizeof(t_body));
+	tpenc((unsigned char *)uncompressed, w.localcount * sizeof(t_body), (unsigned char *)transposed, sizeof(t_body));
+
+	//we cannot predict exactly how big the compressed result will be til we do it. LZ4_compressBound gives an upper bound.
+	//allocate that much, compress into it. It returns an int representing how big the result actually was.
+	int max_compressed_size = LZ4_compressBound(w.localcount * sizeof(t_body));
+	char *compressed = malloc(max_compressed_size);
+	//compress with LZ4
+	int result_compressed_size = LZ4_compress_default(transposed, compressed, w.localcount * sizeof(t_body), max_compressed_size);
+	*loclen = result_compressed_size;
+	//printf("locals compressed to %d from %lu, %.f%% of original size\n", result_compressed_size, w.localcount * sizeof(t_body), (float)result_compressed_size * 100.0  / ((float)w.localcount * sizeof(t_body)));
+	free(transposed);
+	free(uncompressed);
+	return(compressed);
 }
+
 
 t_msg serialize_workunit(t_workunit w)
 {
 	t_msg msg;
+	char *localblob;
+	int local_compressed_size;
 
-	msg.data = calloc(1, wu_size(w));
+	localblob = compress_locals(w, &local_compressed_size);
+	msg.size = (sizeof(int) * 3 + local_compressed_size);
+	msg.data = malloc(msg.size);
 	int offset = 0;
 	memcpy(msg.data, &(w.id), sizeof(int));
 	offset += sizeof(int);
 	memcpy(msg.data + offset, &(w.localcount), sizeof(int));
 	offset += sizeof(int);
-	memcpy(msg.data + offset, w.local_bodies, sizeof(t_body) * w.localcount);
-	offset += sizeof(t_body) * w.localcount;
-	memcpy(msg.data + offset, &(w.neighborcount), sizeof(int));
+	memcpy(msg.data + offset, &(local_compressed_size), sizeof(int));
 	offset += sizeof(int);
-	memcpy(msg.data + offset, w.neighborhood, sizeof(t_body) * w.neighborcount);
-	offset += sizeof(t_body) * w.neighborcount;
-	msg.size = wu_size(w);
+	memcpy(msg.data + offset, localblob, local_compressed_size);
+	offset += local_compressed_size;
 	msg.id = WORK_UNIT_DONE;
+	free(localblob);
 	return (msg);
 }

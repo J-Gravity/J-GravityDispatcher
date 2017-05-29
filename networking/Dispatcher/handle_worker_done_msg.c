@@ -38,7 +38,7 @@ void integrate_WU_results(t_dispatcher *disp, t_cell *old_cell, t_WU *new_WU)
 {
 	t_body	*old_body;
 	int		i;
-
+  
 	i = 0;
 	while (i < new_WU->localcount)
 	{

@@ -11,23 +11,32 @@
 /* ************************************************************************** */
 
 #include "dispatcher.h"
+#include "lz4.h"
+#include "transpose.h"
+
+t_body *decompress_locals(char *localblob, int local_compressed_size, int local_count)
+{
+	char *decompressed = malloc(local_count * sizeof(t_body));
+	LZ4_decompress_safe((char *)localblob, (char *)decompressed, local_compressed_size, local_count * sizeof(t_body));
+	t_body *output = malloc(local_count * sizeof(t_body));
+	tpdec((unsigned char *)decompressed, local_count * sizeof(t_body), (unsigned char *)output, sizeof(t_body));
+	free(decompressed);
+	return output;
+}
 
 t_WU	deserialize_WU(t_msg msg)
 {
 	t_WU	WU;
+	int local_compressed_size;
 
 	int offset = 0;
 	memcpy(&(WU.id), msg.data, sizeof(int));
 	offset += sizeof(int);
 	memcpy(&(WU.localcount), msg.data + offset, sizeof(int));
 	offset += sizeof(int);
-	WU.local_bodies = (t_body *)calloc(WU.localcount, sizeof(t_body));
-	memcpy(WU.local_bodies, msg.data + offset, sizeof(t_body) * WU.localcount);
-	offset += sizeof(t_body) * WU.localcount;
-	memcpy(&(WU.neighborcount), msg.data + offset, sizeof(int));
+	memcpy(&(local_compressed_size), msg.data + offset, sizeof(int));
 	offset += sizeof(int);
-	WU.neighborhood = (t_body *)calloc(WU.neighborcount, sizeof(t_body));
-	memcpy(WU.neighborhood, msg.data + offset, sizeof(t_body) * WU.neighborcount);
-	offset += sizeof(t_body) * WU.neighborcount;
+	WU.local_bodies = decompress_locals(msg.data + offset, local_compressed_size, WU.localcount);
+	offset += sizeof(t_body) * WU.localcount;
 	return (WU);
 }
