@@ -580,8 +580,6 @@ void	divide_dataset(t_dispatcher *dispatcher)
 
     if (t != NULL)
         free_tree(t);
-    if (dispatcher->ticks_done + 1 == dispatcher->ticks_cnt)
-        exit(1);
     printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
