@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/27 00:16:55 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/28 13:29:05 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ static void print_debug(t_worker *worker, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
-	printf("RECIEVED '%s' FROM worker %d\n", line, worker->socket.fd);
 }
 
 static void	check_for_errors(int bytes_read, int *error)
@@ -43,7 +42,6 @@ t_msg	get_worker_msg(t_worker *worker)
 	msg.size = 0;
 	msg.data = calloc(1, 1);
 	buffer = (char *)calloc(1, HEADER_SIZE);
-	printf("listening for worker %d\n", worker->socket.fd);
 	bytes_read = recv(worker->socket.fd, buffer, HEADER_SIZE, 0);
 	if (bytes_read == HEADER_SIZE)
 	{

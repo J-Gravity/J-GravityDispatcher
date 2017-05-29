@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/26 18:04:31 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/28 15:26:20 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@
 # include <errno.h>
 # include <OpenCL/opencl.h>
 # include <pthread.h>
+# include <time.h>
 
 typedef struct			s_lst
 {
@@ -101,6 +102,7 @@ typedef struct			s_WU
 	t_body				*local_bodies;
 	t_body				*neighborhood;
 	cl_float4			force_bias;
+	long				wu_calc_time;
 }						t_WU;
 
 typedef struct			s_workunit
@@ -111,6 +113,7 @@ typedef struct			s_workunit
 	t_body				**local_bodies;
 	t_body				**neighborhood;
 	cl_float4			force_bias;
+	long				wu_calc_time;
 }						t_workunit;
 
 typedef struct			s_worker
@@ -119,6 +122,7 @@ typedef struct			s_worker
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
+	long				w_calc_time;
 }						t_worker;
 
 typedef struct			s_serial
