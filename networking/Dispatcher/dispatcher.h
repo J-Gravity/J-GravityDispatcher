@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 17:28:51 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/28 17:35:57 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
 
+/* *********** */
+/* DEBUG FLAGS */
+/* *********** */
 # define DEBUG 1
 # define MSG_DEBUG 0
 
