@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/27 00:16:55 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/27 22:36:42 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,6 @@ t_msg	get_worker_msg(t_worker *worker)
 	msg.error = 42;
 	msg.id = 0;
 	msg.size = 0;
-	msg.data = calloc(1, 1);
 	buffer = (char *)calloc(1, HEADER_SIZE);
 	printf("listening for worker %d\n", worker->socket.fd);
 	bytes_read = recv(worker->socket.fd, buffer, HEADER_SIZE, 0);
