@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 16)
+#define LEAF_THRESHOLD pow(2, 13)
 
 void print_cl4(cl_float4 v)
 {

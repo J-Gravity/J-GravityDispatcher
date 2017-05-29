@@ -28,6 +28,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	t_cell		*local_cell;
 	int			i;
 
+	printf("handling done msg\n");
 	new_WU = deserialize_WU(msg);
 	local_cell = dispatcher->cells[new_WU.id];
 	i = 0;
@@ -40,7 +41,6 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		i++;
 	}
 	free(new_WU.local_bodies);
-	free(new_WU.neighborhood);
 	free(((t_workunit *)worker->workunit_link->data)->local_bodies);
 	free(((t_workunit *)worker->workunit_link->data)->neighborhood);
 	free((t_workunit *)worker->workunit_link->data);
