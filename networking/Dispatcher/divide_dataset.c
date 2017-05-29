@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 10)
+#define LEAF_THRESHOLD pow(2, 13)
 
 void print_cl4(cl_float4 v)
 {
@@ -580,6 +580,8 @@ void	divide_dataset(t_dispatcher *dispatcher)
 
     if (t != NULL)
         free_tree(t);
+    if (dispatcher->ticks_done + 1 == dispatcher->ticks_cnt)
+        exit(1);
     printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
