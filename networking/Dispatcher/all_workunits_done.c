@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/23 01:00:39 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/26 23:19:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
 	free(dispatcher->cells);
-	printf("about to free dataset stuff\n");
+	//printf("about to free dataset stuff\n");
 	//move new_dataset to dataset
 	free(dispatcher->dataset->particles);
 	free(dispatcher->dataset);
@@ -37,11 +37,16 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		// re-Divide the dataset into work units
 		divide_dataset(dispatcher);
 		// Inform all workers work units are ready
+		pthread_mutex_lock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex locked!\n");
 		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
+		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+				printf("worker list mutex unlocked!\n");
 	}
 	else
 	{
 		//simulation complete
+		printf("simulation complete\n");
 		exit(1);
 	}
 }

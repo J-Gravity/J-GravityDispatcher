@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/23 18:27:33 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/26 22:48:49 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 
 	//printf("A$\n");
 	pthread_mutex_lock(&dispatcher->workunits_mutex);
+				printf("*work units mutex locked!\n");
 	if (dispatcher->workunits)
 	{
 		worker->workunit_link = dispatcher->workunits;
@@ -32,6 +33,8 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 	// else
 	// 	send_worker_msg(worker, new_message(NO_WORK_UNITS, 1, " "));
 	pthread_mutex_unlock(&dispatcher->workunits_mutex);
+				printf("*work units mutex unlocked!\n");
 	//printf("F$\n");
 	free(msg.data);
+	//printf("finished handle workunit\n");
 }

@@ -587,7 +587,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
         bodies[i] = &(dispatcher->dataset->particles[i]);
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-    printf("tree init done\n");
+    //printf("tree init done\n");
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
     printf("tree is made\n");
