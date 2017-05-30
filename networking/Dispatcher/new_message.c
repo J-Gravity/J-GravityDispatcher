@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:27:02 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/27 22:36:58 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/22 17:22:55 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ t_msg	new_message(char id, int data_size, char *data)
 	//printf("D#\n");
 	message.data = (char *)calloc(1, data_size);
 	//printf("E#\n");
-	memcpy(message.data, data, data_size);
+	memcpy(&message.data, data, data_size);
 	//printf("F#\n");
 	return (message);
 }
