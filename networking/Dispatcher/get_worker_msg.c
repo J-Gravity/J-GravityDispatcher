@@ -6,13 +6,13 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 21:30:40 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/28 13:29:05 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-static void print_debug(int fd, t_msg msg)
+static void print_debug(t_worker *worker, t_msg msg)
 {
 	char *line;
 
@@ -20,7 +20,6 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
-	printf("RECIEVED '%s' FROM worker %d\n", line, fd);
 }
 
 static void	check_for_errors(int bytes_read, int *error)
@@ -31,65 +30,39 @@ static void	check_for_errors(int bytes_read, int *error)
 		*error = 0;
 }
 
-char	read_header(int fd, t_msg *msg)
-{
-	char	*header;
-	int		bytes_read;
-
-	header = (char *)calloc(1, HEADER_SIZE);
-	bytes_read = recv(fd, header, HEADER_SIZE, 0);
-	if (bytes_read == HEADER_SIZE)
-	{
-		msg->id = header[0];
-		print_debug(fd, *msg);
-		memcpy(&msg->size, &header[1], sizeof(int));
-		msg->data = (char *)calloc(1, msg->size);
-	}
-	else
-	{
-		printf("recieved a bad msg header on fd %d!\n", fd);
-		check_for_errors(bytes_read, &msg->error);
-		free(header);
-		return (1);
-	}
-	free(header);
-	return (0);
-}
-
-char	read_body(int fd, t_msg *msg)
-{
-	int	bodybytes;
-	int	recv_bytes;
-	
-	bodybytes = 0;
-	while (bodybytes < msg->size)
-	{
-		recv_bytes = recv(fd, msg->data + bodybytes, msg->size, 0);
-		if (recv_bytes > 0)
-			bodybytes += recv_bytes;
-		else
-			break;
-	}
-	check_for_errors(recv_bytes, &msg->error);
-	if (bodybytes != msg->size)
-	{
-		printf("msg body should be %d bytes, but is only %d bytes!\n",
-			msg->size, bodybytes);
-		return (1);
-	}
-	return (0);
-}
-
 t_msg	get_worker_msg(t_worker *worker)
 {
-
+	char	*buffer;
+	int		bytes_read;
 	int 	recv_bytes;
 	t_msg	msg;
 
 	msg.error = 42;
 	msg.id = 0;
 	msg.size = 0;
-	read_header(worker->socket.fd, &msg);
-	read_body(worker->socket.fd, &msg);
+	msg.data = calloc(1, 1);
+	buffer = (char *)calloc(1, HEADER_SIZE);
+	bytes_read = recv(worker->socket.fd, buffer, HEADER_SIZE, 0);
+	if (bytes_read == HEADER_SIZE)
+	{
+		msg.id = buffer[0];
+		print_debug(worker, msg);
+		memcpy(&msg.size, &buffer[1], sizeof(int));
+		msg.data = (char *)calloc(1, msg.size);
+		int bodybytes = 0;
+		while (bodybytes < msg.size)
+		{
+			recv_bytes = recv(worker->socket.fd, msg.data + bodybytes, msg.size, 0);
+			if (recv_bytes > 0)
+				bodybytes += recv_bytes;
+			else
+				break;
+		}
+		if (bodybytes != msg.size)
+			printf("msg size should be %d bytes, but is only %d bytes!\n", msg.size, bytes_read);
+		check_for_errors(recv_bytes, &msg.error);
+	}
+	check_for_errors(bytes_read, &msg.error);
+	free(buffer);
 	return (msg);
 }

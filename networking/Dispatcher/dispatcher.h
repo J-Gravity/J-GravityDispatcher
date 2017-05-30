@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 19:27:42 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/29 21:25:43 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,9 @@
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
 
-/* *********** */
-/* DEBUG FLAGS */
-/* *********** */
-# define DEBUG 1
-# define MSG_DEBUG 0
-# define MUTEX_DEBUG 1
+int G_locked;
+int G_workunit_size;
+long G_worker_calcs;
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -42,6 +39,7 @@
 # include <errno.h>
 # include <OpenCL/opencl.h>
 # include <pthread.h>
+# include <time.h>
 
 typedef struct			s_lst
 {
@@ -108,6 +106,7 @@ typedef struct			s_WU
 	t_body				*local_bodies;
 	t_body				*neighborhood;
 	cl_float4			force_bias;
+	long				wu_calc_time;
 }						t_WU;
 
 typedef struct			s_workunit
@@ -118,15 +117,16 @@ typedef struct			s_workunit
 	t_body				**local_bodies;
 	t_body				**neighborhood;
 	cl_float4			force_bias;
+	long				wu_calc_time;
 }						t_workunit;
 
 typedef struct			s_worker
 {
-	char				active;
 	t_lst				*workunit_link;
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
+	long				w_calc_time;
 }						t_worker;
 
 typedef struct			s_serial

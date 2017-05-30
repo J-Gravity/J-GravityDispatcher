@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/27 01:15:40 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/29 20:14:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,16 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
-
+#include <sys/time.h>
+#include <time.h>
 #include "worker.h"
+
+void current_time(void)
+{
+	struct timeval time;  // removed comma
+	gettimeofday(&time, NULL);
+	printf("%ld\n", time.tv_sec);
+}
 
 t_msg	new_message(char id, int data_size, char *data)
 {
@@ -120,49 +128,52 @@ int main(int argc, char **argsv)
 	conn_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (conn_socket == -1)
 		write(1, "sock error occured\n", 19);
-
 	memset(&serv_addr, '0', sizeof(serv_addr));
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(4242);
-
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(4242);
     // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
-    {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
-
+	if(inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
+	{
+		printf("\nInvalid address/ Address not supported \n");
+		return -1;
+	}
 	if (connect(conn_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
+	{
+		printf("\nConnection Failed \n");
+		return -1;
+	}
+	while (1)
+	{
+		t_msg msg;
 
-    while (1)
-    {
-    	t_msg msg;
-    	msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-    	//printf("got WU_READY\n");
-			if (msg.data)
-    		free(msg.data);
-    	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-    	//printf("sent WU_REQ\n");
-    	msg = wait_for_msg(conn_socket, WORK_UNIT);
-    	printf("got WU\n");
-    	t_workunit w = deserialize_workunit(msg);
-    	if (msg.data)
+		msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
+		if (msg.data)
+			free(msg.data);
+		clock_t start = clock(), diff;
+		send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		printf("worker.send_msg took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+		msg = wait_for_msg(conn_socket, WORK_UNIT);
+		printf("got WU\n");
+		start = clock();
+		t_workunit w = deserialize_workunit(msg);
+		if (msg.data)
 				free(msg.data);
-			printf("deserialized\n");
-    	w = do_workunit(w);
-    	printf("done\n");
-    	msg = serialize_workunit(w);
-    	//printf("serialized\n");
-    	send_msg(conn_socket, msg);
-    	printf("sent completed unit\n");
-			if (w.local_bodies)
-				free(w.local_bodies);
-    }
-
+		printf("deserialized\n");
+		printf("socket.read(): %d\n", socket.read());
+		w = do_workunit(w);
+		printf("done\n");
+		msg = serialize_workunit(w);
+		diff = clock() - start;
+		msec = diff * 1000 / CLOCKS_PER_SEC;
+		printf("worker took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+		printf("%d wu finished: ", w.id);
+		current_time();
+		send_msg(conn_socket, msg);
+		printf("sent completed unit\n");
+		if (w.local_bodies)
+			free(w.local_bodies);
+	}
 	return (0);
 }
