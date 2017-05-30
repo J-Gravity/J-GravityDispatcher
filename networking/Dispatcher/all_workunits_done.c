@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/29 21:24:46 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 21:28:38 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
 	// Reset work units done
-	printf("there were %d work units\n", G_workunit_size);
+	printf("there were %d work units totalling %d MB\n", dispatcher->workunits_done, G_workunit_size);
 	printf("worker units took %ld seconds\n", G_worker_calcs);
 	printf("worker units took an avg of %ld seconds\n", G_worker_calcs/dispatcher->workunits_done);
 	printf("workers were waiting on locks for %d milliseconds\n", G_locked);
