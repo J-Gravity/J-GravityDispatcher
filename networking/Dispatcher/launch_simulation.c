@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 15:30:37 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/30 16:35:01 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,8 +106,14 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	G_locked = msec%1000;
 	head = dispatcher->workers;
+	printf("-------------\n");
 	while (head)
+	{
+		printf("(%p)worker: %d -> (%p)\n", head,
+			((t_worker*)(head->data))->socket.fd, head->next);
 		head = head->next;
+	}
+	printf("-------------\n");
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 }
 
