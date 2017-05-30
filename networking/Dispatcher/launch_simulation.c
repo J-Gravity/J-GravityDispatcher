@@ -39,9 +39,41 @@ t_lst 		*remove_link(t_lst **list, void *data)
 	return (NULL);
 }
 
+void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
+{
+	t_worker	*worker;
+
+	worker = (t_worker *)worker_link->data;
+	if (worker->workunit_link)
+	{
+		if (DEBUG)
+			printf("adding lost worker's work unit back to the pool!\n");
+		pthread_mutex_lock(&dispatcher->workunits_mutex);
+		worker->workunit_link->next = dispatcher->workunits;
+		dispatcher->workunits = worker->workunit_link;
+		pthread_mutex_unlock(&dispatcher->workunits_mutex);
+	}
+	worker->workunit_link = NULL;
+	if (DEBUG)
+		printf("removing worker link!\n");
+	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	remove_link(&dispatcher->workers, worker);
+	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+	free(worker_link);
+	if (worker->socket.fd)
+	{
+		close(worker->socket.fd);
+		worker->socket.fd = 0;
+	}
+	free(worker->tid);
+	free(worker);
+}
+
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
+	if (DEBUG)
+		printf("handling request!\n");
 	if (msg.id == WORK_UNIT_REQUEST)
 		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
@@ -54,15 +86,29 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 		printf("invalid msg id: %d\n", msg.id);
 }
 
+void 		print_worker_fds(t_dispatcher *dispatcher)
+{
+	t_lst	*head;
+
+	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	head = dispatcher->workers;
+	printf("-------------\n");
+	while (head)
+	{
+		printf("(%p)worker: %d -> (%p)\n", head,
+			((t_worker*)(head->data))->socket.fd, head->next);
+		head = head->next;
+	}
+	printf("-------------\n");
+	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+}
+
 void		*handle_worker_connection(void *input)
 {
 	t_thread_handler	*params;
-	t_lst				*head;
-	t_lst				*worker;
-	t_worker			*cur_worker;
+	t_lst				*worker_link;
+	t_worker			*worker;
 	t_msg				msg;
-	pthread_t			kill_me;
-
 
 	signal(SIGPIPE, SIG_IGN);
 	params = (t_thread_handler *)input;
@@ -84,6 +130,27 @@ void		*handle_worker_connection(void *input)
 //		int msec = diff * 1000 / CLOCKS_PER_SEC;
 //printf("handle_worker_connection.head->next lock took %d seconds %d milliseconds\n", msec/1000, msec%1000);
 		msg = get_worker_msg(cur_worker);
+	if (DEBUG)
+		printf("Launched worker network handler thread!\n");
+	params = (t_thread_handler *)input;
+	worker_link = params->worker;
+	worker = (t_worker *)worker_link->data;
+	worker->active = 1;
+	send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
+	while (worker->active)
+	{
+		if (DEBUG)
+			print_worker_fds(params->dispatcher);
+		msg = get_worker_msg(worker);
+		if (DEBUG)
+			printf("done receiving message\n");
+		if (DEBUG && MSG_DEBUG)
+		{
+			printf("msg status: %d\n", msg.error);
+			printf("MSG RECIEVED: [id]=%d", msg.id);
+			printf(" size '%d'\n", msg.size);
+			printf(" body '%s'\n", msg.data);
+		}
 		if (msg.error == -1)
 			printf("get worker message failed with err %d\n", errno);
 		if (msg.error == 0 || msg.error == -1)
@@ -128,8 +195,42 @@ void		*handle_worker_connection(void *input)
 		}
 		else
 			handle_worker_msg(params->dispatcher, cur_worker, msg);
+			if (DEBUG)
+				printf("worker connection terminated! %d\n", worker->socket.fd);
+			worker->active = 0;
+		}
+		else
+			handle_worker_msg(params->dispatcher, worker, msg);
+		//free(msg.data);
 	}
+	cleanup_worker(params->dispatcher, worker_link);
+	free(params);
+	if (DEBUG)
+		printf("killing this thread...\n");
 	return (0);
+}
+
+void		launch_worker_event_threads(t_dispatcher *dispatcher)
+{
+	t_lst				*head;
+	t_worker			*cur_worker;
+	t_thread_handler	*param;
+
+	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	head = dispatcher->workers;
+	while (head)
+	{	
+		cur_worker = (t_worker *)head->data;
+		if (cur_worker->tid == 0)
+		{
+			param = new_thread_handler(dispatcher, head);
+			cur_worker->tid = calloc(1, sizeof(pthread_t));
+			pthread_create(cur_worker->tid, NULL, handle_worker_connection,
+				param);
+		}
+		head = head->next;
+	}
+	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 }
 
 void		launch_simulation(t_dispatcher *dispatcher)
@@ -171,5 +272,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		head = head->next;
 	}
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+	launch_worker_event_threads(dispatcher);
+	printf("sleeping\n");
 	sleep(999999);
 }
