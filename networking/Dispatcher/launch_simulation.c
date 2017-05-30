@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 19:11:50 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 15:30:37 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,12 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	{
 		if (DEBUG)
 			printf("adding lost worker's work unit back to the pool!\n");
+		clock_t start, diff;
+		start = clock();
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_locked = msec%1000;
 		worker->workunit_link->next = dispatcher->workunits;
 		dispatcher->workunits = worker->workunit_link;
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
@@ -55,7 +60,12 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	worker->workunit_link = NULL;
 	if (DEBUG)
 		printf("removing worker link!\n");
+	clock_t start, diff;
+	start = clock();
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	diff = clock() - start;
+	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	G_locked = msec%1000;
 	remove_link(&dispatcher->workers, worker);
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 	free(worker_link);
@@ -73,13 +83,13 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 {
 	if (DEBUG)
 		printf("handling request!\n");
-	if (msg.id == WORK_UNIT_REQUEST)
-	{
+	if (msg.id == WORK_UNIT_REQUEST)	
 		handle_workunit_req(dispatcher, worker, msg);
-	}
 	else if (msg.id == WORK_UNIT_DONE)
 	{
 		handle_worker_done_msg(dispatcher, worker, msg);
+		G_worker_calcs = time(NULL) - worker->w_calc_time;
+		worker->w_calc_time = 0;
 	}
 	else
 		printf("invalid msg id: %d\n", msg.id);
@@ -89,16 +99,15 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 {
 	t_lst	*head;
 
+	clock_t start, diff;
+	start = clock();
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	diff = clock() - start;
+	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	G_locked = msec%1000;
 	head = dispatcher->workers;
-	printf("-------------\n");
 	while (head)
-	{
-		printf("(%p)worker: %d -> (%p)\n", head,
-			((t_worker*)(head->data))->socket.fd, head->next);
 		head = head->next;
-	}
-	printf("-------------\n");
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 }
 
@@ -158,7 +167,11 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
 
+	clock_t start = clock(), diff;
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	diff = clock() - start;
+	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	G_locked = msec%1000;
 	head = dispatcher->workers;
 	while (head)
 	{	

@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/25 19:40:50 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/30 15:31:27 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,6 @@ t_msg serialize_workunit(t_workunit w)
 	// else
 	// 	printf("size mismatch, wtf\n");
 	int origsize = w.localcount * sizeof(t_body) + w.neighborcount *sizeof(cl_float4) + 5 * sizeof(int);
-	printf("msg.size ended up %d, would have been %d without compression, %.2f%%\n", msg.size, origsize, (float)msg.size * 100.0 / (float)origsize);
 	free(localblob);
 	free(neighborblob);
 	return (msg);

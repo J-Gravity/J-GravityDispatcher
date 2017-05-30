@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 19:27:42 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 14:35:07 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,14 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+
+/* ************ */
+/* METRIC FLAGS */
+/* ************ */
+
+int G_locked;
+int G_workunit_size;
+long G_worker_calcs;
 
 /* *********** */
 /* DEBUG FLAGS */
@@ -127,6 +135,7 @@ typedef struct			s_worker
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
+	long				w_calc_time;
 }						t_worker;
 
 typedef struct			s_serial

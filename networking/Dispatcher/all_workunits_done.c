@@ -1,4 +1,4 @@
-/* ************************************************************************** */
+	/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   all_workunits_done.c                               :+:      :+:    :+:   */
@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/26 23:19:25 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 15:38:45 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,13 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
 	// Reset work units done
+	printf("there were %d workunits totalling %d MB\n", dispatcher->workunits_done, G_workunit_size);
+	printf("worker units took %ld seconds\n", G_worker_calcs);
+	printf("worker units took an avg of %ld seconds\n", G_worker_calcs/dispatcher->workunits_done);
+	printf("workers were waiting on locks for %d milliseconds\n", G_locked);
+	G_worker_calcs = 0;
+	printf("10 second sleep\n");
+	sleep(10);
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
 	free(dispatcher->cells);
