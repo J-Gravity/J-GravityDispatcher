@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 15:39:20 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 21:04:03 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,11 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 	if (msg.id == WORK_UNIT_REQUEST)
 		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
+	{
 		handle_worker_done_msg(dispatcher, worker, msg);
+		G_worker_calcs = time(NULL) - worker->w_calc_time;
+		worker->w_calc_time = 0;
+	}
 	else
 		printf("invalid msg id: %d\n", msg.id);
 }
@@ -67,8 +71,11 @@ void		*handle_worker_connection(void *input)
 	send_worker_msg(cur_worker, new_message(WORK_UNITS_READY, 1, " "));
 	while (1)
 	{
-//		clock_t start = clock(), diff;
+		clock_t start = clock(), diff;
 		pthread_mutex_lock(&params->dispatcher->worker_list_mutex);
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_locked = msec%1000;
 		head = params->dispatcher->workers;
 		while (head)
 			head = head->next;
@@ -85,8 +92,11 @@ void		*handle_worker_connection(void *input)
 			if (cur_worker->workunit_link)
 			{
 				printf("adding lost worker's work unit back to the pool!\n");
-//				start = clock();
+				start = clock();
 				pthread_mutex_lock(&params->dispatcher->workunits_mutex);
+				diff = clock() - start;
+				int msec = diff * 1000 / CLOCKS_PER_SEC;
+				G_locked = msec%1000;
 				cur_worker->workunit_link->next = params->dispatcher->workunits;
 				params->dispatcher->workunits = cur_worker->workunit_link;
 				pthread_mutex_unlock(&params->dispatcher->workunits_mutex);
@@ -97,8 +107,11 @@ void		*handle_worker_connection(void *input)
 			cur_worker->workunit_link = NULL;
 			//cleanup thread and worker link
 			//detach worker link from the list
-//			start = clock();
+			start = clock();
 			pthread_mutex_lock(&params->dispatcher->worker_list_mutex);
+			diff = clock() - start;
+			int msec = diff * 1000 / CLOCKS_PER_SEC;
+			G_locked = msec%1000;
 			remove_link(&params->dispatcher->workers, worker->data);
 			pthread_mutex_unlock(&params->dispatcher->worker_list_mutex);
 //			diff = clock() - start;
@@ -139,7 +152,12 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	}
 	dispatcher->is_running = 1;
 
+	clock_t start, diff;
+	start = clock();
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	diff = clock() - start;
+	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	G_locked = msec%1000;
 	head = dispatcher->workers;
 	while (head)
 	{	

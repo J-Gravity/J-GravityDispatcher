@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/28 13:30:27 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 20:48:20 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,11 @@ void	*connect_worker_thread(void *param)
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
 
+		clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_locked = msec/1000 + msec%1000;
 		head = dispatcher->workers;
 		if (head)
 		{

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:42:08 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/28 13:29:23 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 21:00:25 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ int		send_workunit(t_worker *worker, t_workunit *work_unit)
 
 	msg = serialize_workunit(*work_unit);
 	msg.id = WORK_UNIT;
+	worker->w_calc_time = time(NULL);
 	send_worker_msg(worker, msg);
 	free(msg.data);
 	return (0);

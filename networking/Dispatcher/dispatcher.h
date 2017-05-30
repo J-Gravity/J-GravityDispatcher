@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 15:26:20 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 20:54:55 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,9 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+
+int G_locked;
+long G_worker_calcs;
 
 # include <stdio.h>
 # include <sys/socket.h>

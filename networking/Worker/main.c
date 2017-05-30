@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 16:04:56 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 20:14:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,7 @@ int main(int argc, char **argsv)
 		if (msg.data)
 				free(msg.data);
 		printf("deserialized\n");
+		printf("socket.read(): %d\n", socket.read());
 		w = do_workunit(w);
 		printf("done\n");
 		msg = serialize_workunit(w);
