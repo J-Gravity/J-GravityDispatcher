@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/29 20:54:55 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 21:25:43 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 # define NO_WORK_UNITS 8
 
 int G_locked;
+int G_workunit_size;
 long G_worker_calcs;
 
 # include <stdio.h>
