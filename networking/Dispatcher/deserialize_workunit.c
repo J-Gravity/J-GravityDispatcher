@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   deserialize_workunit.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:22:04 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/23 16:46:08 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/30 15:11:32 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,8 @@ t_WU	deserialize_WU(t_msg msg)
 	int local_compressed_size;
 
 	int offset = 0;
+	WU.neighborcount = 0;
+	WU.neighborhood = NULL;
 	memcpy(&(WU.id), msg.data, sizeof(int));
 	offset += sizeof(int);
 	memcpy(&(WU.localcount), msg.data + offset, sizeof(int));
