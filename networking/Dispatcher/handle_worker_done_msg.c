@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 20:30:43 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 15:28:41 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,23 @@
 
 void 	delete_workunit(t_workunit **workunit)
 {
-	free((*workunit)->local_bodies);
-	free((*workunit)->neighborhood);
-	free(*workunit);
-	*workunit = NULL;
+	if (workunit && *workunit)
+	{
+		free((*workunit)->local_bodies);
+		(*workunit)->local_bodies = NULL;
+		free((*workunit)->neighborhood);
+		(*workunit)->neighborhood = NULL;
+		free(*workunit);
+		*workunit = NULL;
+	}
 }
 
 void 	delete_WU(t_WU WU)
 {
 	free(WU.local_bodies);
+	WU.local_bodies = NULL;
 	free(WU.neighborhood);
+	WU.neighborhood = NULL;
 }
 
 t_body	*translate_to_new_dataset(t_dispatcher *d, t_body *old)
