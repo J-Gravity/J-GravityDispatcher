@@ -56,7 +56,7 @@ double tick_start;
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
-# include <CL/opencl.h>
+# include <OpenCL/opencl.h>
 # include <pthread.h>
 # include <fcntl.h>
 # include <unistd.h>
