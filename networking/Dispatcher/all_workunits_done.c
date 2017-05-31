@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 11:28:20 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/31 14:21:41 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Reset work units done
 	if (METRICS)
 	{
-		printf("there were %d workunits totalling %d MB\n", dispatcher->workunits_done, G_workunit_size);
+		printf("%d workers completed %d workunits totalling %ld MB\n", dispatcher->worker_cnt, dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
+		G_workunit_size = 0;
 		printf("worker units took %f seconds\n", G_worker_calcs);
 		printf("worker units took an avg of %f seconds\n", G_worker_calcs/(double)dispatcher->workunits_done);
 		printf("workers were waiting on locks for %d milliseconds\n", G_locked);

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 23:29:25 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 14:20:33 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,11 @@
 /* METRIC FLAGS */
 /* ************ */
 
-# define METRICS 0
-# define STARTUP_METRICS 0
+# define METRICS 1
+# define STARTUP_METRICS 1
 # define TPM_METRIC 1
 int G_locked;
-int G_workunit_size;
+long G_workunit_size;
 double G_worker_calcs;
 double G_total_time;
 double tick_start;
