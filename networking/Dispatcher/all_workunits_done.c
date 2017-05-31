@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 15:38:45 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/31 11:28:20 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	all_workunits_done(t_dispatcher *dispatcher)
 {
-	printf("all workunits done!\n");
+	printf("all workunits done for this tick\n");
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);
 	// Clear Work Units
