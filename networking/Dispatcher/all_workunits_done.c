@@ -62,6 +62,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
+
 	}
 	else
 	{

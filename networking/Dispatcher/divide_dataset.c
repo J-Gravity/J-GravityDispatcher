@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/31 14:05:54 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/31 14:24:02 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -565,7 +565,7 @@ static int unit_size(t_workunit *w)
 
 static void tally_workunits(t_lst *units)
 {
-    int total = 0;
+    long total = 0;
     int local = 0;
     while (units)
     {
