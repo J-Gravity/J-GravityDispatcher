@@ -149,17 +149,17 @@ int main(int argc, char **argsv)
     	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
     	//printf("sent WU_REQ\n");
     	msg = wait_for_msg(conn_socket, WORK_UNIT);
-    	printf("got WU\n");
+    	//printf("got WU\n");
     	t_workunit w = deserialize_workunit(msg);
     	if (msg.data)
 				free(msg.data);
-			printf("deserialized\n");
+			//printf("deserialized\n");
     	w = do_workunit(w);
-    	printf("done\n");
+    	//printf("done\n");
     	msg = serialize_workunit(w);
     	//printf("serialized\n");
     	send_msg(conn_socket, msg);
-    	printf("sent completed unit\n");
+    	//printf("sent completed unit\n");
 			if (w.local_bodies)
 				free(w.local_bodies);
     }
