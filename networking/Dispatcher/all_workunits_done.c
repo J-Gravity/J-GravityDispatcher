@@ -1,4 +1,4 @@
-/* ************************************************************************** */
+	/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   all_workunits_done.c                               :+:      :+:    :+:   */
@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/26 23:19:25 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 15:38:45 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,23 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
 	// Reset work units done
+	if (METRICS)
+	{
+		printf("there were %d workunits totalling %d MB\n", dispatcher->workunits_done, G_workunit_size);
+		printf("worker units took %f seconds\n", G_worker_calcs);
+		printf("worker units took an avg of %f seconds\n", G_worker_calcs/(double)dispatcher->workunits_done);
+		printf("workers were waiting on locks for %d milliseconds\n", G_locked);
+	}
+	G_worker_calcs = 0;
+	double tick_time = time(NULL) - tick_start;
+	if (TPM_METRIC)
+	{
+		printf("tick took %f seconds\n", tick_time);
+		printf("average ticks per minute: %f\n", (double)dispatcher->ticks_done / (G_total_time / 60.0f));
+	}
+	G_total_time += tick_time;
+	tick_start = time(NULL);
+	//sleep(10);
 	dispatcher->workunits_done = 0;
 	dispatcher->ticks_done += 1;
 	free(dispatcher->cells);
@@ -38,14 +55,18 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		divide_dataset(dispatcher);
 		// Inform all workers work units are ready
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-				//printf("worker list mutex locked!\n");
+		if (DEBUG && MUTEX_DEBUG)
+			printf("worker list mutex locked!\n");
 		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
 		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
-				//printf("worker list mutex unlocked!\n");
+		if (DEBUG && MUTEX_DEBUG)
+			printf("worker list mutex unlocked!\n");
+
 	}
 	else
 	{
 		//simulation complete
+		printf("total worker calc time: %f seconds\n", G_total_time);
 		printf("simulation complete\n");
 		exit(1);
 	}

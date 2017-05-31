@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/26 18:04:31 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 23:29:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,29 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+
+/* ************ */
+/* METRIC FLAGS */
+/* ************ */
+
+# define METRICS 0
+# define STARTUP_METRICS 0
+# define TPM_METRIC 1
+int G_locked;
+int G_workunit_size;
+double G_worker_calcs;
+double G_total_time;
+double tick_start;
+
+/* *********** */
+/* DEBUG FLAGS */
+/* *********** */
+# define DEBUG 0
+# define MSG_DEBUG 0
+# define WORKER_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 0
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -83,6 +106,7 @@ typedef struct s_cell
 	int bodycount;
 	struct s_cell *parent;
 	struct s_cell **children;
+	struct s_cell *scb;
 	cl_float4 center;
 	cl_float4 force_bias;
 	t_bounds bounds;
@@ -118,10 +142,12 @@ typedef struct			s_workunit
 
 typedef struct			s_worker
 {
+	char				active;
 	t_lst				*workunit_link;
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
+	long				w_calc_time;
 }						t_worker;
 
 typedef struct			s_serial
