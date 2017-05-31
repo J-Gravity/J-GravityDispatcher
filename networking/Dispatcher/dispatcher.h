@@ -87,6 +87,7 @@ typedef struct s_cell
 	int bodycount;
 	struct s_cell *parent;
 	struct s_cell **children;
+	struct s_cell *scb;
 	cl_float4 center;
 	cl_float4 force_bias;
 	t_bounds bounds;
