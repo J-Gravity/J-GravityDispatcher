@@ -45,11 +45,7 @@ char *compress_neighbors(t_workunit w, int *neighblen)
 	char *uncompressed = malloc(w.neighborcount * sizeof(cl_float4));
 	int offset = 0;
 	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(cl_float4))
-	{
 		memcpy(uncompressed + offset, &(w.neighborhood[i]->position), sizeof(cl_float4));
-		if (w.neighborhood[i]->velocity.w == -1)
-			free(w.neighborhood[i]); //getting rid of this soon
-	}
 
 	//byte transpose using TurboTranspose
 	char *transposed = malloc(w.neighborcount * sizeof(cl_float4));
