@@ -107,6 +107,7 @@ static t_cell *init_cell(t_body **bodies, t_cell *parent, t_bounds bounds)
     c->bounds = bounds;
     c->center = center_of_mass(c, bodies, &(c->bodycount));
     c->force_bias = (cl_float4){0, 0, 0, 0};
+    c->scb = NULL;
     return (c);
 }
 
@@ -164,10 +165,11 @@ static t_cell *single_body_cell(t_cell *cell)
     single->bodies = (t_body **)calloc(2, sizeof(t_body *));
     single->bodies[0] = (t_body *)calloc(1, sizeof(t_body));
     single->bodies[0]->position = cell->center;
-    single->bodies[0]->velocity = (cl_float4){0, 0, 0, -1}; //this is a signal so we can free it appropriately
+    single->bodies[0]->velocity = (cl_float4){0, 0, 0, 0};
     single->bodies[1] = NULL;
     single->bodycount = 1;
-    single->bounds = (t_bounds){0,0,0,0,0,0}; // this is also an anti-leak signal
+    single->bounds = (t_bounds){0,0,0,0,0,0};
+    cell->scb = single;
     return (single);
 }
 
@@ -264,11 +266,6 @@ static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
     {
         memcpy(&(bodies[k]), cells[i]->bodies, cells[i]->bodycount * sizeof(t_body *));
         k += cells[i]->bodycount;
-        if (cells[i]->bodycount == 1 && boundequ(cells[i]->bounds, (t_bounds){0, 0, 0, 0, 0, 0}))
-        {
-            free(cells[i]->bodies);
-            free(cells[i]);
-        }
     }
     //printf("leaving b_f_c\n");
     *neighborcount = count;
@@ -537,6 +534,12 @@ static void recursive_tree_free(t_cell *c)
     {
         recursive_tree_free(c->children[i]);
         free(c->children[i]);
+    }
+    if (c->scb)
+    {
+        free(c->scb->bodies[0]);
+        free(c->scb->bodies);
+        free(c->scb);
     }
     free(c->children);
     free(c->bodies);
