@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 23:35:08 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 11:26:50 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,14 +106,8 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	G_locked = msec%1000;
 	head = dispatcher->workers;
-	printf("-------------\n");
 	while (head)
-	{
-		printf("(%p)worker: %d -> (%p)\n", head,
-			((t_worker*)(head->data))->socket.fd, head->next);
 		head = head->next;
-	}
-	printf("-------------\n");
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 }
 
@@ -157,7 +151,6 @@ void		*handle_worker_connection(void *input)
 		}
 		else
 			handle_worker_msg(params->dispatcher, worker, msg);
-		//free(msg.data);
 	}
 	cleanup_worker(params->dispatcher, worker_link);
 	free(params);
@@ -200,13 +193,19 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	int 				timeout;
 	t_lst				*head;
 	
-	timeout = 120;
+	timeout = 64;
 	if (DEBUG)
 		printf("begin launch_simulation\n");
 	while (!dispatcher->workers)
 	{
-		printf("Waiting for workers to connect...\n");
+		write(1, "\rWaiting for workers to connect", 31);
+		sleep(2);
+		write(1, ".", 1);
+		sleep(2);
+		write(1, ".", 1);
 		sleep(5);
+		write(1, ". \n", 3);
+		sleep(2);
 		if (--timeout == 0)
 		{
 			printf("Timeout reached, Simulation aborted!");
@@ -217,7 +216,6 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	launch_worker_event_threads(dispatcher);
 	G_total_time = 0.0;
 	tick_start = time(NULL);
-	printf("sleeping\n");
 	sleep(999999);
 	printf("END\n");
 }

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 15:28:41 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 11:13:05 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,10 +69,8 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	delete_workunit((t_workunit **)&worker->workunit_link->data);
 	free(worker->workunit_link);
 	worker->workunit_link = NULL;
-	//printf("copied the bodies\n");
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
-	//printf("done %d of %d workunits\n", dispatcher->workunits_done, dispatcher->workunits_cnt);
 	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
 		all_workunits_done(dispatcher);
 	else if (dispatcher->workunits)

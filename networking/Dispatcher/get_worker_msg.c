@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 22:35:35 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 11:14:48 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
-	printf("RECIEVED '%s' FROM worker %d\n", line, fd);
 }
 
 static void	check_for_errors(int bytes_read, int *error)
