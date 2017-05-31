@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/30 15:35:15 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/30 23:07:40 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,8 @@
 
 void print_cl4(cl_float4 v)
 {
-    printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+ 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+        printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
 }
 
 static t_bounds bounds_from_bodies(t_body **bodies)
@@ -547,7 +548,8 @@ static void recursive_tree_free(t_cell *c)
 
 static void free_tree(t_octree *t)
 {
-    printf("freeing the tree\n");
+ 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+        printf("freeing the tree\n");
     recursive_tree_free(t->root);
     free(t->root);
     free(t);
@@ -574,7 +576,8 @@ static void tally_workunits(t_lst *units)
         units = units->next;
     }
 	G_workunit_size = total / (1024 * 1024);
-    printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
+ 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+        printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
     //printf("total localcount is %d\n", local);
 }
 
@@ -584,7 +587,8 @@ void	divide_dataset(t_dispatcher *dispatcher)
 
     if (t != NULL)
         free_tree(t);
-    printf("starting divide_dataset\n");
+ 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+        printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
 	bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
@@ -594,7 +598,9 @@ void	divide_dataset(t_dispatcher *dispatcher)
     //printf("tree init done\n");
     tree_it_up(t->root);
     t_cell **leaves = enumerate_leaves(t->root);
-    printf("tree is made\n");
+ 		
+ 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+        printf("tree is made\n");
     dispatcher->workunits = create_workunits(t, leaves);
     tally_workunits(dispatcher->workunits);
     int len = lstlen(dispatcher->workunits);
@@ -603,6 +609,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
-    printf("workunits made, done divide_dataset\n");
+ 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+        printf("workunits made, done divide_dataset\n");
 	return ;
 }

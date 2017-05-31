@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 16:35:01 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/30 23:35:08 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	worker = (t_worker *)worker_link->data;
 	if (worker->workunit_link)
 	{
-		if (DEBUG)
+		if (DEBUG && WORKER_DEBUG)
 			printf("adding lost worker's work unit back to the pool!\n");
 		clock_t start, diff;
 		start = clock();
@@ -58,7 +58,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	}
 	worker->workunit_link = NULL;
-	if (DEBUG)
+	if (DEBUG && WORKER_DEBUG)
 		printf("removing worker link!\n");
 	clock_t start, diff;
 	start = clock();
@@ -81,14 +81,14 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
 {
-	if (DEBUG)
+	if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		printf("handling request!\n");
 	if (msg.id == WORK_UNIT_REQUEST)	
 		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
 	{
 		handle_worker_done_msg(dispatcher, worker, msg);
-		G_worker_calcs = time(NULL) - worker->w_calc_time;
+		G_worker_calcs += time(NULL) - worker->w_calc_time;
 		worker->w_calc_time = 0;
 	}
 	else
@@ -125,7 +125,7 @@ void		*handle_worker_connection(void *input)
 	t_msg				msg;
 
 	signal(SIGPIPE, SIG_IGN);
-	if (DEBUG)
+	if (DEBUG && WORKER_DEBUG)
 		printf("Launched worker network handler thread!\n");
 	params = (t_thread_handler *)input;
 	worker_link = params->worker;
@@ -134,13 +134,12 @@ void		*handle_worker_connection(void *input)
 	send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
 	while (worker->active)
 	{
-		if (DEBUG)
+		if (DEBUG && WORKER_DEBUG)
 			print_worker_fds(params->dispatcher);
 		msg = get_worker_msg(worker);
-		if (DEBUG)
-			printf("done receiving message\n");
-		if (DEBUG && MSG_DEBUG)
+		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
+			printf("done receiving message\n");
 			printf("msg status: %d\n", msg.error);
 			printf("MSG RECIEVED: [id]=%d", msg.id);
 			printf(" size '%d'\n", msg.size);
@@ -152,7 +151,7 @@ void		*handle_worker_connection(void *input)
 		}
 		if (msg.error == 0 || msg.error == -1)
 		{
-			if (DEBUG)
+			if (DEBUG && WORKER_DEBUG)
 				printf("worker connection terminated! %d\n", worker->socket.fd);
 			worker->active = 0;
 		}
@@ -162,7 +161,7 @@ void		*handle_worker_connection(void *input)
 	}
 	cleanup_worker(params->dispatcher, worker_link);
 	free(params);
-	if (DEBUG)
+	if (DEBUG && WORKER_DEBUG)
 		printf("killing this thread...\n");
 	return (0);
 }
@@ -202,10 +201,10 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	t_lst				*head;
 	
 	timeout = 120;
-	printf("begin launch_simulation\n");
+	if (DEBUG)
+		printf("begin launch_simulation\n");
 	while (!dispatcher->workers)
 	{
-		printf("There are no workers, simulation cannot start!\n");
 		printf("Waiting for workers to connect...\n");
 		sleep(5);
 		if (--timeout == 0)
@@ -216,6 +215,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	}
 	dispatcher->is_running = 1;
 	launch_worker_event_threads(dispatcher);
+	G_total_time = 0.0;
+	tick_start = time(NULL);
 	printf("sleeping\n");
 	sleep(999999);
 	printf("END\n");
