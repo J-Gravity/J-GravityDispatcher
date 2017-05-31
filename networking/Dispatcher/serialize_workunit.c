@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/30 15:31:27 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/31 14:21:28 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ char *compress_locals(t_workunit w, int *loclen)
 	int result_compressed_size = LZ4_compress_default(transposed, compressed, w.localcount * sizeof(t_body), max_compressed_size);
 	*loclen = result_compressed_size;
 	//printf("locals compressed to %d from %lu, %.f%% of original size\n", result_compressed_size, w.localcount * sizeof(t_body), (float)result_compressed_size * 100.0  / ((float)w.localcount * sizeof(t_body)));
+	G_workunit_size += result_compressed_size;
 	free(transposed);
 	free(uncompressed);
 	return(compressed);

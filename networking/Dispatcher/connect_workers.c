@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/30 23:31:49 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 14:18:07 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,6 +96,7 @@ void  connect_workers(t_dispatcher *dispatcher, t_lst **workers)
 {
 	pthread_t	*worker_conn_thr;
 
+	dispatcher->worker_cnt++;
 	worker_conn_thr = (pthread_t *)calloc(1, sizeof(pthread_t));
 	pthread_create(worker_conn_thr, NULL, connect_worker_thread, dispatcher);
 	return ;

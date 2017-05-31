@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 11:26:50 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/31 14:15:00 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,25 +194,27 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	int 				timeout;
 	t_lst				*head;
 	
-	timeout = 64;
+	timeout = 256;
 	if (DEBUG)
 		printf("begin launch_simulation\n");
 	while (!dispatcher->workers)
 	{
+		write(1, "[2K", 4);
 		write(1, "\rWaiting for workers to connect", 31);
-		sleep(2);
+		sleep(1);
 		write(1, ".", 1);
-		sleep(2);
+		sleep(1);
 		write(1, ".", 1);
-		sleep(5);
-		write(1, ". \n", 3);
-		sleep(2);
+		sleep(1);
+		write(1, ".", 1);
+		sleep(1);
 		if (--timeout == 0)
 		{
 			printf("Timeout reached, Simulation aborted!");
 			return ;
 		}
 	}
+	printf("\nWorker(s) now connected\n");
 	dispatcher->is_running = 1;
 	launch_worker_event_threads(dispatcher);
 	G_total_time = 0.0;
