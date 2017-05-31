@@ -576,7 +576,7 @@ static void tally_workunits(t_lst *units)
         units = units->next;
     }
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
+        printf("total size of all workunits: %ldMB\n", total / (1024 * 1024));
 }
 
 void	divide_dataset(t_dispatcher *dispatcher)
