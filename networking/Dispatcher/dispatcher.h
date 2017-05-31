@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 14:35:07 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/30 23:29:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,16 +29,24 @@
 /* METRIC FLAGS */
 /* ************ */
 
+# define METRICS 0
+# define STARTUP_METRICS 0
+# define TPM_METRIC 1
 int G_locked;
 int G_workunit_size;
-long G_worker_calcs;
+double G_worker_calcs;
+double G_total_time;
+double tick_start;
 
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 1
+# define DEBUG 0
 # define MSG_DEBUG 0
-# define MUTEX_DEBUG 1
+# define WORKER_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 0
 
 # include <stdio.h>
 # include <sys/socket.h>

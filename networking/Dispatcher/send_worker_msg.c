@@ -39,7 +39,8 @@ void	send_worker_msg(t_worker *worker, t_msg msg)
 	memcpy(&buffer[5], msg.data, msg.size);
 	if (send(worker->socket.fd, buffer, msg_size, 0) == -1)
 		printf("send failed with %d\n", errno);
-	print_debug(worker, msg);
+ 	if (DEBUG && MSG_DEBUG)
+		print_debug(worker, msg);
 	free(buffer);
 	//printf("send worker msg finished\n");
 }
