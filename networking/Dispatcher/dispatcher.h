@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/25 14:45:46 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/28 19:27:42 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,13 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+
+/* *********** */
+/* DEBUG FLAGS */
+/* *********** */
+# define DEBUG 1
+# define MSG_DEBUG 0
+# define MUTEX_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -115,6 +122,7 @@ typedef struct			s_workunit
 
 typedef struct			s_worker
 {
+	char				active;
 	t_lst				*workunit_link;
 	char				compute_class;
 	pthread_t			*tid;
@@ -137,6 +145,7 @@ typedef struct			s_dataset
 typedef struct			s_dispatcher
 {
 	pthread_mutex_t		workunits_mutex;
+	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
 	char				*name;
 	t_lst				*workers;
