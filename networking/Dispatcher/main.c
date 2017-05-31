@@ -33,9 +33,21 @@ int	main(int ac, char **av)
 	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
+	clock_t start = clock(), diff;
 	connect_workers(dispatcher, &dispatcher->workers);
+	diff = clock() - start;
+	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	printf("connect_workers took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+	start = clock();
 	request_dataset(dispatcher, av[1]);
+	diff = clock() - start;
+	msec = diff * 1000 / CLOCKS_PER_SEC;
+	printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+	start = clock();
 	divide_dataset(dispatcher);
+	diff = clock() - start;
+	msec = diff * 1000 / CLOCKS_PER_SEC;
+	printf("divide_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	return (0);
 }

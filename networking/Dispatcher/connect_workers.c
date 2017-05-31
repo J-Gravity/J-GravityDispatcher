@@ -37,8 +37,11 @@ void	*connect_worker_thread(void *param)
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
 
+		clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-				printf("worker list mutex locked!\n");
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_locked = msec/1000 + msec%1000;
 		head = dispatcher->workers;
 		//printf("f0\n");
 		if (head)
