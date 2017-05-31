@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/30 23:07:40 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 14:24:02 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -575,11 +575,8 @@ static void tally_workunits(t_lst *units)
         //printf("WU %d was %dKB\n",((t_workunit *)units->data)->id, this / 1024);
         units = units->next;
     }
-	G_workunit_size = total / (1024 * 1024);
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
-
-    //printf("total localcount is %d\n", local);
 }
 
 void	divide_dataset(t_dispatcher *dispatcher)
