@@ -565,7 +565,7 @@ static int unit_size(t_workunit *w)
 
 static void tally_workunits(t_lst *units)
 {
-    int total = 0;
+    long total = 0;
     int local = 0;
     while (units)
     {
@@ -578,6 +578,7 @@ static void tally_workunits(t_lst *units)
 	G_workunit_size = total / (1024 * 1024);
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("total size of all workunits: %dMB\n", total / (1024 * 1024));
+
     //printf("total localcount is %d\n", local);
 }
 
