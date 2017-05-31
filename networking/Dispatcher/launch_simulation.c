@@ -84,6 +84,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 	if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		printf("handling request!\n");
 	if (msg.id == WORK_UNIT_REQUEST)	
+
 		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
 	{
@@ -144,7 +145,7 @@ void		*handle_worker_connection(void *input)
 			printf("MSG RECIEVED: [id]=%d", msg.id);
 			printf(" size '%d'\n", msg.size);
 			printf(" body '%s'\n", msg.data);
-		}
+    }
 		if (msg.error == -1)
 		{
 			printf("get worker message failed with err %d\n", errno);
