@@ -40,8 +40,8 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		G_avg_ten_wu_min += (double)dispatcher->workunits_done / ((time(NULL) - G_total_time) / 60.0f);
 		if (dispatcher->ticks_done % 10 == 0 && dispatcher->ticks_done != 0)
 		{
-			printf("Average ticks/min for last 10 ticks %f\n", G_avg_ten_ticks_min);
-			printf("Average workunits/min for last 10 ticks %f\n", G_avg_ten_wu_min);
+			printf("Average ticks/min for last 10 ticks %f\n", G_avg_ten_ticks_min / 10);
+			printf("Average workunits/min for last 10 ticks %f\n", G_avg_ten_wu_min / 10);
 			G_avg_ten_ticks_min = 0;
 			G_avg_ten_wu_min = 0;
 		}
