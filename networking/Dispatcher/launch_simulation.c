@@ -216,9 +216,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	}
 	printf("\nWorker(s) now connected\n");
 	dispatcher->is_running = 1;
-	launch_worker_event_threads(dispatcher);
-	G_total_time = 0.0;
 	tick_start = time(NULL);
+	launch_worker_event_threads(dispatcher);
 	sleep(999999);
 	printf("END\n");
 }

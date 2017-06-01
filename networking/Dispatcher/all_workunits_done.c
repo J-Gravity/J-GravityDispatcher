@@ -19,7 +19,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	save_output(dispatcher, dispatcher->name);
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
-	// Reset work units done
+	dispatcher->ticks_done++;
 	if (METRICS)
 	{
 		printf("%d workers completed %d workunits totalling %ld MB\n", dispatcher->worker_cnt, dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
@@ -32,16 +32,21 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	double tick_time = time(NULL) - tick_start;
 	if (TPM_METRIC)
 	{
-		printf("tick took %f seconds\n", tick_time);
-		printf("average ticks per minute: %f\n\n", (double)dispatcher->ticks_done / (G_total_time / 60.0f));
+		printf("average ticks per minute: %f\n", (double)dispatcher->ticks_done / ((time(NULL) - G_total_time) / 60.0f));
+		G_avg_ten_ticks_min += (double)dispatcher->ticks_done / ((time(NULL) - G_total_time) / 60.0f);
+		printf("average workunits per minute: %f\n\n", (double)dispatcher->workunits_done / ((time(NULL) - G_total_time) / 60.0f));
+		G_avg_ten_wu_min += (double)dispatcher->workunits_done / ((time(NULL) - G_total_time) / 60.0f);
+		if (dispatcher->ticks_done % 10 == 0 && dispatcher->ticks_done != 0)
+		{
+			printf("Average ticks/min for last 10 ticks %ld\n", G_avg_ten_ticks_min);
+			printf("Average workunits/min for last 10 ticks %ld\n", G_avg_ten_wu_min);
+			G_avg_ten_ticks_min = 0;
+			G_avg_ten_wu_min = 0;
+		}
 	}
-	G_total_time += tick_time;
 	tick_start = time(NULL);
-	//sleep(10);
 	dispatcher->workunits_done = 0;
-	dispatcher->ticks_done += 1;
 	free(dispatcher->cells);
-	//printf("about to free dataset stuff\n");
 	//move new_dataset to dataset
 	free(dispatcher->dataset->particles);
 	free(dispatcher->dataset);
@@ -66,7 +71,6 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	}
 	else
 	{
-		//simulation complete
 		printf("total worker calc time: %f seconds\n", G_total_time);
 		printf("simulation complete\n");
 		exit(1);
