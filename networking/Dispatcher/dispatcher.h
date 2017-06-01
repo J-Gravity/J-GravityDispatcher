@@ -38,8 +38,8 @@ long G_workunit_size;
 double G_worker_calcs;
 double G_total_time;
 double tick_start;
-long G_avg_ten_ticks_min;
-long G_avg_ten_wu_min;
+double G_avg_ten_ticks_min;
+double G_avg_ten_wu_min;
 
 /* *********** */
 /* DEBUG FLAGS */

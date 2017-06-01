@@ -27,7 +27,7 @@ int	main(int ac, char **av)
 	G_total_time = time(NULL);
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
-	dispatcher->ticks_cnt = 100;
+	dispatcher->ticks_cnt = 10;
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
