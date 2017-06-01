@@ -14,7 +14,7 @@
 
 void	all_workunits_done(t_dispatcher *dispatcher)
 {
-	printf("all workunits done for this tick\n");
+	printf("\nall workunits done for this tick\n");
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);
 	// Clear Work Units
@@ -33,7 +33,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (TPM_METRIC)
 	{
 		printf("tick took %f seconds\n", tick_time);
-		printf("average ticks per minute: %f\n", (double)dispatcher->ticks_done / (G_total_time / 60.0f));
+		printf("average ticks per minute: %f\n\n", (double)dispatcher->ticks_done / (G_total_time / 60.0f));
 	}
 	G_total_time += tick_time;
 	tick_start = time(NULL);

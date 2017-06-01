@@ -12,6 +12,7 @@
 
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
+# define _GNU_SOURCE
 # define PORT 4242
 # define HEADER_SIZE 5
 
