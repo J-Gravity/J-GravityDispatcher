@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/25 19:40:50 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/31 14:21:28 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ char *compress_locals(t_workunit w, int *loclen)
 	int result_compressed_size = LZ4_compress_default(transposed, compressed, w.localcount * sizeof(t_body), max_compressed_size);
 	*loclen = result_compressed_size;
 	//printf("locals compressed to %d from %lu, %.f%% of original size\n", result_compressed_size, w.localcount * sizeof(t_body), (float)result_compressed_size * 100.0  / ((float)w.localcount * sizeof(t_body)));
+	G_workunit_size += result_compressed_size;
 	free(transposed);
 	free(uncompressed);
 	return(compressed);
@@ -45,11 +46,7 @@ char *compress_neighbors(t_workunit w, int *neighblen)
 	char *uncompressed = malloc(w.neighborcount * sizeof(cl_float4));
 	int offset = 0;
 	for (int i = 0; i < w.neighborcount; i++, offset += sizeof(cl_float4))
-	{
 		memcpy(uncompressed + offset, &(w.neighborhood[i]->position), sizeof(cl_float4));
-		if (w.neighborhood[i]->velocity.w == -1)
-			free(w.neighborhood[i]); //getting rid of this soon
-	}
 
 	//byte transpose using TurboTranspose
 	char *transposed = malloc(w.neighborcount * sizeof(cl_float4));
@@ -109,7 +106,6 @@ t_msg serialize_workunit(t_workunit w)
 	// else
 	// 	printf("size mismatch, wtf\n");
 	int origsize = w.localcount * sizeof(t_body) + w.neighborcount *sizeof(cl_float4) + 5 * sizeof(int);
-	printf("msg.size ended up %d, would have been %d without compression, %.2f%%\n", msg.size, origsize, (float)msg.size * 100.0 / (float)origsize);
 	free(localblob);
 	free(neighborblob);
 	return (msg);

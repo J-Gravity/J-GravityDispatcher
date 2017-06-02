@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 19:27:42 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 14:20:33 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,12 +25,28 @@
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
 
+/* ************ */
+/* METRIC FLAGS */
+/* ************ */
+
+# define METRICS 1
+# define STARTUP_METRICS 1
+# define TPM_METRIC 1
+int G_locked;
+long G_workunit_size;
+double G_worker_calcs;
+double G_total_time;
+double tick_start;
+
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 1
+# define DEBUG 0
 # define MSG_DEBUG 0
-# define MUTEX_DEBUG 1
+# define WORKER_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 0
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -42,6 +58,9 @@
 # include <errno.h>
 # include <OpenCL/opencl.h>
 # include <pthread.h>
+# include <fcntl.h>
+# include <unistd.h>
+# include <signal.h>
 
 typedef struct			s_lst
 {
@@ -87,6 +106,7 @@ typedef struct s_cell
 	int bodycount;
 	struct s_cell *parent;
 	struct s_cell **children;
+	struct s_cell *scb;
 	cl_float4 center;
 	cl_float4 force_bias;
 	t_bounds bounds;
@@ -127,6 +147,7 @@ typedef struct			s_worker
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
+	long				w_calc_time;
 }						t_worker;
 
 typedef struct			s_serial

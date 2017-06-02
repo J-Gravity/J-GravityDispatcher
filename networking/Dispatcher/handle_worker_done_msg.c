@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/28 20:30:43 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/05/31 11:13:05 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,23 @@
 
 void 	delete_workunit(t_workunit **workunit)
 {
-	free((*workunit)->local_bodies);
-	free((*workunit)->neighborhood);
-	free(*workunit);
-	*workunit = NULL;
+	if (workunit && *workunit)
+	{
+		free((*workunit)->local_bodies);
+		(*workunit)->local_bodies = NULL;
+		free((*workunit)->neighborhood);
+		(*workunit)->neighborhood = NULL;
+		free(*workunit);
+		*workunit = NULL;
+	}
 }
 
 void 	delete_WU(t_WU WU)
 {
 	free(WU.local_bodies);
+	WU.local_bodies = NULL;
 	free(WU.neighborhood);
+	WU.neighborhood = NULL;
 }
 
 t_body	*translate_to_new_dataset(t_dispatcher *d, t_body *old)
@@ -62,10 +69,10 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	delete_workunit((t_workunit **)&worker->workunit_link->data);
 	free(worker->workunit_link);
 	worker->workunit_link = NULL;
-	//printf("copied the bodies\n");
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
-	//printf("done %d of %d workunits\n", dispatcher->workunits_done, dispatcher->workunits_cnt);
+	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
+
 	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
 		all_workunits_done(dispatcher);
 	else if (dispatcher->workunits)
@@ -74,5 +81,5 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		send_worker_msg(worker, m);
 		free(m.data);
 	}
-	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
+	
 }

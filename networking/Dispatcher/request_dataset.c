@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:41:19 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/25 16:14:32 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/30 23:34:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,8 +26,9 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	long scale;
 	/*
 	 *   TODO : Figure out what the hell the file will be called;
-	*/
-	printf("starting request_dataset\n");
+	*/	
+	if (DEBUG)
+		printf("starting request_dataset\n");
 	if ((fd = open(file, O_RDONLY)) < 1)
 	{
 		fprintf(stderr, "Error opening file %s\n", file, errno);
@@ -47,6 +48,7 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	dispatcher->new_dataset->particles = calloc(count, sizeof(t_body));
 	dispatcher->new_dataset->particle_cnt = dispatcher->dataset->particle_cnt;
 	dispatcher->new_dataset->max_scale = dispatcher->dataset->max_scale;
-	printf("finished request_dataset\n");
+	if (DEBUG)
+		printf("finished request_dataset\n");
 	return ;
 }
