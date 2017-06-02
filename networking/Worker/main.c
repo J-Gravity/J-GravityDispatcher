@@ -90,6 +90,7 @@ t_msg	wait_for_msg(int socket, int message_code)
 			{
 				//connection has been broken for some reason
 				printf("Time spent waiting for workunit was %ld seconds\n", G_time_waiting_for_wu);
+				close(socket);
 				exit(1);
 			}
 			continue ;

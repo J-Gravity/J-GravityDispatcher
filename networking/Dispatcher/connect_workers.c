@@ -32,7 +32,7 @@ void	*connect_worker_thread(void *param)
 			printf("accept returned 0!");
 			continue;
 		}
-		//printf("\nworker connected fd: %d\n", fd);
+		dispatcher->worker_cnt++;
 		printf("%d workers are connected\n", dispatcher->worker_cnt);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
@@ -40,7 +40,6 @@ void	*connect_worker_thread(void *param)
 
 		clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-		dispatcher->worker_cnt++;
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex locked!\n");
 		diff = clock() - start;
