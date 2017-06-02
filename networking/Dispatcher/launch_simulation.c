@@ -107,8 +107,14 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	G_printfds_locked += msec%1000;
 	head = dispatcher->workers;
-	while (head)
-		head = head->next;
+	printf("-------------\n");
+  	while (head)
+ 	{
+		printf("(%p)worker: %d -> (%p)\n", head,
+			((t_worker*)(head->data))->socket.fd, head->next);
+  		head = head->next;
+ 	}
+	printf("-------------\n");
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 }
 

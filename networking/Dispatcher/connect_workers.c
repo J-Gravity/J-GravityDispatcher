@@ -40,6 +40,7 @@ void	*connect_worker_thread(void *param)
 
 		clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
+		dispatcher->worker_cnt++;
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex locked!\n");
 		diff = clock() - start;
