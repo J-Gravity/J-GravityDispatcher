@@ -67,6 +67,8 @@ t_msg	wait_for_msg(int socket, int message_code)
 		start_time = time(NULL);
 		bytes_read = recv(socket, buffer, HEADER_SIZE, 0);
 		G_time_waiting_for_wu += time(NULL) - start_time;
+		if (G_time_waiting_for_wu == -1)
+			G_time_waiting_for_wu = 0;
 		if (bytes_read == HEADER_SIZE)
 		{
 			int bodybytes = 0;
@@ -141,7 +143,7 @@ int main(int argc, char **argsv)
         	return -1;
     	}
 	printf("Successfully connected to %s\n", argsv[1]);
-	G_time_waiting_for_wu = 0;
+	G_time_waiting_for_wu = -1;
 	while (1)
     	{
     		t_msg msg;

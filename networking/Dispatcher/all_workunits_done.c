@@ -21,30 +21,29 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
 	dispatcher->ticks_done++;
+	double tick_time = (time(NULL) - G_tick_start);
+	G_total_time += tick_time;
 	if (METRICS)
 	{
+		printf("--------------------------------Tick %d---------------------------\n", dispatcher->ticks_done);
 		printf("%d workers completed %d workunits totalling %ld MB\n", dispatcher->worker_cnt, dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
 		G_workunit_size = 0;
 		printf("Total workunits took %f seconds\n", G_worker_calcs);
-		printf("The average workunit took %f seconds\n", G_worker_calcs/(double)dispatcher->workunits_done);
+		printf("The average workunit took %f seconds\n", G_worker_calcs / (double)dispatcher->workunits_done);
 		printf("workers were waiting on locks for %d milliseconds\n", G_locked);
 	}
 	G_worker_calcs = 0;
-	double tick_time = (time(NULL) - G_tick_start);
 	if (TPM_METRIC)
 	{
 		printf("this tick took: %.0f seconds\n", tick_time);
-		printf("average ticks per minute: %.2f\n", (double)dispatcher->ticks_done / tick_time / 60);
-		G_last_ten_ticks_permin += (double)dispatcher->ticks_done / tick_time;
-		printf("average workunits per minute: %.2f\n\n", (double)dispatcher->workunits_done / tick_time / 60);
-		G_last_ten_workunits_permin += (double)dispatcher->workunits_done / tick_time;
-		if (dispatcher->ticks_done % 10 == 0 && dispatcher->ticks_done != 0)
+		printf("This tick ran at %.2f tick/min\n", 60.0 / tick_time);
+		printf("These workunits ran at %.2f workunits/min\n\n", 60 * ((double)dispatcher->workunits_done / tick_time));
+		G_total_workunit_cnt += dispatcher->workunits_done;
+		if (dispatcher->ticks_done % dispatcher->ticks_cnt == 0 && dispatcher->ticks_done != 0)
 		{
-			printf("\n\x1b[32mAverage ticks/sec for last 10 ticks %.2f\n", G_last_ten_ticks_permin * 60 / 10);
-			printf("Average workunits/sec for last 10 ticks %.2f\n\n", G_last_ten_workunits_permin * 60 / 10);
+			printf("\n\x1b[32mAverage ticks/min %.2f\n",  dispatcher->ticks_cnt / (G_total_time / 60));
+			printf("Average workunits/min %.2f\n\n", 60 * (G_total_workunit_cnt / G_total_time));
 			printf("\x1b[0m");
-			G_last_ten_ticks_permin = 0;
-			G_last_ten_workunits_permin = 0;
 		}
 	}
 	dispatcher->workunits_done = 0;
@@ -74,7 +73,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	}
 	else
 	{
-		printf("total worker calc time: %f seconds\n", (time(NULL) - G_total_time));
+		printf("total worker calc time: %f seconds\n", G_total_time);
 		printf("simulation complete\n");
 		close(dispatcher->sin.fd);
 		exit(1);

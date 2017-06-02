@@ -33,7 +33,7 @@ void	*connect_worker_thread(void *param)
 			continue;
 		}
 		//printf("\nworker connected fd: %d\n", fd);
-		printf("%d workers are connected\n", fd - 3);
+		printf("%d workers are connected\n", dispatcher->worker_cnt);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
