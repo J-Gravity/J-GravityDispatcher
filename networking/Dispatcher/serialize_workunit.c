@@ -34,7 +34,6 @@ char *compress_locals(t_workunit w, int *loclen)
 	int result_compressed_size = LZ4_compress_default(transposed, compressed, w.localcount * sizeof(t_body), max_compressed_size);
 	*loclen = result_compressed_size;
 	//printf("locals compressed to %d from %lu, %.f%% of original size\n", result_compressed_size, w.localcount * sizeof(t_body), (float)result_compressed_size * 100.0  / ((float)w.localcount * sizeof(t_body)));
-	G_workunit_size += result_compressed_size;
 	free(transposed);
 	free(uncompressed);
 	return(compressed);
@@ -100,6 +99,7 @@ t_msg serialize_workunit(t_workunit w)
 
 	memcpy(msg.data + offset, neighborblob, neighborhood_compressed_size);
 	offset += neighborhood_compressed_size;
+	G_workunit_size += offset;
 
 	// if (offset == msg.size)
 	// 	printf("sizes matched as expected\n");

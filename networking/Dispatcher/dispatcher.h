@@ -42,15 +42,18 @@ int G_workerevent_locked;
 int G_handle_locked;
 double G_tick_start;
 long G_workunit_size;
+long G_total_workunit_size;
 double G_worker_calcs;
 double G_total_time;
 long G_total_workunit_cnt;
 
+long c_count;
+
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 1
-# define MSG_DEBUG 1
+# define DEBUG 0
+# define MSG_DEBUG 0
 # define WORKER_DEBUG 0
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0

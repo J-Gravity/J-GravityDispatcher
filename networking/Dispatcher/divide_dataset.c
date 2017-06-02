@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 19)
+#define LEAF_THRESHOLD pow(2, 18)
 
 void print_cl4(cl_float4 v)
 {
@@ -418,17 +418,23 @@ static void divide_cell(t_cell *c)
     c->children = children;
 }
 
-static void tree_it_up(t_cell *root)
+static void tree_it_up(t_cell *root, t_dispatcher dispatcher)
 {
     //recursively flesh out the barnes-hut tree from the root node.
     //just keep splitting into 8 sub-octants and recursing on them until the number of stars in the cell is manageable.
-    if (!root)
-        return ;
-    if (root->bodycount < LEAF_THRESHOLD)
-        return ;
-    divide_cell(root);
-    for (int i = 0; i < 8; i++)
-        tree_it_up(root->children[i]);
+	if (!root)
+		return ;
+//	if (root->bodycount < dispatcher.dataset->particle_cnt / 2 && dispatcher.ticks_done >= 1)
+//	{
+//		printf("2\n");
+//		return ;
+//	}
+	else if (root->bodycount < LEAF_THRESHOLD)
+		return ;
+	c_count++;
+	divide_cell(root);
+	for (int i = 0; i < 8; i++)
+		tree_it_up(root->children[i], dispatcher);
 }
 
 static t_cell **enumerate_leaves(t_cell *root)
@@ -583,6 +589,7 @@ void	divide_dataset(t_dispatcher *dispatcher)
 {
     static t_octree *t;
 
+    c_count = 0;
     if (t != NULL)
         free_tree(t);
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
@@ -594,14 +601,14 @@ void	divide_dataset(t_dispatcher *dispatcher)
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     //printf("tree init done\n");
-    tree_it_up(t->root);
+    tree_it_up(t->root, *dispatcher);
+    printf("cell_count = %ld\n", c_count);
     t_cell **leaves = enumerate_leaves(t->root);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
 	    printf("tree is made\n");
     dispatcher->workunits = create_workunits(t, leaves);
     tally_workunits(dispatcher->workunits);
     int len = lstlen(dispatcher->workunits);
-    printf("2^%d stars, max 2^%d per leaf, resulted in %d units\n", (int)log2(dispatcher->dataset->particle_cnt), (int)log2(LEAF_THRESHOLD), len);
     dispatcher->workunits_cnt = len;
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;

@@ -40,5 +40,6 @@ t_socket		setup_server_socket(int port)
 		printf("Listening on server socket failed with code: %d\n", errno);
 		exit(1);
 	}
+	printf("sin.fd == %d\n", sin.fd);
 	return (sin);
 }
