@@ -34,12 +34,12 @@
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
 int G_locked;
+double G_tick_start;
 long G_workunit_size;
 double G_worker_calcs;
 double G_total_time;
-double tick_start;
-double G_avg_ten_ticks_min;
-double G_avg_ten_wu_min;
+double G_last_ten_ticks_permin;
+double G_last_ten_workunits_permin;
 
 /* *********** */
 /* DEBUG FLAGS */

@@ -219,7 +219,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		;
 	write(1, "running...\n", 11);
 	dispatcher->is_running = 1;
-	tick_start = time(NULL);
+	G_tick_start = time(NULL);
 	launch_worker_event_threads(dispatcher);
 	sleep(999999);
 	printf("END\n");

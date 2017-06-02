@@ -32,7 +32,8 @@ void	*connect_worker_thread(void *param)
 			printf("accept returned 0!");
 			continue;
 		}
-		printf("\nworker connected fd: %d\n", fd);
+		//printf("\nworker connected fd: %d\n", fd);
+		printf("%d workers are connected\n", fd - 3);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;

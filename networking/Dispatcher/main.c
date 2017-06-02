@@ -24,8 +24,8 @@ int	main(int ac, char **av)
 		return (0);
 	}
 	signal(SIGPIPE, SIG_IGN);
-	G_avg_ten_ticks_min = 0;
-	G_avg_ten_wu_min = 0;
+	G_last_ten_ticks_permin = 0;
+	G_last_ten_workunits_permin = 0;
 	G_total_time = time(NULL);
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
