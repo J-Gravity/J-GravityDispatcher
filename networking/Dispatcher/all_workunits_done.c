@@ -77,6 +77,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	{
 		printf("total worker calc time: %f seconds\n", G_total_time);
 		printf("simulation complete\n");
+		close(dispatcher->sin.fd);
 		exit(1);
 	}
 }
