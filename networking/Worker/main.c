@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/27 01:15:40 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/01 18:50:39 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,7 @@ t_msg	wait_for_msg(int socket, int message_code)
 			if (bytes_read <= 0)
 			{
 				//connection has been broken for some reason
+				printf("Time spent waiting for workunit was %ld seconds\n", G_time_waiting_for_wu);
 				exit(1);
 			}
 			continue ;
@@ -158,6 +159,5 @@ int main(int argc, char **argsv)
 		if (w.local_bodies)
 			free(w.local_bodies);
 	}
-	printf("Time spent waiting for workunit was %ld seconds\n", G_time_waiting_for_wu);
 	return (0);
 }
