@@ -602,7 +602,8 @@ void	divide_dataset(t_dispatcher *dispatcher)
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     //printf("tree init done\n");
     tree_it_up(t->root, *dispatcher);
-    printf("cell_count = %ld\n", c_count);
+    if (DEBUG && NETWORK_DEBUG)
+    	printf("cell_count = %ld\n", c_count);
     t_cell **leaves = enumerate_leaves(t->root);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
 	    printf("tree is made\n");
@@ -615,5 +616,6 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->cell_count = len;
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("workunits made, done divide_dataset\n");
+	printf("workunit count: %d\n", dispatcher->workunits_cnt);
 	return ;
 }

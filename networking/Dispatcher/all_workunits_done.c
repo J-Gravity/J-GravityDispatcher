@@ -51,6 +51,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("workers were waiting on locks for %d seconds\n", G_total_locked / 1000);
 			printf("\n\x1b[32mAverage ticks/min %.2f\n",  dispatcher->ticks_cnt / (G_total_time / 60));
 			printf("Average workunits/min %.2f\n\n", 60 * (G_total_workunit_cnt / G_total_time));
+			printf("Processed %ld MB/sec/tick\n", ((G_total_workunit_size / (1024 * 1024)) / 60) / dispatcher->ticks_cnt);
 			printf("\x1b[0m");
 		}
 	}

@@ -52,12 +52,13 @@ long c_count;
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 0
 # define WORKER_DEBUG 0
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
 # define DIVIDE_DATASET_DEBUG 0
+# define NETWORK_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
