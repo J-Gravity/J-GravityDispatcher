@@ -44,7 +44,7 @@ void	*connect_worker_thread(void *param)
 			printf("worker list mutex locked!\n");
 		diff = clock() - start;
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_locked = msec/1000 + msec%1000;
+		G_connect_locked += msec/1000 + msec%1000;
 		head = dispatcher->workers;
 		//printf("f0\n");
 		if (head)

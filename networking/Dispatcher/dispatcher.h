@@ -33,7 +33,13 @@
 # define METRICS 1
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
-int G_locked;
+int G_total_locked;
+int G_connect_locked;
+int G_movelist_locked;
+int G_removeworker_locked;
+int G_printfds_locked;
+int G_workerevent_locked;
+int G_handle_locked;
 double G_tick_start;
 long G_workunit_size;
 double G_worker_calcs;

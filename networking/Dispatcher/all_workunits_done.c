@@ -30,7 +30,6 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		G_workunit_size = 0;
 		printf("Total workunits took %f seconds\n", G_worker_calcs);
 		printf("The average workunit took %f seconds\n", G_worker_calcs / (double)dispatcher->workunits_done);
-		printf("workers were waiting on locks for %d milliseconds\n", G_locked);
 	}
 	G_worker_calcs = 0;
 	if (TPM_METRIC)
@@ -38,9 +37,17 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		printf("this tick took: %.0f seconds\n", tick_time);
 		printf("This tick ran at %.2f tick/min\n", 60.0 / tick_time);
 		printf("These workunits ran at %.2f workunits/min\n\n", 60 * ((double)dispatcher->workunits_done / tick_time));
+		printf("connect locked for %d seconds\n", G_connect_locked / 1000);
+		printf("movelist locked for %d seconds\n", G_movelist_locked / 1000);
+		printf("removeworker locked for %d seconds\n", G_removeworker_locked / 1000);
+		printf("workerevent locked for %d seconds\n", G_workerevent_locked / 1000);
+		printf("handle locked for %d seconds\n", G_handle_locked / 1000);
+		printf("printfds locked for %d seconds\n", G_printfds_locked / 1000);
 		G_total_workunit_cnt += dispatcher->workunits_done;
+		G_total_locked += G_removeworker_locked + G_workerevent_locked + G_handle_locked + G_printfds_locked;
 		if (dispatcher->ticks_done % dispatcher->ticks_cnt == 0 && dispatcher->ticks_done != 0)
 		{
+			printf("workers were waiting on locks for %d seconds\n", G_total_locked / 1000);
 			printf("\n\x1b[32mAverage ticks/min %.2f\n",  dispatcher->ticks_cnt / (G_total_time / 60));
 			printf("Average workunits/min %.2f\n\n", 60 * (G_total_workunit_cnt / G_total_time));
 			printf("\x1b[0m");
@@ -52,6 +59,11 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	free(dispatcher->dataset->particles);
 	free(dispatcher->dataset);
 	dispatcher->dataset = dispatcher->new_dataset;
+	G_movelist_locked = 0;
+	G_removeworker_locked = 0;
+	G_workerevent_locked = 0;
+	G_handle_locked = 0;
+	G_printfds_locked = 0;
 	G_tick_start = time(NULL);
 	dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
 	dispatcher->new_dataset->particles = calloc(dispatcher->dataset->particle_cnt, sizeof(t_body));
