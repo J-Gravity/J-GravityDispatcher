@@ -14,38 +14,57 @@
 
 void	all_workunits_done(t_dispatcher *dispatcher)
 {
-	printf("all workunits done for this tick\n");
+	if (DEBUG)
+		printf("all workunits done for this tick\n");
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);
 	// Clear Work Units
 	//clear_work_units(&dispatcher->workunits);
-	// Reset work units done
+	dispatcher->ticks_done++;
+	double tick_time = (time(NULL) - G_tick_start);
+	G_total_time += tick_time;
 	if (METRICS)
 	{
+		printf("--------------------------------Tick %d---------------------------\n", dispatcher->ticks_done);
 		printf("%d workers completed %d workunits totalling %ld MB\n", dispatcher->worker_cnt, dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
 		G_workunit_size = 0;
-		printf("worker units took %f seconds\n", G_worker_calcs);
-		printf("worker units took an avg of %f seconds\n", G_worker_calcs/(double)dispatcher->workunits_done);
-		printf("workers were waiting on locks for %d milliseconds\n", G_locked);
+		printf("Total workunits took %f seconds\n", G_worker_calcs);
+		printf("The average workunit took %f seconds\n", G_worker_calcs / (double)dispatcher->workunits_done);
 	}
 	G_worker_calcs = 0;
-	double tick_time = time(NULL) - tick_start;
 	if (TPM_METRIC)
 	{
-		printf("tick took %f seconds\n", tick_time);
-		printf("average ticks per minute: %f\n", (double)dispatcher->ticks_done / (G_total_time / 60.0f));
+		printf("this tick took: %.0f seconds\n", tick_time);
+		printf("This tick ran at %.2f tick/min\n", 60.0 / tick_time);
+		printf("These workunits ran at %.2f workunits/min\n\n", 60 * ((double)dispatcher->workunits_done / tick_time));
+		printf("connect locked for %d seconds\n", G_connect_locked / 1000);
+		printf("movelist locked for %d seconds\n", G_movelist_locked / 1000);
+		printf("removeworker locked for %d seconds\n", G_removeworker_locked / 1000);
+		printf("workerevent locked for %d seconds\n", G_workerevent_locked / 1000);
+		printf("handle locked for %d seconds\n", G_handle_locked / 1000);
+		printf("printfds locked for %d seconds\n", G_printfds_locked / 1000);
+		G_total_workunit_cnt += dispatcher->workunits_done;
+		G_total_locked += G_removeworker_locked + G_workerevent_locked + G_handle_locked + G_printfds_locked;
+		if (dispatcher->ticks_done % dispatcher->ticks_cnt == 0 && dispatcher->ticks_done != 0)
+		{
+			printf("workers were waiting on locks for %d seconds\n", G_total_locked / 1000);
+			printf("\n\x1b[32mAverage ticks/min %.2f\n",  dispatcher->ticks_cnt / (G_total_time / 60));
+			printf("Average workunits/min %.2f\n\n", 60 * (G_total_workunit_cnt / G_total_time));
+			printf("\x1b[0m");
+		}
 	}
-	G_total_time += tick_time;
-	tick_start = time(NULL);
-	//sleep(10);
 	dispatcher->workunits_done = 0;
-	dispatcher->ticks_done += 1;
 	free(dispatcher->cells);
-	//printf("about to free dataset stuff\n");
 	//move new_dataset to dataset
 	free(dispatcher->dataset->particles);
 	free(dispatcher->dataset);
 	dispatcher->dataset = dispatcher->new_dataset;
+	G_movelist_locked = 0;
+	G_removeworker_locked = 0;
+	G_workerevent_locked = 0;
+	G_handle_locked = 0;
+	G_printfds_locked = 0;
+	G_tick_start = time(NULL);
 	dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
 	dispatcher->new_dataset->particles = calloc(dispatcher->dataset->particle_cnt, sizeof(t_body));
 	dispatcher->new_dataset->particle_cnt = dispatcher->dataset->particle_cnt;
@@ -66,9 +85,9 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	}
 	else
 	{
-		//simulation complete
 		printf("total worker calc time: %f seconds\n", G_total_time);
 		printf("simulation complete\n");
+		close(dispatcher->sin.fd);
 		exit(1);
 	}
 }

@@ -11,7 +11,7 @@ worker: tt lz4
 	gcc -o worker *.c ../TurboTranspose-master/transpose.o ../TurboTranspose-master/transpose_sse.o ../lz4-lib/liblz4.a -O3 -I ../TurboTranspose-master -I ../lz4-lib -framework OpenCL
 
 clean:
-	rm -f dispatcher
+	rm -f worker
 	make -C ../TurboTranspose-master clean
 	make -C ../lz4-lib clean
 

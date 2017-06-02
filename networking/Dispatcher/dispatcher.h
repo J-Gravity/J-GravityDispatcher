@@ -12,6 +12,7 @@
 
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
+# define _GNU_SOURCE
 # define PORT 4242
 # define HEADER_SIZE 5
 
@@ -32,17 +33,24 @@
 # define METRICS 1
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
-int G_locked;
+int G_total_locked;
+int G_connect_locked;
+int G_movelist_locked;
+int G_removeworker_locked;
+int G_printfds_locked;
+int G_workerevent_locked;
+int G_handle_locked;
+double G_tick_start;
 long G_workunit_size;
 double G_worker_calcs;
 double G_total_time;
-double tick_start;
+long G_total_workunit_cnt;
 
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 0
-# define MSG_DEBUG 0
+# define DEBUG 1
+# define MSG_DEBUG 1
 # define WORKER_DEBUG 0
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
@@ -56,7 +64,7 @@ double tick_start;
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
-# include <OpenCL/opencl.h>
+# include <CL/opencl.h>
 # include <pthread.h>
 # include <fcntl.h>
 # include <unistd.h>

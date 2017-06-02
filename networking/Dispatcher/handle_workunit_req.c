@@ -18,7 +18,7 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 	pthread_mutex_lock(&dispatcher->workunits_mutex);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_locked = msec%1000;
+	G_handle_locked += msec%1000;
 	if (DEBUG && MUTEX_DEBUG)
 		printf("*work units mutex locked!\n");
 	if (dispatcher->workunits)
