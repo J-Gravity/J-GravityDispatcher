@@ -57,13 +57,16 @@ t_msg	wait_for_msg(int socket, int message_code)
 	char	*buffer;
 	int		bytes_read;
 	t_msg	msg;
+	long	start_time;
 
 
 	buffer = (char *)calloc(1, HEADER_SIZE);
 
 	while (1)
 	{
+		start_time = time(NULL);
 		bytes_read = recv(socket, buffer, HEADER_SIZE, 0);
+		G_time_waiting_for_wu += time(NULL) - start_time;
 		if (bytes_read == HEADER_SIZE)
 		{
 			int bodybytes = 0;
@@ -122,47 +125,39 @@ int main(int argc, char **argsv)
 		write(1, "sock error occured\n", 19);
 
 	memset(&serv_addr, '0', sizeof(serv_addr));
-
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(4242);
-
-    // Convert IPv4 and IPv6 addresses from text to binary form
-    if(inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
-    {
-        printf("\nInvalid address/ Address not supported \n");
-        return -1;
-    }
+	serv_addr.sin_family = AF_INET;
+	serv_addr.sin_port = htons(4242);
+	// Convert IPv4 and IPv6 addresses from text to binary form
+	if(inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
+	{
+		printf("\nInvalid address/ Address not supported \n");
+		return -1;
+	}
 
 	if (connect(conn_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    {
-        printf("\nConnection Failed \n");
-        return -1;
-    }
-
-    while (1)
-    {
-    	t_msg msg;
-    	msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-    	//printf("got WU_READY\n");
-			if (msg.data)
-    		free(msg.data);
-    	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-    	//printf("sent WU_REQ\n");
-    	msg = wait_for_msg(conn_socket, WORK_UNIT);
-    	printf("got WU\n");
-    	t_workunit w = deserialize_workunit(msg);
-    	if (msg.data)
-				free(msg.data);
-			printf("deserialized\n");
-    	w = do_workunit(w);
-    	printf("done\n");
-    	msg = serialize_workunit(w);
-    	//printf("serialized\n");
-    	send_msg(conn_socket, msg);
-    	printf("sent completed unit\n");
-			if (w.local_bodies)
-				free(w.local_bodies);
-    }
-
+    	{
+        	printf("\nConnection Failed \n");
+        	return -1;
+    	}
+	printf("Successfully connected to %s\n", argsv[1]);
+	G_time_waiting_for_wu = 0;
+	while (1)
+    	{
+    		t_msg msg;
+    		msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
+				if (msg.data)
+	    		free(msg.data);
+	    	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
+	    	msg = wait_for_msg(conn_socket, WORK_UNIT);
+	    	t_workunit w = deserialize_workunit(msg);
+	    	if (msg.data)
+			free(msg.data);
+	    	w = do_workunit(w);
+	    	msg = serialize_workunit(w);
+    		send_msg(conn_socket, msg);
+		if (w.local_bodies)
+			free(w.local_bodies);
+	}
+	printf("Time spent waiting for workunit was %ld seconds\n", G_time_waiting_for_wu);
 	return (0);
 }

@@ -42,6 +42,11 @@
 # define DEVICE CL_DEVICE_TYPE_DEFAULT
 # endif
 
+/* ******* */
+/* METRICS */
+/* ******* */
+long G_time_waiting_for_wu;
+
 typedef struct s_context
 {
     cl_device_id device_id;
