@@ -15,6 +15,8 @@
 int	main(int ac, char **av)
 {
 	t_dispatcher	*dispatcher;
+	char		*line = NULL;
+	size_t		size;
 
 	if (ac != 2)
 	{

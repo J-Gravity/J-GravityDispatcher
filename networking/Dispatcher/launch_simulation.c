@@ -214,7 +214,10 @@ void		launch_simulation(t_dispatcher *dispatcher)
 			return ;
 		}
 	}
-	printf("\nWorker(s) now connected\n");
+	printf("\rPress [ENTER] to start dispatching workunits\n");
+	while (getchar() != 10)
+		;
+	write(1, "running...\n", 11);
 	dispatcher->is_running = 1;
 	tick_start = time(NULL);
 	launch_worker_event_threads(dispatcher);
