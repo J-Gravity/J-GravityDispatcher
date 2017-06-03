@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 23:45:25 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 13:59:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,22 +110,6 @@ t_msg	wait_for_msg(int socket, int message_code)
 			return msg;
 		}
 	}
-}
-
-t_workunit *receive_workunit(int conn_socket)
-{
-	t_msg	*msg;
-	*msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-	if (msg->data)
-		free(msg->data);
-	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-	*msg = wait_for_msg(conn_socket, WORK_UNIT);
-	return(serialize_workunit((t_workunit *)msg->data));
-}
-
-void	send_workunit()
-{
-
 }
 
 int main(int argc, char **argsv)

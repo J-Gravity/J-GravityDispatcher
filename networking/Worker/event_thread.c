@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 23:43:03 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 14:32:13 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	}
 	else if (msg.id == WORK_UNIT)
 	{
-		queue_enqueue(queue, queue_create_new((t_workunit)(msg.data)));
+		queue_enqueue(&worker->todo_work, queue_create_new(deserialize_workunit(msg)));
     if (DEBUG)
         printf("work unit added to local queue\n");
 		free(msg.data);

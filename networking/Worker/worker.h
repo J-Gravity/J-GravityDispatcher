@@ -128,22 +128,22 @@ typedef struct			s_worker
 
 /*
  * 	Creates a new node and returns it
- * 		@param workunit	The workunit to be added to the node
+ * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_workunit *workunit);
+t_lst		*queue_create_new(t_workunit workunit);
 
 /*
  * 	Pops a node off the queue
- * 		@param queue	A queue struct that holds first, last and size
+ * 		@param **queue	A queue struct that holds first, last and size
  */
 t_workunit	*queue_pop(t_queue **queue);
 
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
- * 		@param queue	A queue struct that holds first, last and size
- * 		@param new		The new node to be added to the queue
+ * 		@param **queue	A queue struct that holds first, last and size
+ * 		@param *new		The new node to be added to the queue
  */
-t_lst		*queue_enqueue(t_queue *queue, t_lst *new);
+t_lst		*queue_enqueue(t_queue **queue, t_lst *new_node);
 
 /*
  *	Revieve a t_msg from an active tcp connection
@@ -158,7 +158,7 @@ t_msg	receive_msg(int fd);
 void	send_msg(int fd, t_msg msg);
 
 
-void		do_workunit(t_workunit *w);
+t_workunit	*do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
 t_msg		serialize_workunit(t_workunit w);
 

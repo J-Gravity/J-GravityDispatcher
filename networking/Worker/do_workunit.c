@@ -287,7 +287,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     return (ret);
 }
 
-void do_workunit(t_workunit *w)
+t_workunit *do_workunit(t_workunit *w)
 {
     // printf("before computation, from WU\n");
     // print_cl4(w->local_bodies[0].position);
