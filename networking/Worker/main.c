@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 16:12:49 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 16:23:09 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,9 @@ int main(int argc, char **argsv)
 	launch_sender_thread(worker);
 	if (DEBUG)
 		printf("threads launched\n");
-	sem_wait(worker->exit_sem);
+	printf("wem_wait:%d\n",sem_wait(worker->exit_sem));
+	printf("errno %d\n", errno);
 	//cleanup
+	sleep(9999999);
 	return (0);
 }
