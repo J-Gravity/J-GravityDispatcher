@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:40:44 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 13:59:56 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,35 +112,14 @@ t_msg	wait_for_msg(int socket, int message_code)
 	}
 }
 
-t_workunit *receive_workunit(int conn_socket)
-{
-	t_msg	*msg;
-	*msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-	if (msg->data)
-		free(msg->data);
-	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-	*msg = wait_for_msg(conn_socket, WORK_UNIT);
-	return(serialize_workunit((t_workunit *)msg->data));
-}
-
-void	send_workunit()
-{
-
-}
-
 int main(int argc, char **argsv)
 {
-	int		err;
-	int		conn_socket;
+	int			err;
+	int			conn_socket;
 	struct		sockaddr_in serv_addr;
-	int		buff_size;
-	t_lst		*completed_workunits = NULL;
-	t_lst		*lastcompleted_workunits = NULL;
-	t_lst		*first = NULL;
-	t_lst		*last = NULL;
-	pthread_t	*receive_wu_thread;
-	pthread_t	*calculate_wu;
+	t_worker	*worker;
 
+	worker = (t_worker *)calloc(1, sizeof(t_worker));
 	if (argc == 1)
 	{
 		printf("Usage ./a.out [IP Address]\n");
@@ -165,29 +144,18 @@ int main(int argc, char **argsv)
 		return -1;
 	}
 	printf("Successfully connected to %s\n", argsv[1]);
-	G_time_waiting_for_wu = -1;
-	while (1)
-	{
-		//GRAB NEW WORKUNITS//
-//P_THREAD_LOCK
-		last = enqueue(last, createnew(receive_workunit(conn_socket)));
-		if (first == NULL)
-			first = last;
-		if (msg.data)
-			free(msg.data);
-//P_THREAD_UNLOCK
-		
-		//SENDS COMPLETED WORKUNITS//
-//P_THREAD_LOCK
-		lastcompleted_workunits = enqueue(lastcompleted_workunits, createnew(do_workunit(pop(&first))));
-		if (completed_workunits == NULL)
-			completed_workunits = lastcompleted_workunits;
-//P_THREAD_UNLOCK
-		msg = serialize_workunit(pop(&completed_workunits));
-
-    		send_msg(conn_socket, msg);
-		if (w.local_bodies)
-			free(w.local_bodies);
-	}
+	worker->socket.fd = conn_socket;
+	sem_init(&worker->calc_thread_sem, 0, 0);
+	sem_init(&worker->sender_thread_sem, 0, 0);
+	sem_init(&worker->exit_sem, 0, 0);
+	if (DEBUG)
+		printf("semaphores initalized\n");
+	launch_event_thread(worker);
+	launch_calculation_thread(worker);
+	launch_sender_thread(worker);
+	if (DEBUG)
+		printf("threads launched\n");
+	sem_wait(&worker->exit_sem);
+	//cleanup
 	return (0);
 }

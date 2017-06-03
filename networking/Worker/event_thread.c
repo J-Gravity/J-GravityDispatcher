@@ -6,26 +6,31 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:56:29 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 14:53:55 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "worker.h"
 
-static void handle_event(t_worker *worker, t_msg msg)
+static void	handle_event(t_worker *worker, t_msg msg)
 {
-	if (msg->id == WORK_UNITS_READY)
+	if (msg.id == WORK_UNITS_READY)
 	{
-		send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-	}
-	else if (msg->id == WORK_UNIT)
-	{
-		queue_enqueue(queue, queue_create_new((t_workunit)(msg.data)));
+		//may need to mutex the socket to avoid conflict with sender_thread
+		send_msg(worker->socket.fd, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
 		free(msg.data);
+	}
+	else if (msg.id == WORK_UNIT)
+	{
+		queue_enqueue(&worker->todo_work, queue_create_new(deserialize_workunit(msg)));
+    if (DEBUG)
+        printf("work unit added to local queue\n");
+		free(msg.data);
+		sem_post(&worker->calc_thread_sem);
 	}
 }
 
-static void *event_thread(void *param)
+static void	*event_thread(void *param)
 {
 	t_msg		msg;
 	t_worker	*worker;
@@ -33,7 +38,7 @@ static void *event_thread(void *param)
 	worker = (t_worker *)param;
 	while (worker->active)
 	{
-		msg = receive_msg(worker->socket.fd));
+		msg = receive_msg(worker->socket.fd);
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
@@ -48,17 +53,19 @@ static void *event_thread(void *param)
 		}
 		if (msg.error == 0 || msg.error == -1)
 		{
-			if (DEBUG && WORKER_DEBUG)
+			if (DEBUG && NETWORK_DEBUG)
 				printf("dispatcher connection terminated! %d\n", worker->socket.fd);
 			worker->active = 0;
 		}
 		else
 			handle_event(worker, msg);
 	}
+	sem_post(&worker->exit_sem);
 	return (0);
 }
 
-launch_event_thread(t_worker *worker)
+void		launch_event_thread(t_worker *worker)
 {
+	worker->event_thread = (pthread_t *)calloc(1, sizeof(pthread_t));
 	pthread_create(worker->event_thread, NULL, event_thread, worker);
 }

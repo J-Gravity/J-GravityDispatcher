@@ -31,6 +31,8 @@
 # include <string.h>
 # include <errno.h>
 # include <OpenCL/opencl.h>
+# include <pthread.h>
+# include <semaphore.h>
 
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 10000
@@ -47,6 +49,15 @@
 /* ******* */
 long G_time_waiting_for_wu;
 
+/* *********** */
+/* DEBUG FLAGS */
+/* *********** */
+# define DEBUG 0
+# define MSG_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
+# define NETWORK_DEBUG 0
+
 typedef struct s_context
 {
     cl_device_id device_id;
@@ -60,12 +71,20 @@ typedef struct			s_body
 	cl_float4			velocity;
 }						t_body;
 
+typedef struct			s_lst
+{
+	void 				*data;
+	size_t				data_size;
+	struct s_lst		*next;
+}						t_lst;
+
 typedef struct			s_queue
 {
 	int					count;
 	t_lst				*first;
 	t_lst				*last;
-}
+	pthread_mutex_t		mutex;
+}						t_queue;
 
 typedef struct			s_workunit
 {
@@ -89,39 +108,57 @@ typedef	struct			s_socket
 	int					fd;
 	struct sockaddr_in	*addr;
 	socklen_t			*addrlen;
+	pthread_mutex_t		mutex;
 }						t_socket;
 
 
 typedef struct			s_worker
 {
 	char				active;
-	t_queue				todo_work;
-	t_queue				completed_work;
+	t_queue				*todo_work;
+	t_queue				*completed_work;
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
-	t_socket			dispatcher_conn;
+	pthread_t			*sender_thread;
+	sem_t				sender_thread_sem;
+	sem_t				calc_thread_sem;
+	sem_t				exit_sem;
+	t_socket			socket;
 }						t_worker;
 
 /*
  * 	Creates a new node and returns it
- * 		@param workunit	The workunit to be added to the node
+ * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_workunit *workunit);
+t_lst		*queue_create_new(t_workunit workunit);
 
 /*
  * 	Pops a node off the queue
- * 		@param queue	A queue struct that holds first, last and size
+ * 		@param **queue	A queue struct that holds first, last and size
  */
 t_workunit	*queue_pop(t_queue **queue);
 
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
- * 		@param queue	A queue struct that holds first, last and size
- * 		@param new		The new node to be added to the queue
+ * 		@param **queue	A queue struct that holds first, last and size
+ * 		@param *new		The new node to be added to the queue
  */
-t_lst		*queue_enqueue(t_queue *queue, t_lst *new);
+t_lst		*queue_enqueue(t_queue **queue, t_lst *new_node);
 
-t_workunit	do_workunit(t_workunit w);
+/*
+ *	Revieve a t_msg from an active tcp connection
+ *		@param fd file descriptor for the open tcp connection
+ */
+t_msg	receive_msg(int fd);
+
+/*
+ *	Send a t_msg on an active tcp connection
+ *		@param fd file descriptor for the open tcp connection
+ */
+void	send_msg(int fd, t_msg msg);
+
+
+t_workunit	*do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
 t_msg		serialize_workunit(t_workunit w);
 

@@ -287,13 +287,13 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     return (ret);
 }
 
-t_workunit do_workunit(t_workunit w)
+t_workunit *do_workunit(t_workunit *w)
 {
     // printf("before computation, from WU\n");
-    // print_cl4(w.local_bodies[0].position);
-    // print_cl4(w.local_bodies[0].velocity);
-    size_t ncount = w.localcount;
-    size_t mcount = w.neighborcount;
+    // print_cl4(w->local_bodies[0].position);
+    // print_cl4(w->local_bodies[0].velocity);
+    size_t ncount = w->localcount;
+    size_t mcount = w->neighborcount;
     size_t npadding = nearest_mult_256(ncount) - ncount;
     size_t mpadding = nearest_mult_256(mcount) - mcount;
     cl_float4 *N = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
@@ -301,26 +301,26 @@ t_workunit do_workunit(t_workunit w)
     cl_float4 *V = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
     for (int i = 0; i < ncount; i++)
     {
-        N[i] = w.local_bodies[i].position;
-        V[i] = w.local_bodies[i].velocity;
+        N[i] = w->local_bodies[i].position;
+        V[i] = w->local_bodies[i].velocity;
     }
     // printf("before computation, in input buffers\n");
     // print_cl4(N[0]);
     // print_cl4(V[0]);
     for (int i = 0; i < mcount; i++)
     {
-        M[i] = w.neighborhood[i];
+        M[i] = w->neighborhood[i];
     }
-    if (w.local_bodies) free(w.local_bodies);
-    w.local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);
-    if (w.neighborhood) free(w.neighborhood);
-    w.neighborhood = NULL;
-    w.neighborcount = 0;
+    if (w->local_bodies) free(w->local_bodies);
+    w->local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);
+    if (w->neighborhood) free(w->neighborhood);
+    w->neighborhood = NULL;
+    w->neighborcount = 0;
     if (N) free(N);
     if (M) free(M);
     if (V) free(V);
     // printf("after computation, in WU\n");
-    // print_cl4(w.local_bodies[0].position);
-    // print_cl4(w.local_bodies[0].velocity);
+    // print_cl4(w->local_bodies[0].position);
+    // print_cl4(w->local_bodies[0].velocity);
     return (w);
 }
