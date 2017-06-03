@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/01 18:50:39 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/02 18:22:06 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,56 +112,20 @@ t_msg	wait_for_msg(int socket, int message_code)
 	}
 }
 
-t_workunit *receive_workunit()
+t_workunit *receive_workunit(int conn_socket)
 {
-	t_msg msg;
-	msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-	if (msg.data)
-		free(msg.data);
+	t_msg	*msg;
+	*msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
+	if (msg->data)
+		free(msg->data);
 	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-	msg = wait_for_msg(conn_socket, WORK_UNIT);
-	return(eserialize_workunit(msg));
+	*msg = wait_for_msg(conn_socket, WORK_UNIT);
+	return(serialize_workunit((t_workunit *)msg->data));
 }
 
 void	send_workunit()
 {
 
-}
-
-t_lst	*create_new(t_workunit *new)
-{
-	t_lst	*node;
-
-	node = (t_lst *)calloc(1, sizeof(t_lst));
-	node->data = new;
-	return (node);
-}
-
-t_lst *enqueue(t_lst *last, t_lst *new)
-{
-	t_lst	*node;
-
-	if (NULL == last)
-		return (new);
-	node = last;
-	node->next = new;
-	last = new;
-	return (last);
-}
-
-t_workunit	*pop(t_lst **first)
-{
-	t_workunit	*data;
-	t_lst		*node;
-
-	node = *first;
-	if(node)
-	{
-		data = node->data;
-		*first = *first->next;
-		free(node);
-	}
-	return (data);
 }
 
 int main(int argc, char **argsv)
