@@ -6,26 +6,27 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:28:14 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 19:08:44 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "worker.h"
 
-static void handle_event(t_worker *worker, t_msg msg)
+static void	handle_event(t_worker *worker, t_msg msg)
 {
-	if (msg->id == WORK_UNITS_READY)
+	if (msg.id == WORK_UNITS_READY)
 	{
-		send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
+		send_msg(worker->socket.fd, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
+		free(msg.data);
 	}
-	else if (msg->id == WORK_UNIT)
+	else if (msg.id == WORK_UNIT)
 	{
 		//add work unit to the dispatcher->todo_work queue
 		//free msg
 	}
 }
 
-static void *event_thread(void *param)
+static void	*event_thread(void *param)
 {
 	t_msg		msg;
 	t_worker	*worker;
@@ -33,7 +34,7 @@ static void *event_thread(void *param)
 	worker = (t_worker *)param;
 	while (worker->active)
 	{
-		msg = receive_msg(worker->socket.fd));
+		msg = receive_msg(worker->socket.fd);
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
@@ -48,7 +49,7 @@ static void *event_thread(void *param)
 		}
 		if (msg.error == 0 || msg.error == -1)
 		{
-			if (DEBUG && WORKER_DEBUG)
+			if (DEBUG && NETWORK_DEBUG)
 				printf("dispatcher connection terminated! %d\n", worker->socket.fd);
 			worker->active = 0;
 		}
@@ -58,7 +59,7 @@ static void *event_thread(void *param)
 	return (0);
 }
 
-launch_event_thread(t_worker *worker)
+void		launch_event_thread(t_worker *worker)
 {
 	pthread_create(worker->event_thread, NULL, event_thread, worker);
 }

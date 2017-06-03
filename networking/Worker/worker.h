@@ -31,6 +31,7 @@
 # include <string.h>
 # include <errno.h>
 # include <OpenCL/opencl.h>
+# include <pthread.h>
 
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 10000
@@ -47,6 +48,15 @@
 /* ******* */
 long G_time_waiting_for_wu;
 
+/* *********** */
+/* DEBUG FLAGS */
+/* *********** */
+# define DEBUG 0
+# define MSG_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
+# define NETWORK_DEBUG 0
+
 typedef struct s_context
 {
     cl_device_id device_id;
@@ -60,12 +70,19 @@ typedef struct			s_body
 	cl_float4			velocity;
 }						t_body;
 
+typedef struct			s_lst
+{
+	void 				*data;
+	size_t				data_size;
+	struct s_lst		*next;
+}						t_lst;
+
 typedef struct			s_queue
 {
 	int					count;
 	t_lst				*first;
 	t_lst				*last;
-}
+}						t_queue;
 
 typedef struct			s_workunit
 {
@@ -95,11 +112,11 @@ typedef	struct			s_socket
 typedef struct			s_worker
 {
 	char				active;
-	t_queue				todo_work;
-	t_queue				completed_work;
+	t_queue				*todo_work;
+	t_queue				*completed_work;
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
-	t_socket			dispatcher_conn;
+	t_socket			socket;
 }						t_worker;
 
 /*
@@ -120,7 +137,14 @@ t_workunit	*queue_pop(t_queue **queue);
  */
 t_lst		*queue_enqueue(t_queue *queue);
 
-t_workunit	do_workunit(t_workunit w);
+/*
+ *	Revieve a t_msg from an active tcp connection
+ *		@param fd file descriptor for the open tcp connection
+ */
+t_msg	receive_msg(int fd);
+
+
+void		do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
 t_msg		serialize_workunit(t_workunit w);
 

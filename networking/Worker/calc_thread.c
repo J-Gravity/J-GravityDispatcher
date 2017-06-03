@@ -6,11 +6,11 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:52:38 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 19:12:23 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "worker"
+#include "worker.h"
 
 static void *calc_thread(void *param)
 {
@@ -20,7 +20,7 @@ static void *calc_thread(void *param)
 	worker = (t_worker *)param;
     while (1)
     {
-        if (worker->todo_work.count > 0)
+        if (worker->todo_work->count > 0)
         {
             workunit = queue_pop(&worker->todo_work);
             workunit = do_workunit(workunit);
