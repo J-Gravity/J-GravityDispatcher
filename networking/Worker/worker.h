@@ -84,6 +84,15 @@ typedef	struct			s_socket
 	socklen_t			*addrlen;
 }						t_socket;
 
+typedef struct			s_worker
+{
+	char				active;
+	t_queue				workunit_queue;
+	pthread_t			*event_thread;
+	pthread_t			*calc_thread;
+	t_socket			dispatcher_conn;
+}						t_worker;
+
 
 t_workunit do_workunit(t_workunit w);
 
