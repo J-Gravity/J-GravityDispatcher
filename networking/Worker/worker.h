@@ -128,9 +128,9 @@ typedef struct			s_worker
 
 /*
  * 	Creates a new node and returns it
- * 		@param queue	A queue struct that holds first, last and size
+ * 		@param workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_queue *queue);
+t_lst		*queue_create_new(t_workunit *workunit);
 
 /*
  * 	Pops a node off the queue
@@ -141,8 +141,9 @@ t_workunit	*queue_pop(t_queue **queue);
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
  * 		@param queue	A queue struct that holds first, last and size
+ * 		@param new		The new node to be added to the queue
  */
-t_lst		*queue_enqueue(t_queue *queue);
+t_lst		*queue_enqueue(t_queue *queue, t_lst *new);
 
 /*
  *	Revieve a t_msg from an active tcp connection

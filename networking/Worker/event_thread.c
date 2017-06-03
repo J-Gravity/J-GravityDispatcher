@@ -22,10 +22,10 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	}
 	else if (msg.id == WORK_UNIT)
 	{
-		//add work unit to the dispatcher->todo_work queue
-		//free msg
-        if (DEBUG)
-            printf("work unit added to local queue\n");
+		queue_enqueue(queue, queue_create_new((t_workunit)(msg.data)));
+    if (DEBUG)
+        printf("work unit added to local queue\n");
+		free(msg.data);
 		sem_post(&worker->calc_thread_sem);
 	}
 }
