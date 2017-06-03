@@ -120,9 +120,9 @@ typedef struct			s_worker
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
 	pthread_t			*sender_thread;
-	sem_t				sender_thread_sem;
-	sem_t				calc_thread_sem;
-	sem_t				exit_sem;
+	sem_t				*sender_thread_sem;
+	sem_t				*calc_thread_sem;
+	sem_t				*exit_sem;
 	t_socket			socket;
 }						t_worker;
 

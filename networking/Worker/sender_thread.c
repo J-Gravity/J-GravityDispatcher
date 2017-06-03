@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 14:55:27 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 16:13:06 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static void *sender_thread(void *param)
 	worker = (t_worker *)param;
     while (1)
     {
-	    sem_wait(&worker->sender_thread_sem);
+	    sem_wait(worker->sender_thread_sem);
         if (DEBUG)
             printf("sending work unit\n");
         workunit = queue_pop(&worker->completed_work);

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 14:53:55 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 16:12:56 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static void	handle_event(t_worker *worker, t_msg msg)
     if (DEBUG)
         printf("work unit added to local queue\n");
 		free(msg.data);
-		sem_post(&worker->calc_thread_sem);
+		sem_post(worker->calc_thread_sem);
 	}
 }
 
@@ -60,7 +60,7 @@ static void	*event_thread(void *param)
 		else
 			handle_event(worker, msg);
 	}
-	sem_post(&worker->exit_sem);
+	sem_post(worker->exit_sem);
 	return (0);
 }
 

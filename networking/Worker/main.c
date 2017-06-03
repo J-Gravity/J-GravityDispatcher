@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 13:59:56 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 16:12:49 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,9 +145,9 @@ int main(int argc, char **argsv)
 	}
 	printf("Successfully connected to %s\n", argsv[1]);
 	worker->socket.fd = conn_socket;
-	sem_init(&worker->calc_thread_sem, 0, 0);
-	sem_init(&worker->sender_thread_sem, 0, 0);
-	sem_init(&worker->exit_sem, 0, 0);
+	worker->calc_thread_sem = sem_open("calc_thread", O_CREAT, 0600, 0);
+	worker->sender_thread_sem = sem_open("sender_thread", O_CREAT, 0600, 0);
+	worker->exit_sem = sem_open("exit", O_CREAT, 0600, 0);
 	if (DEBUG)
 		printf("semaphores initalized\n");
 	launch_event_thread(worker);
@@ -155,7 +155,7 @@ int main(int argc, char **argsv)
 	launch_sender_thread(worker);
 	if (DEBUG)
 		printf("threads launched\n");
-	sem_wait(&worker->exit_sem);
+	sem_wait(worker->exit_sem);
 	//cleanup
 	return (0);
 }
