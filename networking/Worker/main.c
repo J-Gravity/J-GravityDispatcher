@@ -112,12 +112,70 @@ t_msg	wait_for_msg(int socket, int message_code)
 	}
 }
 
+t_workunit *receive_workunit()
+{
+	t_msg msg;
+	msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
+	if (msg.data)
+		free(msg.data);
+	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
+	msg = wait_for_msg(conn_socket, WORK_UNIT);
+	return(eserialize_workunit(msg));
+}
+
+void	send_workunit()
+{
+
+}
+
+t_lst	*create_new(t_workunit *new)
+{
+	t_lst	*node;
+
+	node = (t_lst *)calloc(1, sizeof(t_lst));
+	node->data = new;
+	return (node);
+}
+
+t_lst *enqueue(t_lst *last, t_lst *new)
+{
+	t_lst	*node;
+
+	if (NULL == last)
+		return (new);
+	node = last;
+	node->next = new;
+	last = new;
+	return (last);
+}
+
+t_workunit	*pop(t_lst **first)
+{
+	t_workunit	*data;
+	t_lst		*node;
+
+	node = *first;
+	if(node)
+	{
+		data = node->data;
+		*first = *first->next;
+		free(node);
+	}
+	return (data);
+}
+
 int main(int argc, char **argsv)
 {
-	int err;
-	int conn_socket;
-	struct sockaddr_in serv_addr;
+	int		err;
+	int		conn_socket;
+	struct		sockaddr_in serv_addr;
 	int		buff_size;
+	t_lst		*completed_workunits = NULL;
+	t_lst		*lastcompleted_workunits = NULL;
+	t_lst		*first = NULL;
+	t_lst		*last = NULL;
+	pthread_t	*receive_wu_thread;
+	pthread_t	*calculate_wu;
 
 	if (argc == 1)
 	{
@@ -132,32 +190,38 @@ int main(int argc, char **argsv)
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_port = htons(4242);
 	// Convert IPv4 and IPv6 addresses from text to binary form
-	if(inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
+	if (inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
 	{
 		printf("\nInvalid address/ Address not supported \n");
 		return -1;
 	}
-
 	if (connect(conn_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-    	{
-        	printf("\nConnection Failed \n");
-        	return -1;
-    	}
+	{
+		printf("\nConnection Failed \n");
+		return -1;
+	}
 	printf("Successfully connected to %s\n", argsv[1]);
 	G_time_waiting_for_wu = -1;
 	while (1)
-    	{
-    		t_msg msg;
-    		msg = wait_for_msg(conn_socket, WORK_UNITS_READY);
-				if (msg.data)
-	    		free(msg.data);
-	    	send_msg(conn_socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-	    	msg = wait_for_msg(conn_socket, WORK_UNIT);
-	    	t_workunit w = deserialize_workunit(msg);
-	    	if (msg.data)
+	{
+		//GRAB NEW WORKUNITS//
+//P_THREAD_LOCK
+		last = enqueue(last, createnew(receive_workunit(conn_socket)));
+		if (first == NULL)
+			first = last;
+		if (msg.data)
 			free(msg.data);
-	    	w = do_workunit(w);
-	    	msg = serialize_workunit(w);
+//P_THREAD_UNLOCK
+		
+		//SENDS COMPLETED WORKUNITS//
+//P_THREAD_LOCK
+		lastcompleted_workunits = enqueue(lastcompleted_workunits,
+				createnew(do_workunit(pop(&first))));
+		if (completed_workunits == NULL)
+			completed_workunits = lastcompleted_workunits;
+//P_THREAD_UNLOCK
+		msg = serialize_workunit(pop(&completed_workunits));
+
     		send_msg(conn_socket, msg);
 		if (w.local_bodies)
 			free(w.local_bodies);

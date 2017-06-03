@@ -32,7 +32,6 @@ void	*connect_worker_thread(void *param)
 			printf("accept returned 0!");
 			continue;
 		}
-		dispatcher->worker_cnt++;
 		printf("%d workers are connected\n", dispatcher->worker_cnt);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
@@ -47,23 +46,14 @@ void	*connect_worker_thread(void *param)
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
 		G_connect_locked += msec/1000 + msec%1000;
 		head = dispatcher->workers;
-		//printf("f0\n");
 		if (head)
 		{
-			//printf("head->next\n");
-			while (head)
-			{
-				if (head->next == NULL)
-					break;
+			while (head && head->next)
 				head = head->next;
-			}
 			head->next = new_link;
 		}
 		else
-		{
-			//printf("new list\n");
 			dispatcher->workers = new_link;
-		}
 		new_worker = (t_worker *)new_link->data;
 		new_worker->socket.fd = fd;
 		new_worker->tid = 0;

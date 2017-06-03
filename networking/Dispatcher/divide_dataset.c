@@ -592,12 +592,12 @@ void	divide_dataset(t_dispatcher *dispatcher)
     c_count = 0;
     if (t != NULL)
         free_tree(t);
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("starting divide_dataset\n");
+    if (DEBUG && DIVIDE_DATASET_DEBUG)
+	    printf("starting divide_dataset\n");
     t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
-	bodies[dispatcher->dataset->particle_cnt] = NULL;
+    bodies[dispatcher->dataset->particle_cnt] = NULL;
     for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
-        bodies[i] = &(dispatcher->dataset->particles[i]);
+	    bodies[i] = &(dispatcher->dataset->particles[i]);
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
     //printf("tree init done\n");
