@@ -121,6 +121,7 @@ typedef struct			s_worker
 	pthread_t			*sender_thread;
 	pthread_mutex_t		sender_thread_mutex;
 	pthread_mutex_t		calc_thread_mutex;
+	pthread_mutex_t		exit_mutex;
 	t_socket			socket;
 }						t_worker;
 

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:22:06 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/02 20:24:29 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,6 +141,9 @@ int main(int argc, char **argsv)
 	pthread_t	*receive_wu_thread;
 	pthread_t	*calculate_wu;
 
+	t_worker	*worker;
+
+	worker = (t_worker *)calloc(1, sizeof(t_worker));
 	if (argc == 1)
 	{
 		printf("Usage ./a.out [IP Address]\n");
@@ -165,30 +168,81 @@ int main(int argc, char **argsv)
 		return -1;
 	}
 	printf("Successfully connected to %s\n", argsv[1]);
-	G_time_waiting_for_wu = -1;
-	while (1)
-	{
-		//GRAB NEW WORKUNITS//
-//P_THREAD_LOCK
-		last = enqueue(last, createnew(receive_workunit(conn_socket)));
-		if (first == NULL)
-			first = last;
-		if (msg.data)
-			free(msg.data);
-//P_THREAD_UNLOCK
-		
-		//SENDS COMPLETED WORKUNITS//
-//P_THREAD_LOCK
-		lastcompleted_workunits = enqueue(lastcompleted_workunits,
-				createnew(do_workunit(pop(&first))));
-		if (completed_workunits == NULL)
-			completed_workunits = lastcompleted_workunits;
-//P_THREAD_UNLOCK
-		msg = serialize_workunit(pop(&completed_workunits));
-
-    		send_msg(conn_socket, msg);
-		if (w.local_bodies)
-			free(w.local_bodies);
-	}
+	worker->socket.fd = conn_socket;
+	pthread_mutex_init(&worker->sender_thread_mutex, NULL);
+	pthread_mutex_init(&worker->calc_thread_mutex, NULL);
+	pthread_mutex_init(&worker->exit_mutex, NULL);
+	launch_event_thread(worker);
+	launch_calculation_thread(worker);
+	launch_sender_thread(worker);
+	pthread_mutex_lock(&worker->exit_mutex);
+	pthread_mutex_lock(&worker->exit_mutex);
+	//cleanup
 	return (0);
 }
+
+
+// int main(int argc, char **argsv)
+// {
+// 	int		err;
+// 	int		conn_socket;
+// 	struct		sockaddr_in serv_addr;
+// 	int		buff_size;
+// 	t_lst		*completed_workunits = NULL;
+// 	t_lst		*lastcompleted_workunits = NULL;
+// 	t_lst		*first = NULL;
+// 	t_lst		*last = NULL;
+// 	pthread_t	*receive_wu_thread;
+// 	pthread_t	*calculate_wu;
+
+// 	if (argc == 1)
+// 	{
+// 		printf("Usage ./a.out [IP Address]\n");
+// 		exit(1);
+// 	}
+// 	conn_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+// 	if (conn_socket == -1)
+// 		write(1, "sock error occured\n", 19);
+
+// 	memset(&serv_addr, '0', sizeof(serv_addr));
+// 	serv_addr.sin_family = AF_INET;
+// 	serv_addr.sin_port = htons(4242);
+// 	// Convert IPv4 and IPv6 addresses from text to binary form
+// 	if (inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
+// 	{
+// 		printf("\nInvalid address/ Address not supported \n");
+// 		return -1;
+// 	}
+// 	if (connect(conn_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+// 	{
+// 		printf("\nConnection Failed \n");
+// 		return -1;
+// 	}
+// 	printf("Successfully connected to %s\n", argsv[1]);
+// 	G_time_waiting_for_wu = -1;
+// 	while (1)
+// 	{
+// 		//GRAB NEW WORKUNITS//
+// //P_THREAD_LOCK
+// 		last = enqueue(last, createnew(receive_workunit(conn_socket)));
+// 		if (first == NULL)
+// 			first = last;
+// 		if (msg.data)
+// 			free(msg.data);
+// //P_THREAD_UNLOCK
+		
+// 		//SENDS COMPLETED WORKUNITS//
+// //P_THREAD_LOCK
+// 		lastcompleted_workunits = enqueue(lastcompleted_workunits,
+// 				createnew(do_workunit(pop(&first))));
+// 		if (completed_workunits == NULL)
+// 			completed_workunits = lastcompleted_workunits;
+// //P_THREAD_UNLOCK
+// 		msg = serialize_workunit(pop(&completed_workunits));
+
+//     		send_msg(conn_socket, msg);
+// 		if (w.local_bodies)
+// 			free(w.local_bodies);
+// 	}
+// 	return (0);
+// }

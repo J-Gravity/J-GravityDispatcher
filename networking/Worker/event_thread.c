@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 19:55:08 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 20:20:20 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ static void	*event_thread(void *param)
 		else
 			handle_event(worker, msg);
 	}
+	pthread_mutex_unlock(&worker->exit_mutex);
 	return (0);
 }
 
