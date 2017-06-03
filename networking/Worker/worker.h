@@ -149,14 +149,31 @@ t_lst		*queue_enqueue(t_queue **queue, t_lst *new_node);
  *	Revieve a t_msg from an active tcp connection
  *		@param fd file descriptor for the open tcp connection
  */
-t_msg	receive_msg(int fd);
+t_msg		receive_msg(int fd);
 
 /*
  *	Send a t_msg on an active tcp connection
  *		@param fd file descriptor for the open tcp connection
  */
-void	send_msg(int fd, t_msg msg);
+void		send_msg(int fd, t_msg msg);
 
+/*
+ *	Starts listening for and handling network events
+ *		@param worker The worker's master struct
+ */
+void		launch_event_thread(t_worker *worker);
+
+/*
+ *	Start computing workunits as they become availible
+ *		@param worker The worker's master struct
+ */
+void		launch_calculation_thread(t_worker *worker);
+
+/*
+ *	Start sending completed workunits as they become availible
+ *		@param worker The worker's master struct
+ */
+void		launch_sender_thread(t_worker *worker);
 
 t_workunit	*do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
