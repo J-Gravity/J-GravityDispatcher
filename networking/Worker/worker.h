@@ -60,6 +60,13 @@ typedef struct			s_body
 	cl_float4			velocity;
 }						t_body;
 
+typedef struct			s_queue
+{
+	int					count;
+	t_lst				*first;
+	t_lst				*last;
+}
+
 typedef struct			s_workunit
 {
 	int					id;
@@ -84,11 +91,27 @@ typedef	struct			s_socket
 	socklen_t			*addrlen;
 }						t_socket;
 
+/*
+ * 	Creates a new node and returns it
+ * 		@param queue	A queue struct that holds first, last and size
+ */
+t_lst		*queue_create_new(t_queue *queue);
 
-t_workunit do_workunit(t_workunit w);
+/*
+ * 	Pops a node off the queue
+ * 		@param queue	A queue struct that holds first, last and size
+ */
+t_workunit	*queue_pop(t_queue **queue);
 
-t_workunit deserialize_workunit(t_msg msg);
-t_msg serialize_workunit(t_workunit w);
+/*
+ * 	Adds a node to the end of the queue. Returns the last param.
+ * 		@param queue	A queue struct that holds first, last and size
+ */
+t_lst		*queue_enqueue(t_queue *queue);
+
+t_workunit	do_workunit(t_workunit w);
+t_workunit	deserialize_workunit(t_msg msg);
+t_msg		serialize_workunit(t_workunit w);
 
 void print_cl4(cl_float4 v);
 
