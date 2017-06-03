@@ -14,26 +14,22 @@
 
 void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 {
-	clock_t start = clock(), diff;
 	if (DEBUG && MUTEX_DEBUG)
 		printf("*work units mutex locked!\n");
-	diff = clock() - start;
-	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_handle_locked += msec%1000;
 	if (dispatcher->workunits)
 	{
+		clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_handle_locked += msec%1000;
 		worker->workunit_link = dispatcher->workunits;
 		dispatcher->workunits = dispatcher->workunits->next;
 		worker->workunit_link->next = NULL;
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
-		send_workunit(worker, (t_workunit *)(worker->workunit_link->data));
-	}
-	else
-	{
-		pthread_mutex_unlock(&dispatcher->workunits_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("*work units mutex unlocked!\n");
+		send_workunit(worker, (t_workunit *)(worker->workunit_link->data));
 	}
 	free(msg.data);
 }
