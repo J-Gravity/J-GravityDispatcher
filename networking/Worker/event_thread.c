@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:28:14 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 18:56:29 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,8 @@ static void handle_event(t_worker *worker, t_msg msg)
 	}
 	else if (msg->id == WORK_UNIT)
 	{
-		//add work unit to the dispatcher->todo_work queue
-		//free msg
+		queue_enqueue(queue, queue_create_new((t_workunit)(msg.data)));
+		free(msg.data);
 	}
 }
 

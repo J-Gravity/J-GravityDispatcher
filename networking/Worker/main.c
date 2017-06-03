@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 18:22:06 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/02 18:40:44 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,8 +179,7 @@ int main(int argc, char **argsv)
 		
 		//SENDS COMPLETED WORKUNITS//
 //P_THREAD_LOCK
-		lastcompleted_workunits = enqueue(lastcompleted_workunits,
-				createnew(do_workunit(pop(&first))));
+		lastcompleted_workunits = enqueue(lastcompleted_workunits, createnew(do_workunit(pop(&first))));
 		if (completed_workunits == NULL)
 			completed_workunits = lastcompleted_workunits;
 //P_THREAD_UNLOCK
