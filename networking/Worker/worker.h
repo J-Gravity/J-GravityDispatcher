@@ -32,6 +32,7 @@
 # include <errno.h>
 # include <OpenCL/opencl.h>
 # include <pthread.h>
+# include <semaphore.h>
 
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 10000
