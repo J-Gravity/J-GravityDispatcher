@@ -87,7 +87,8 @@ typedef	struct			s_socket
 typedef struct			s_worker
 {
 	char				active;
-	t_queue				workunit_queue;
+	t_queue				todo_work;
+	t_queue				completed_work;
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
 	t_socket			dispatcher_conn;
