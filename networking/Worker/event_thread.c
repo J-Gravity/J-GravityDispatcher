@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 14:32:13 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 14:53:55 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,5 +66,6 @@ static void	*event_thread(void *param)
 
 void		launch_event_thread(t_worker *worker)
 {
+	worker->event_thread = (pthread_t *)calloc(1, sizeof(pthread_t));
 	pthread_create(worker->event_thread, NULL, event_thread, worker);
 }

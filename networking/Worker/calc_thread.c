@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 14:29:04 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 14:54:10 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,5 +33,6 @@ static void *calc_thread(void *param)
 
 void launch_calculation_thread(t_worker *worker)
 {
+	worker->calc_thread = (pthread_t *)calloc(1, sizeof(pthread_t));
 	pthread_create(worker->calc_thread, NULL, calc_thread, worker);
 }

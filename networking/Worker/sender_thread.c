@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 23:42:30 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 14:55:27 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,5 +37,6 @@ static void *sender_thread(void *param)
 
 void launch_sender_thread(t_worker *worker)
 {
+	worker->sender_thread = (pthread_t *)calloc(1, sizeof(pthread_t));
     pthread_create(worker->sender_thread, NULL, sender_thread, worker);
 }
