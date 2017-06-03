@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 19:12:23 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 20:10:16 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,13 @@ static void *calc_thread(void *param)
 	worker = (t_worker *)param;
     while (1)
     {
-        if (worker->todo_work->count > 0)
+	    pthread_mutex_lock(&worker->calc_thread_mutex);
+        while (worker->todo_work->count > 0)// todo: add queue function for getting the counter
         {
             workunit = queue_pop(&worker->todo_work);
-            workunit = do_workunit(workunit);
+            do_workunit(workunit);
             queue_enqueue(&worker->completed_work, queue_create_new(workunit));
+	        pthread_mutex_unlock(&worker->sender_thread_mutex);
         }
     }
     return (0);
@@ -32,5 +34,5 @@ static void *calc_thread(void *param)
 
 void launch_calculation_thread(t_worker *worker)
 {
-    pthread_create(worker->event_thread, NULL, calc_thread, worker);
+    pthread_create(worker->calc_thread, NULL, calc_thread, worker);
 }

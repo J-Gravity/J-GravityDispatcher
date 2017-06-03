@@ -82,6 +82,7 @@ typedef struct			s_queue
 	int					count;
 	t_lst				*first;
 	t_lst				*last;
+	pthread_mutex_t		mutex;
 }						t_queue;
 
 typedef struct			s_workunit
@@ -106,6 +107,7 @@ typedef	struct			s_socket
 	int					fd;
 	struct sockaddr_in	*addr;
 	socklen_t			*addrlen;
+	pthread_mutex_t		mutex;
 }						t_socket;
 
 
@@ -116,6 +118,9 @@ typedef struct			s_worker
 	t_queue				*completed_work;
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
+	pthread_t			*sender_thread;
+	pthread_mutex_t		sender_thread_mutex;
+	pthread_mutex_t		calc_thread_mutex;
 	t_socket			socket;
 }						t_worker;
 
@@ -142,6 +147,12 @@ t_lst		*queue_enqueue(t_queue *queue);
  *		@param fd file descriptor for the open tcp connection
  */
 t_msg	receive_msg(int fd);
+
+/*
+ *	Send a t_msg on an active tcp connection
+ *		@param fd file descriptor for the open tcp connection
+ */
+void	send_msg(int fd, t_msg msg);
 
 
 void		do_workunit(t_workunit *w);

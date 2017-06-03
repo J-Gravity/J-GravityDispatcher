@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 19:08:44 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 19:55:08 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ static void	handle_event(t_worker *worker, t_msg msg)
 {
 	if (msg.id == WORK_UNITS_READY)
 	{
+		//may need to mutex the socket to avoid conflict with sender_thread
 		send_msg(worker->socket.fd, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
 		free(msg.data);
 	}
@@ -23,6 +24,7 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	{
 		//add work unit to the dispatcher->todo_work queue
 		//free msg
+		pthread_mutex_unlock(&worker->calc_thread_mutex);
 	}
 }
 
