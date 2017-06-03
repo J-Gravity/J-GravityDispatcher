@@ -91,6 +91,17 @@ typedef	struct			s_socket
 	socklen_t			*addrlen;
 }						t_socket;
 
+
+typedef struct			s_worker
+{
+	char				active;
+	t_queue				todo_work;
+	t_queue				completed_work;
+	pthread_t			*event_thread;
+	pthread_t			*calc_thread;
+	t_socket			dispatcher_conn;
+}						t_worker;
+
 /*
  * 	Creates a new node and returns it
  * 		@param queue	A queue struct that holds first, last and size
