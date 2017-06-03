@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 20:10:16 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 23:42:13 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,14 +20,13 @@ static void *calc_thread(void *param)
 	worker = (t_worker *)param;
     while (1)
     {
-	    pthread_mutex_lock(&worker->calc_thread_mutex);
-        while (worker->todo_work->count > 0)// todo: add queue function for getting the counter
-        {
-            workunit = queue_pop(&worker->todo_work);
-            do_workunit(workunit);
-            queue_enqueue(&worker->completed_work, queue_create_new(workunit));
-	        pthread_mutex_unlock(&worker->sender_thread_mutex);
-        }
+	    sem_wait(&worker->calc_thread_sem);
+        if (DEBUG)
+            printf("calculating work unit\n");
+        workunit = queue_pop(&worker->todo_work);
+        do_workunit(workunit);
+        queue_enqueue(&worker->completed_work, queue_create_new(workunit));
+        sem_post(&worker->sender_thread_sem);
     }
     return (0);
 }

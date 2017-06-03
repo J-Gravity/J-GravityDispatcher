@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 20:24:29 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 23:45:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,17 +130,9 @@ void	send_workunit()
 
 int main(int argc, char **argsv)
 {
-	int		err;
-	int		conn_socket;
+	int			err;
+	int			conn_socket;
 	struct		sockaddr_in serv_addr;
-	int		buff_size;
-	t_lst		*completed_workunits = NULL;
-	t_lst		*lastcompleted_workunits = NULL;
-	t_lst		*first = NULL;
-	t_lst		*last = NULL;
-	pthread_t	*receive_wu_thread;
-	pthread_t	*calculate_wu;
-
 	t_worker	*worker;
 
 	worker = (t_worker *)calloc(1, sizeof(t_worker));
@@ -169,14 +161,17 @@ int main(int argc, char **argsv)
 	}
 	printf("Successfully connected to %s\n", argsv[1]);
 	worker->socket.fd = conn_socket;
-	pthread_mutex_init(&worker->sender_thread_mutex, NULL);
-	pthread_mutex_init(&worker->calc_thread_mutex, NULL);
-	pthread_mutex_init(&worker->exit_mutex, NULL);
+	sem_init(&worker->calc_thread_sem, 0, 0);
+	sem_init(&worker->sender_thread_sem, 0, 0);
+	sem_init(&worker->exit_sem, 0, 0);
+	if (DEBUG)
+		printf("semaphores initalized\n");
 	launch_event_thread(worker);
 	launch_calculation_thread(worker);
 	launch_sender_thread(worker);
-	pthread_mutex_lock(&worker->exit_mutex);
-	pthread_mutex_lock(&worker->exit_mutex);
+	if (DEBUG)
+		printf("threads launched\n");
+	sem_wait(&worker->exit_sem);
 	//cleanup
 	return (0);
 }

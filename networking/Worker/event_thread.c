@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/02 20:20:20 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/02 23:43:03 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,9 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	{
 		//add work unit to the dispatcher->todo_work queue
 		//free msg
-		pthread_mutex_unlock(&worker->calc_thread_mutex);
+        if (DEBUG)
+            printf("work unit added to local queue\n");
+		sem_post(&worker->calc_thread_sem);
 	}
 }
 
@@ -58,7 +60,7 @@ static void	*event_thread(void *param)
 		else
 			handle_event(worker, msg);
 	}
-	pthread_mutex_unlock(&worker->exit_mutex);
+	sem_post(&worker->exit_sem);
 	return (0);
 }
 
