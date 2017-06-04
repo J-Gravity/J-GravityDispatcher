@@ -27,6 +27,7 @@ t_workunit	*queue_pop(t_queue **queue)
 			(*queue)->first = (*queue)->first->next;
 			free(node);
 		}
+		(*queue)->count--;
 		pthread_mutex_unlock(&(*queue)->mutex);
 	}
 	return (workunit);
