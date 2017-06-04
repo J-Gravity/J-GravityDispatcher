@@ -43,7 +43,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	t_worker	*worker;
 
 	worker = (t_worker *)worker_link->data;
-	if (worker->workunit_link)
+	if (worker->workunit_queue->count > 0)
 	{
 		if (DEBUG && WORKER_DEBUG)
 			printf("adding lost worker's work unit back to the pool!\n");
@@ -53,11 +53,11 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		diff = clock() - start;
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
 		G_movelist_locked += msec%1000;
-		worker->workunit_link->next = dispatcher->workunits;
-		dispatcher->workunits = worker->workunit_link;
+		while (worker->workunit_queue->count > 0)
+			queue_enqueue(&dispatcher->workunits, queue_create_new(*queue_pop(&worker->workunit_queue)));
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	}
-	worker->workunit_link = NULL;
+	worker->workunit_queue = NULL;
 	if (DEBUG && WORKER_DEBUG)
 		printf("removing worker link!\n");
 	clock_t start, diff;
@@ -226,6 +226,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	write(1, "running...\n", 11);
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
+	printf("launch0\n");
 	launch_worker_event_threads(dispatcher);
 	sleep(999999);
 	printf("END\n");

@@ -485,8 +485,9 @@ static t_lst *new_node(t_workunit *w)
     return (n);
 }
 
-int lstlen(t_lst *lst)
+int lstlen(t_queue *queue)
 {
+	t_lst	*lst = queue->first;
     if (!lst)
         return (0);
     int i = 0;
@@ -498,33 +499,25 @@ int lstlen(t_lst *lst)
     return (i);
 }
 
-static t_lst   *create_workunits(t_octree *t, t_cell **leaves)
+static t_queue   *create_workunits(t_octree *t, t_cell **leaves)
 {
-    t_lst *head = NULL;
-    t_lst *tail = NULL;
-    t_workunit *w = NULL;
-    long sizetotal = 0;
+	t_queue		*workunits;
+	t_lst		*w = NULL;
+    long 		sizetotal = 0;
 
+	workunits = (t_queue *)calloc(1, sizeof(t_queue));
+	workunits = NULL;
     for (int i = 0; leaves[i]; i++)
     {
-        w = make_workunit_for_cell(leaves[i], t, i);
+        queue_enqueue(&workunits, queue_create_new(*make_workunit_for_cell(leaves[i], t, i)));
         if (w)
-        {
-            sizetotal += w->localcount + w->neighborcount;
-            if (!head)
-            {
-                head = new_node(w);
-                tail = head;
-            }
-            else
-            {
-                tail->next = new_node(w);
-                tail = tail->next;
-            }
+		{
+            sizetotal += ((t_workunit *)(w->data))->localcount + ((t_workunit *)w->data)->neighborcount;
+            queue_enqueue(&workunits, w);
         }
     }
     //printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
-    return (head);
+	return (workunits);
 }
 
 static void recursive_tree_free(t_cell *c)
@@ -569,11 +562,12 @@ static int unit_size(t_workunit *w)
     return total;
 }
 
-static void tally_workunits(t_lst *units)
+static void tally_workunits(t_queue *queue)
 {
+	t_lst	*units = queue->first;
     long total = 0;
     int local = 0;
-    while (units)
+	while (units)
     {
         int this = unit_size((t_workunit *)units->data);
         total += this;
@@ -607,7 +601,9 @@ void	divide_dataset(t_dispatcher *dispatcher)
     t_cell **leaves = enumerate_leaves(t->root);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
 	    printf("tree is made\n");
-    dispatcher->workunits = create_workunits(t, leaves);
+    printf("d0\n");
+	dispatcher->workunits = create_workunits(t, leaves);
+    printf("d1\n");
     tally_workunits(dispatcher->workunits);
     int len = lstlen(dispatcher->workunits);
     dispatcher->workunits_cnt = len;

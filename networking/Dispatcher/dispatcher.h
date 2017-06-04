@@ -53,11 +53,11 @@ long c_count;
 /* DEBUG FLAGS */
 /* *********** */
 # define DEBUG 1
-# define MSG_DEBUG 0
-# define WORKER_DEBUG 0
-# define MSG_DETAILS_DEBUG 0
-# define MUTEX_DEBUG 0
-# define DIVIDE_DATASET_DEBUG 0
+# define MSG_DEBUG 1
+# define WORKER_DEBUG 1
+# define MSG_DETAILS_DEBUG 1
+# define MUTEX_DEBUG 1
+# define DIVIDE_DATASET_DEBUG 1
 # define NETWORK_DEBUG 1
 
 # include <stdio.h>
@@ -74,6 +74,13 @@ long c_count;
 # include <unistd.h>
 # include <signal.h>
 
+typedef struct			s_lst
+{
+	void 				*data;
+	size_t				data_size;
+	struct s_lst		*next;
+}						t_lst;
+
 typedef struct			s_queue
 {
 	int					count;
@@ -81,13 +88,6 @@ typedef struct			s_queue
 	t_lst				*last;
 	pthread_mutex_t		mutex;
 }						t_queue;
-
-typedef struct			s_lst
-{
-	void 				*data;
-	size_t				data_size;
-	struct s_lst		*next;
-}						t_lst;
 
 typedef struct			s_msg
 {
@@ -163,7 +163,7 @@ typedef struct			s_workunit
 typedef struct			s_worker
 {
 	char				active;
-	t_lst				*workunit_link;
+	t_queue				*workunit_queue;
 	char				compute_class;
 	pthread_t			*tid;
 	t_socket			socket;
@@ -195,7 +195,7 @@ typedef struct			s_dispatcher
 	t_dataset			*new_dataset;
 	int					ticks_cnt;
 	int					ticks_done;
-	t_lst				*workunits;
+	t_queue				*workunits;
 	int					workunits_cnt;
 	int					workunits_done;
 	t_cell				**cells;
@@ -402,7 +402,7 @@ void		broadcast_worker_msg(t_lst *workers, t_msg msg);
 /*
 *	clears the link list of work units.
 */
-void		clear_work_units(t_lst **work_units);
+void		clear_work_units(t_queue **work_units);
 
 /*
 *	clears the link list of work units.

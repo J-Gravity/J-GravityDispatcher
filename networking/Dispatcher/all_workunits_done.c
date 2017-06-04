@@ -18,8 +18,6 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		printf("all workunits done for this tick\n");
 	// Output tick to file
 	save_output(dispatcher, dispatcher->name);
-	// Clear Work Units
-	//clear_work_units(&dispatcher->workunits);
 	dispatcher->ticks_done++;
 	double tick_time = (time(NULL) - G_tick_start);
 	G_total_time += tick_time;

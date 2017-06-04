@@ -66,9 +66,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
 	delete_WU(complete_WU);
-	delete_workunit((t_workunit **)&worker->workunit_link->data);
-	free(worker->workunit_link);
-	worker->workunit_link = NULL;
+	queue_pop(&worker->workunit_queue);
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
