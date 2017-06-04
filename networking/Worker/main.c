@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 17:28:00 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 20:17:34 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,9 +75,6 @@ int main(int argc, char **argsv)
 	}
 	printf("Successfully connected to %s\n", argsv[1]);
 	worker->socket.fd = conn_socket;
-	worker->todo_work = (t_queue *)calloc(1, sizeof(t_queue));
-	worker->todo_work->last = (t_lst *)calloc(1, sizeof(t_lst));
-	worker->completed_work = (t_queue *)calloc(1, sizeof(t_queue));
 	launch_event_thread(worker);
 	launch_calculation_thread(worker);
 	launch_sender_thread(worker);

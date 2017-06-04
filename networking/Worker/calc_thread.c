@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 16:53:43 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 20:16:28 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,15 @@ static void *calc_thread(void *param)
 	worker = (t_worker *)param;
 	while (1)
 	{
-		if (worker->todo_work->count > 0)
+		if (worker->todo_work != NULL && worker->todo_work->count > 0)
 		{
-			printf("worker_todo\n");
-		if (DEBUG)
-			printf("calculating work unit\n");
-		workunit = queue_pop(&worker->todo_work);
-		printf("c-1\n");
-		workunit = do_workunit(workunit);
-		printf("c0\n");
-		queue_enqueue(&worker->completed_work, queue_create_new(*workunit));
-		printf("c1\n");
-		worker->completed_work->count++;
-		printf("c2\n");
-		worker->todo_work->count--;
-		printf("calc finished loop\n");
+			if (DEBUG)
+				printf("calculating work unit\n");
+			workunit = queue_pop(&worker->todo_work);
+			workunit = do_workunit(workunit);
+			queue_enqueue(&worker->completed_work, queue_create_new(*workunit));
+			worker->completed_work->count++;
+			worker->todo_work->count--;
 		}
 	}
 	return (0);

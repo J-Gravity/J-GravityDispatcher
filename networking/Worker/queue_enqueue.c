@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:21:21 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/03 17:25:50 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 20:15:59 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ t_lst	*queue_enqueue(t_queue **queue, t_lst *new)
 
 	if (NULL == (*queue))
 		(*queue) = (t_queue *)calloc(1, sizeof(t_queue));
+	(*queue)->count++;
 	if (NULL == (*queue)->first)
 	{
 		(*queue)->first = new;

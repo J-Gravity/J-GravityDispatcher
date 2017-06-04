@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 17:33:03 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 20:14:34 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ static void *sender_thread(void *param)
 	worker = (t_worker *)param;
 	while (1)
 	{
-		if (worker->completed_work->count)
+		if (worker->completed_work && worker->completed_work->count)
 		{
 			printf("start completed_work\n");
 			if (DEBUG)
