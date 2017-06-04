@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 16:51:49 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 20:53:07 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@ static void *sender_thread(void *param)
     while (1)
     {
 	    if (sem_wait(worker->sender_thread_sem) < 0)
-		    printf("wem_wait failed with err:%d\n", errno);
-        if (DEBUG)
-            printf("sending work unit\n");
+		    printf("SEND- wem_wait failed with err:%d\n", errno);
+	   	if (DEBUG)
+            printf("SEND- sending work unit\n");
         workunit = queue_pop(&worker->completed_work);
         //send complete work unit
         msg = serialize_workunit(*workunit);
@@ -32,6 +32,8 @@ static void *sender_thread(void *param)
         if (workunit->local_bodies)
             free(workunit->local_bodies);
         free(workunit);
+	   	if (DEBUG)
+            printf("SEND- finished sending work unit\n");
     }
     return (0);
 }

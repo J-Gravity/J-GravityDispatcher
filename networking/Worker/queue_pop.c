@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:20:42 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/03 16:57:37 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 20:39:19 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ t_workunit	*queue_pop(t_queue **queue)
 	t_lst		*node;
 
 	node = (*queue)->first;
-	if(node)
+	if (node)
 	{
 		workunit = node->data;
 		(*queue)->first = (*queue)->first->next;
@@ -26,4 +26,3 @@ t_workunit	*queue_pop(t_queue **queue)
 	}
 	return (workunit);
 }
-
