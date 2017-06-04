@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   queue_pop.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:20:42 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/03 21:47:00 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/04 16:34:02 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,9 @@ t_workunit	*queue_pop(t_queue **queue)
 			(*queue)->first = (*queue)->first->next;
 			free(node);
 		}
+		(*queue)->count--;
+		if ((*queue)->count == 0)
+			(*queue)->last = NULL;
 		pthread_mutex_unlock(&(*queue)->mutex);
 	}
 	return (workunit);
