@@ -33,6 +33,7 @@
 # include <OpenCL/opencl.h>
 # include <pthread.h>
 # include <semaphore.h>
+#include <sys/stat.h>
 
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 10000
@@ -54,8 +55,8 @@ long G_time_waiting_for_wu;
 /* *********** */
 # define DEBUG 1
 # define MSG_DEBUG 1
-# define MSG_DETAILS_DEBUG 0
-# define MUTEX_DEBUG 0
+# define MSG_DETAILS_DEBUG 1
+# define MUTEX_DEBUG 1
 # define NETWORK_DEBUG 1
 
 typedef struct s_context
@@ -120,9 +121,9 @@ typedef struct			s_worker
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
 	pthread_t			*sender_thread;
-	sem_t				sender_thread_sem;
-	sem_t				calc_thread_sem;
-	sem_t				exit_sem;
+	sem_t				*sender_thread_sem;
+	sem_t				*calc_thread_sem;
+	sem_t				*exit_sem;
 	t_socket			socket;
 }						t_worker;
 

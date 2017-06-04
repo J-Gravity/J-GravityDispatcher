@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 20:12:19 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 18:01:49 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,10 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	{
 		printf("flag1\n");
 		queue_enqueue(&worker->todo_work, queue_create_new(deserialize_workunit(msg)));
-		if (DEBUG)
+    	if (DEBUG)
         	printf("work unit added to local queue\n");
 		free(msg.data);
+		sem_post(worker->calc_thread_sem);
 	}
 }
 
@@ -38,9 +39,11 @@ static void	*event_thread(void *param)
 	t_worker	*worker;
 
 	worker = (t_worker *)param;
-	while (1)
+	printf("event thread started\n");
+	while (worker->active)
 	{
 		msg = receive_msg(worker->socket.fd);
+		printf("recieved msg\n");
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
@@ -64,11 +67,14 @@ static void	*event_thread(void *param)
 		}
 		printf("event reached end loop\n");
 	}
+	printf("exiting event thread\n");
+	sem_post(worker->exit_sem);
 	return (0);
 }
 
 void		launch_event_thread(t_worker *worker)
 {
+	worker->active = 1;
 	worker->event_thread = (pthread_t *)calloc(1, sizeof(pthread_t));
 	pthread_create(worker->event_thread, NULL, event_thread, worker);
 }

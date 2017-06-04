@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 20:16:28 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 17:39:21 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,15 @@ static void *calc_thread(void *param)
 	worker = (t_worker *)param;
 	while (1)
 	{
-		if (worker->todo_work != NULL && worker->todo_work->count > 0)
-		{
-			if (DEBUG)
-				printf("calculating work unit\n");
-			workunit = queue_pop(&worker->todo_work);
-			workunit = do_workunit(workunit);
-			queue_enqueue(&worker->completed_work, queue_create_new(*workunit));
-			worker->completed_work->count++;
-			worker->todo_work->count--;
-		}
+		if (sem_wait(worker->calc_thread_sem) < 0)
+		    printf("wem_wait failed with err:%d\n", errno);
+		if (DEBUG)
+			printf("calculating work unit\n");
+		workunit = queue_pop(&worker->todo_work);
+		do_workunit(workunit);
+		queue_enqueue(&worker->completed_work, queue_create_new(*workunit));
+		sem_post(worker->sender_thread_sem);
+
 	}
 	return (0);
 }
