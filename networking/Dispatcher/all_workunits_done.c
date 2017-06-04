@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/16 21:48:12 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 14:21:41 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 21:13:58 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,6 +63,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	dispatcher->dataset = dispatcher->new_dataset;
 	G_workunit_size = 0;
 	G_movelist_locked = 0;
+	G_connect_locked = 0;
 	G_removeworker_locked = 0;
 	G_workerevent_locked = 0;
 	G_handle_locked = 0;
