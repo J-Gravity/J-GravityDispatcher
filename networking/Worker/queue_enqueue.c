@@ -6,7 +6,7 @@
 /*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:21:21 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/03 20:15:59 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 20:44:21 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,8 @@ t_lst	*queue_enqueue(t_queue **queue, t_lst *new)
 	if (NULL == (*queue)->last)
 	{
 		(*queue)->last = new;
+		(*queue)->last->next = NULL;
+		(*queue)->first->next = (*queue)->last;
 		return (new);
 	}
 	node = (*queue)->last;
