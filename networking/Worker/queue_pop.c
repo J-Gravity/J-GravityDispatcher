@@ -17,7 +17,7 @@ t_workunit	*queue_pop(t_queue **queue)
 	t_workunit	*workunit;
 	t_lst		*node;
 
-	if (queue)
+	if (*queue)
 	{
 		pthread_mutex_lock(&(*queue)->mutex);
 		node = (*queue)->first;
