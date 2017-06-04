@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 14:20:33 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 22:11:01 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,14 @@ long c_count;
 # include <fcntl.h>
 # include <unistd.h>
 # include <signal.h>
+
+typedef struct			s_queue
+{
+	int					count;
+	t_lst				*first;
+	t_lst				*last;
+	pthread_mutex_t		mutex;
+}						t_queue;
 
 typedef struct			s_lst
 {
@@ -203,6 +211,24 @@ typedef struct			s_thread_handler
 	t_lst				*worker;
 }						t_thread_handler;
 
+/*
+ * 	Creates a new node and returns it
+ * 		@param *workunit	The workunit to be added to the node
+ */
+t_lst		*queue_create_new(t_workunit workunit);
+
+/*
+ * 	Pops a node off the queue
+ * 		@param **queue	A queue struct that holds first, last and size
+ */
+t_workunit	*queue_pop(t_queue **queue);
+
+/*
+ * 	Adds a node to the end of the queue. Returns the last param.
+ * 		@param **queue	A queue struct that holds first, last and size
+ * 		@param *new		The new node to be added to the queue
+ */
+t_lst		*queue_enqueue(t_queue **queue, t_lst *new_node);
 
 void print_cl4(cl_float4 v);
 
