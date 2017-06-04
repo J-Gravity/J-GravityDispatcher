@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 11:14:48 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/05/29 14:54:03 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ char	read_header(int fd, t_msg *msg)
 	if (bytes_read == HEADER_SIZE)
 	{
 		msg->id = header[0];
- 		if (DEBUG && MSG_DEBUG)
+		if (DEBUG && MSG_DEBUG)
 			print_debug(fd, *msg);
 		memcpy(&msg->size, &header[1], sizeof(int));
 		msg->data = (char *)calloc(1, msg->size);
