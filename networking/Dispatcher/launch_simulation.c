@@ -50,6 +50,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		clock_t start, diff;
 		start = clock();
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
+		dispatcher->worker_cnt--;
 		diff = clock() - start;
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
 		G_movelist_locked += msec%1000;
