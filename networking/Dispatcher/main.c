@@ -15,6 +15,8 @@
 int	main(int ac, char **av)
 {
 	t_dispatcher	*dispatcher;
+	char		*line = NULL;
+	size_t		size;
 
 	if (ac != 2)
 	{
@@ -22,9 +24,11 @@ int	main(int ac, char **av)
 		return (0);
 	}
 	signal(SIGPIPE, SIG_IGN);
+	G_total_workunit_cnt = 0;
+	G_total_time = 0;
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
-	dispatcher->ticks_cnt = 100;
+	dispatcher->ticks_cnt = 10;
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
@@ -49,6 +53,8 @@ int	main(int ac, char **av)
 	divide_dataset(dispatcher);
 	diff = clock() - start;
 	msec = diff * 1000 / CLOCKS_PER_SEC;
+	if (METRICS && STARTUP_METRICS)
+		printf("There are %ld particles\n", dispatcher->dataset->particle_cnt);
 	if (METRICS && STARTUP_METRICS)
 		printf("divide_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.

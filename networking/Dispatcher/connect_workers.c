@@ -79,6 +79,7 @@ void	*connect_worker_thread(void *param)
 	dispatcher = (t_dispatcher *)param;
 	while (dispatcher->is_connect)
 	{
+
 		fd = accept(dispatcher->sin.fd,
 			(struct sockaddr *)&(dispatcher->sin.addr.sin_addr),
 			&(dispatcher->sin.addrlen));

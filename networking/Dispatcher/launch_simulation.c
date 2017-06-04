@@ -52,7 +52,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
 		diff = clock() - start;
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_locked = msec%1000;
+		G_movelist_locked += msec%1000;
 		worker->workunit_link->next = dispatcher->workunits;
 		dispatcher->workunits = worker->workunit_link;
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
@@ -65,7 +65,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_locked = msec%1000;
+	G_removeworker_locked += msec%1000;
 	remove_link(&dispatcher->workers, worker);
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 	free(worker_link);
@@ -105,7 +105,7 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_locked = msec%1000;
+	G_printfds_locked += msec%1000;
 	head = dispatcher->workers;
 	printf("-------------\n");
   	while (head)
@@ -176,7 +176,7 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_locked = msec%1000;
+	G_workerevent_locked += msec%1000;
 	head = dispatcher->workers;
 	while (head)
 	{	
@@ -220,11 +220,13 @@ void		launch_simulation(t_dispatcher *dispatcher)
 			return ;
 		}
 	}
-	printf("\nWorker(s) now connected\n");
+	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
+	while (getchar() != 10)
+		;
+	write(1, "running...\n", 11);
 	dispatcher->is_running = 1;
+	G_tick_start = time(NULL);
 	launch_worker_event_threads(dispatcher);
-	G_total_time = 0.0;
-	tick_start = time(NULL);
 	sleep(999999);
 	printf("END\n");
 }
