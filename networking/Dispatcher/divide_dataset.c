@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/05/31 14:24:02 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/04 16:51:32 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -501,19 +501,17 @@ int lstlen(t_queue *queue)
 
 static t_queue   *create_workunits(t_octree *t, t_cell **leaves)
 {
-	t_queue		*workunits;
-	t_lst		*w = NULL;
+	t_queue		*workunits = NULL;
+	t_lst		*new_workunit = NULL;
     long 		sizetotal = 0;
 
-	workunits = (t_queue *)calloc(1, sizeof(t_queue));
-	workunits = NULL;
+    new_workunit = make_workunit_for_cell(leaves[i], t, i);
     for (int i = 0; leaves[i]; i++)
     {
-        queue_enqueue(&workunits, queue_create_new(*make_workunit_for_cell(leaves[i], t, i)));
-        if (w)
+        if (new_workunit)
 		{
             sizetotal += ((t_workunit *)(w->data))->localcount + ((t_workunit *)w->data)->neighborcount;
-            queue_enqueue(&workunits, w);
+            queue_enqueue(&workunits, new_node(new_workunit));
         }
     }
     //printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
