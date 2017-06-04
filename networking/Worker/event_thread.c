@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 14:53:55 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/03 17:19:00 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,11 +22,16 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	}
 	else if (msg.id == WORK_UNIT)
 	{
-		queue_enqueue(&worker->todo_work, queue_create_new(deserialize_workunit(msg)));
+		printf("enque\n");
+		printf("worker->todo_work: %d\n", worker->todo_work->count);
+		worker->todo_work->last = queue_enqueue(&worker->todo_work, queue_create_new(deserialize_workunit(msg)));
+		printf("2worker->todo_work:%d\n", ((t_workunit *)(worker->todo_work->last->data))->id);
+		printf("2worker->todo_work:%d\n", ((t_workunit *)(worker->todo_work->last->data))->localcount);
+		printf("enque done\n");
     if (DEBUG)
         printf("work unit added to local queue\n");
 		free(msg.data);
-		sem_post(&worker->calc_thread_sem);
+	worker->todo_work->count++;
 	}
 }
 
@@ -36,9 +41,10 @@ static void	*event_thread(void *param)
 	t_worker	*worker;
 
 	worker = (t_worker *)param;
-	while (worker->active)
+	while (1)
 	{
 		msg = receive_msg(worker->socket.fd);
+		printf("received\n");
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
@@ -46,11 +52,9 @@ static void	*event_thread(void *param)
 			printf("MSG RECIEVED: [id]=%d", msg.id);
 			printf(" size '%d'\n", msg.size);
 			printf(" body '%s'\n", msg.data);
-	}
-		if (msg.error == -1)
-		{
-			printf("get worker message failed with err %d\n", errno);
 		}
+		if (msg.error == -1)
+			printf("get worker message failed with err %d\n", errno);
 		if (msg.error == 0 || msg.error == -1)
 		{
 			if (DEBUG && NETWORK_DEBUG)
@@ -59,8 +63,8 @@ static void	*event_thread(void *param)
 		}
 		else
 			handle_event(worker, msg);
+		printf("event reached end loop\n");
 	}
-	sem_post(&worker->exit_sem);
 	return (0);
 }
 
