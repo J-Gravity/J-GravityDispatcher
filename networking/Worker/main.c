@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 16:23:09 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/03 19:58:55 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,17 @@
 #include <arpa/inet.h>
 
 #include "worker.h"
+
+static void print_debug(int fd, t_msg msg)
+{
+	char *line;
+
+	if (msg.id == WORK_UNIT_REQUEST)
+		line = "WORK_UNIT_REQUEST";
+	else if (msg.id == WORK_UNIT_DONE)
+		line = "WORK_UNIT_DONE";
+	printf("SENT '%s' TO dispatcher %d\n", line, fd);
+}
 
 t_msg	new_message(char id, int data_size, char *data)
 {
@@ -46,6 +57,8 @@ void	send_msg(int fd, t_msg msg)
 	memcpy(&buffer[1], &msg.size, sizeof(int));
 	memcpy(&buffer[5], msg.data, msg.size);
 	send(fd, buffer, msg_size, 0);
+	if (DEBUG & MSG_DEBUG)
+		print_debug(fd, msg);
 	if (msg.data)
 		free(msg.data);
 	if (buffer)
@@ -145,9 +158,16 @@ int main(int argc, char **argsv)
 	}
 	printf("Successfully connected to %s\n", argsv[1]);
 	worker->socket.fd = conn_socket;
-	worker->calc_thread_sem = sem_open("calc_thread", O_CREAT, 0600, 0);
-	worker->sender_thread_sem = sem_open("sender_thread", O_CREAT, 0600, 0);
-	worker->exit_sem = sem_open("exit", O_CREAT, 0600, 0);
+
+	worker->calc_thread_sem = sem_open("/calc_thread", O_CREAT, 0644, 0);
+	if (worker->calc_thread_sem == SEM_FAILED)
+		printf("sem1 open failed with %d\n", errno);
+	worker->sender_thread_sem = sem_open("/sender_thread", O_CREAT, 0644, 0);
+	if (worker->sender_thread_sem == SEM_FAILED)
+		printf("sem2 open failed with %d\n", errno);
+	worker->exit_sem = sem_open("/exit", O_CREAT, 0644, 0);
+	if (worker->exit_sem == SEM_FAILED)
+		printf("sem3 open failed with %d\n", errno);
 	if (DEBUG)
 		printf("semaphores initalized\n");
 	launch_event_thread(worker);
@@ -155,9 +175,30 @@ int main(int argc, char **argsv)
 	launch_sender_thread(worker);
 	if (DEBUG)
 		printf("threads launched\n");
-	printf("wem_wait:%d\n",sem_wait(worker->exit_sem));
-	printf("errno %d\n", errno);
-	//cleanup
-	sleep(9999999);
+	sleep(90000);
+	int val = sem_wait(worker->exit_sem);
+	if (val < 0)
+		printf("wem_wait failed with err:%d\n", errno);
+	printf("A exit sem: %d\n", val);
+	//cleanup	
+	printf("A\n");
+	sem_close(worker->calc_thread_sem);
+	printf("B\n");
+	sem_close(worker->sender_thread_sem);
+	printf("C\n");
+	sem_close(worker->exit_sem);
+	printf("D\n");
+	
+	int rc = sem_unlink("/calc_thread");
+    if (rc)
+        printf("sem_unlink err %d\n", errno);
+	rc = sem_unlink("/sender_thread");
+    if (rc)
+        printf("sem_unlink err %d\n", errno);
+	rc = sem_unlink("/exit");
+    if (rc)
+        printf("sem_unlink err %d\n", errno);
+
+	printf("F\n");
 	return (0);
 }
