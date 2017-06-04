@@ -22,6 +22,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+#include <dispatch/dispatch.h>
 #include "worker.h"
 
 static void print_debug(int fd, t_msg msg)
@@ -33,17 +34,6 @@ static void print_debug(int fd, t_msg msg)
 	else if (msg.id == WORK_UNIT_DONE)
 		line = "WORK_UNIT_DONE";
 	printf("SENT '%s' TO dispatcher %d\n", line, fd);
-}
-
-t_msg	new_message(char id, int data_size, char *data)
-{
-	t_msg	message;
-
-	message.id = id;
-	message.size = data_size;
-	message.data = (char *)calloc(1, data_size);
-	memcpy(&message.data, data, data_size);
-	return (message);
 }
 
 void	send_msg(int fd, t_msg msg)
@@ -63,66 +53,6 @@ void	send_msg(int fd, t_msg msg)
 		free(msg.data);
 	if (buffer)
 		free(buffer);
-}
-
-t_msg	wait_for_msg(int socket, int message_code)
-{
-	char	*buffer;
-	int		bytes_read;
-	t_msg	msg;
-	long	start_time;
-
-
-	buffer = (char *)calloc(1, HEADER_SIZE);
-
-	while (1)
-	{
-		start_time = time(NULL);
-		bytes_read = recv(socket, buffer, HEADER_SIZE, 0);
-		G_time_waiting_for_wu += time(NULL) - start_time;
-		if (G_time_waiting_for_wu == -1)
-			G_time_waiting_for_wu = 0;
-		if (bytes_read == HEADER_SIZE)
-		{
-			int bodybytes = 0;
-			msg.id = buffer[0];
-			memcpy(&msg.size, &buffer[1], sizeof(int));
-			msg.data = (char *)calloc(1, msg.size);
-			while (bodybytes < msg.size)
-			{
-				bodybytes += recv(socket, msg.data + bodybytes, msg.size, 0);
-				// if (msg.id == WORK_UNIT)
-				// 	exit(1); //INVOKE SIGPIPE ON SERVER
-			}
-		}
-		else
-		{
-			printf("something was wrong with the message\n");
-			printf("we read %d bytes and wanted %d\n",bytes_read, HEADER_SIZE);
-			if (bytes_read <= 0)
-			{
-				//connection has been broken for some reason
-				printf("Time spent waiting for workunit was %ld seconds\n", G_time_waiting_for_wu);
-				close(socket);
-				exit(1);
-			}
-			continue ;
-		}
-		if (msg.id != message_code)
-		{
-			printf("not the message we were expecting\n");
-			printf("we got %d when we wanted %d\n", msg.id, message_code);
-			if (msg.id == WORK_UNITS_READY)
-				send_msg(socket, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
-			continue ;
-		}
-		else
-		{
-			if (buffer)
-				free(buffer);
-			return msg;
-		}
-	}
 }
 
 int main(int argc, char **argsv)
@@ -198,7 +128,6 @@ int main(int argc, char **argsv)
 	rc = sem_unlink("/exit");
     if (rc)
         printf("sem_unlink err %d\n", errno);
-
 	printf("F\n");
 	return (0);
 }

@@ -28,6 +28,7 @@ static void *calc_thread(void *param)
 		do_workunit(workunit);
 		queue_enqueue(&worker->completed_work, queue_create_new(*workunit));
 		sem_post(worker->sender_thread_sem);
+
 	}
 	return (0);
 }
