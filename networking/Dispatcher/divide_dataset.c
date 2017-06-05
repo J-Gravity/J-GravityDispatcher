@@ -18,7 +18,7 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 18)
+#define LEAF_THRESHOLD pow(2, 12)
 
 void print_cl4(cl_float4 v)
 {
@@ -511,7 +511,7 @@ static t_queue   *create_workunits(t_octree *t, t_cell **leaves)
         if (new_workunit)
 		{
             sizetotal += new_workunit->localcount + new_workunit->neighborcount;
-            queue_enqueue(&workunits, new_node(new_workunit));
+			queue_enqueue(&workunits, new_node(new_workunit));
         }
     }
     //printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
@@ -592,16 +592,37 @@ void	divide_dataset(t_dispatcher *dispatcher)
 	    bodies[i] = &(dispatcher->dataset->particles[i]);
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-    //printf("tree init done\n");
-    tree_it_up(t->root, *dispatcher);
+    
+	for (int j = 0; j < dispatcher->dataset->particle_cnt; j++)
+	{
+		for (int k = 0; k < dispatcher->dataset->particle_cnt; k++)
+		{
+			if (j == k)
+				continue ;
+			if ((dispatcher->dataset->particles[j].position.x == dispatcher->dataset->particles[k].position.x)
+			&& (dispatcher->dataset->particles[j].position.y == dispatcher->dataset->particles[k].position.y)
+			&& (dispatcher->dataset->particles[j].position.z == dispatcher->dataset->particles[k].position.z)
+			&& (dispatcher->dataset->particles[j].velocity.x == dispatcher->dataset->particles[k].velocity.x)
+			&& (dispatcher->dataset->particles[j].velocity.y == dispatcher->dataset->particles[k].velocity.y)
+			&& (dispatcher->dataset->particles[j].velocity.z == dispatcher->dataset->particles[k].velocity.z))
+			{
+				printf("%d %d x: %f\n", j, k, dispatcher->dataset->particles[j].position.x);
+				printf("%d %d y: %f\n", j, k, dispatcher->dataset->particles[j].position.y);
+				printf("%d %d z: %f\n", j, k, dispatcher->dataset->particles[j].position.z);
+				printf("%d %d x: %f\n", j, k, dispatcher->dataset->particles[j].velocity.x);
+				printf("%d %d y: %f\n", j, k, dispatcher->dataset->particles[j].velocity.x);
+				printf("%d %d z: %f\n", j, k, dispatcher->dataset->particles[j].velocity.z);
+			}
+		}
+	}
+
+	tree_it_up(t->root, *dispatcher);
     if (DEBUG && NETWORK_DEBUG)
     	printf("cell_count = %ld\n", c_count);
     t_cell **leaves = enumerate_leaves(t->root);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
 	    printf("tree is made\n");
-    printf("d0\n");
 	dispatcher->workunits = create_workunits(t, leaves);
-    printf("d1\n");
     tally_workunits(dispatcher->workunits);
     int len = lstlen(dispatcher->workunits);
     dispatcher->workunits_cnt = len;

@@ -74,6 +74,10 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (dispatcher->ticks_done < dispatcher->ticks_cnt)
 	{
 		// re-Divide the dataset into work units
+		printf("p cnt:%ld\n", (dispatcher->dataset->particle_cnt));
+		printf("0.x:%f\n", dispatcher->dataset->particles[0].position.x);
+		printf("1.x:%f\n", dispatcher->dataset->particles[1].position.x);
+		printf("2.x:%f\n", dispatcher->dataset->particles[2].position.x);
 		divide_dataset(dispatcher);
 		// Inform all workers work units are ready
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);

@@ -15,6 +15,7 @@
 t_socket		setup_server_socket(int port)
 {
 	t_socket	sin;
+	int optval;
  
 	memset(&sin.addr, 0, sizeof(sin.addr));
 	sin.addrlen = sizeof(struct sockaddr_storage);
@@ -30,6 +31,9 @@ t_socket		setup_server_socket(int port)
 	sin.addr.sin_family = AF_INET;
 	sin.addr.sin_addr.s_addr = INADDR_ANY;
 	sin.addr.sin_port = htons(port);
+
+	optval = 1;
+	setsockopt(sin.fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
 	if (bind(sin.fd, (struct sockaddr *)&sin.addr, sizeof(sin.addr)) < 0)
 	{
 		fprintf(stderr, "Binding the server socket failed with code: %d\n", errno);
