@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/04 16:59:19 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/04 17:01:16 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -510,7 +510,7 @@ static t_queue   *create_workunits(t_octree *t, t_cell **leaves)
         new_workunit = make_workunit_for_cell(leaves[i], t, i);
         if (new_workunit)
 		{
-            sizetotal += ((t_workunit *)(new_workunit->data))->localcount + ((t_workunit *)new_workunit->data)->neighborcount;
+            sizetotal += new_workunit->localcount + new_workunit->neighborcount;
             queue_enqueue(&workunits, new_node(new_workunit));
         }
     }
