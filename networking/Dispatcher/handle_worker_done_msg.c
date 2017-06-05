@@ -66,8 +66,8 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
 	delete_WU(complete_WU);
-	queue_pop(&worker->workunit_queue);
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
+	queue_pop(&worker->workunit_queue);
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 
@@ -75,14 +75,6 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		all_workunits_done(dispatcher);
 	else if (dispatcher->workunits)
 	{
-		/*
-		write(1, "[2K", 4);
-		write(1, "\r", 1);
-		for (int i = 0; i < (int)(((1.0 * dispatcher->workunits_done) / (1.0 * dispatcher->workunits_cnt)) * 100); i++)
-			write(1, "|", 1);
-		for (int i = (int)(((1.0 * dispatcher->workunits_done) / (1.0 * dispatcher->workunits_cnt)) * 100); i < 100; i++)
-			write(1, "-", 1);
-		*/
 		t_msg m = new_message(WORK_UNITS_READY, 0, "");
 		send_worker_msg(worker, m);
 		free(m.data);

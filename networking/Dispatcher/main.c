@@ -50,9 +50,7 @@ int	main(int ac, char **av)
 	if (METRICS && STARTUP_METRICS)
 		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
 	start = clock();
-	printf("main0\n");
 	divide_dataset(dispatcher);
-	printf("main1\n");
 	diff = clock() - start;
 	msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)

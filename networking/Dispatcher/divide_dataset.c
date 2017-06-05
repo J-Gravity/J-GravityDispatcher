@@ -501,21 +501,20 @@ int lstlen(t_queue *queue)
 
 static t_queue   *create_workunits(t_octree *t, t_cell **leaves)
 {
-	t_queue		*workunits = NULL;
-	t_workunit	*new_workunit = NULL;
-    long 		sizetotal = 0;
+	long		sizetotal = 0;
+	t_queue		*head = NULL;
+	t_workunit	*w = NULL;
 
-    for (int i = 0; leaves[i]; i++)
-    {
-        new_workunit = make_workunit_for_cell(leaves[i], t, i);
-        if (new_workunit)
+	for (int i = 0; leaves[i]; i++)
+	{
+		w = make_workunit_for_cell(leaves[i], t, i);
+		if (w)
 		{
-            sizetotal += new_workunit->localcount + new_workunit->neighborcount;
-			queue_enqueue(&workunits, new_node(new_workunit));
-        }
-    }
-    //printf("%d workunits were %ld stars total\n", lstlen(head), sizetotal);
-	return (workunits);
+			sizetotal += w->localcount + w->neighborcount;
+			queue_enqueue(&head, queue_create_new(*w));
+		}
+	}
+	return (head);
 }
 
 static void recursive_tree_free(t_cell *c)
@@ -592,29 +591,6 @@ void	divide_dataset(t_dispatcher *dispatcher)
 	    bodies[i] = &(dispatcher->dataset->particles[i]);
     bodies[dispatcher->dataset->particle_cnt] = NULL;
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-    
-	for (int j = 0; j < dispatcher->dataset->particle_cnt; j++)
-	{
-		for (int k = 0; k < dispatcher->dataset->particle_cnt; k++)
-		{
-			if (j == k)
-				continue ;
-			if ((dispatcher->dataset->particles[j].position.x == dispatcher->dataset->particles[k].position.x)
-			&& (dispatcher->dataset->particles[j].position.y == dispatcher->dataset->particles[k].position.y)
-			&& (dispatcher->dataset->particles[j].position.z == dispatcher->dataset->particles[k].position.z)
-			&& (dispatcher->dataset->particles[j].velocity.x == dispatcher->dataset->particles[k].velocity.x)
-			&& (dispatcher->dataset->particles[j].velocity.y == dispatcher->dataset->particles[k].velocity.y)
-			&& (dispatcher->dataset->particles[j].velocity.z == dispatcher->dataset->particles[k].velocity.z))
-			{
-				printf("%d %d x: %f\n", j, k, dispatcher->dataset->particles[j].position.x);
-				printf("%d %d y: %f\n", j, k, dispatcher->dataset->particles[j].position.y);
-				printf("%d %d z: %f\n", j, k, dispatcher->dataset->particles[j].position.z);
-				printf("%d %d x: %f\n", j, k, dispatcher->dataset->particles[j].velocity.x);
-				printf("%d %d y: %f\n", j, k, dispatcher->dataset->particles[j].velocity.x);
-				printf("%d %d z: %f\n", j, k, dispatcher->dataset->particles[j].velocity.z);
-			}
-		}
-	}
 
 	tree_it_up(t->root, *dispatcher);
     if (DEBUG && NETWORK_DEBUG)
@@ -631,6 +607,5 @@ void	divide_dataset(t_dispatcher *dispatcher)
     dispatcher->cell_count = len;
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("workunits made, done divide_dataset\n");
-	printf("workunit count: %d\n", dispatcher->workunits_cnt);
 	return ;
 }

@@ -69,13 +69,6 @@ t_msg serialize_workunit(t_workunit w)
 {
 	t_msg msg;
 
-	for (int i = 0; i < w.localcount; i++)
-	{
-		printf("%d p.x: %f\n", i, w.local_bodies[i]->position.x);
-		printf("%d p.y: %f\n", i, w.local_bodies[i]->position.y);
-		printf("%d p.z: %f\n", i, w.local_bodies[i]->position.z);
-	}
-	sleep(10);
 	int local_compressed_size;
 	char *localblob = compress_locals(w, &local_compressed_size);
 

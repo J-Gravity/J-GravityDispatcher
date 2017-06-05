@@ -38,10 +38,9 @@ t_lst	*queue_enqueue(t_queue **queue, t_lst *new)
 		pthread_mutex_unlock(&(*queue)->mutex);
 		return (new);
 	}
-	node = (*queue)->last;
-	node->next = new;
-	(*queue)->last = node;
-	pthread_mutex_unlock(&(*queue)->mutex);
+	(*queue)->last->next = new;
+    (*queue)->last = (*queue)->last->next;
+	pthread_mutex_unlock(&((*queue)->mutex));
 	return ((*queue)->last);
 }
 
