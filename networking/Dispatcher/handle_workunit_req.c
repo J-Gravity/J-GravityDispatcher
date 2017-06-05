@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/02 20:45:53 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/05 01:47:21 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 {
-	if (dispatcher->workunits->count > 0)
+	while (dispatcher->workunits->count > 0 && worker->workunit_queue->count < 2)
 	{
 		clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
@@ -28,14 +28,14 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker, t_msg msg)
 		if (DEBUG && MUTEX_DEBUG)
 			printf("*work units mutex unlocked!\n");
 		G_sent_wu++;
-		if (G_sent_wu + dispatcher->workunits->count - dispatcher->total_workunits != 0)
-		{
-			printf("----difference: %d\n", G_sent_wu + dispatcher->workunits->count - dispatcher->total_workunits);
-			printf("total: %d\n", dispatcher->total_workunits);
-			printf("sent: %d\n", G_sent_wu);
-			printf("count: %d\n", dispatcher->workunits->count);
-			sleep(20);
-		}
+		// if (G_sent_wu + dispatcher->workunits->count - dispatcher->total_workunits != 0)
+		// {
+		// 	printf("----difference: %d\n", G_sent_wu + dispatcher->workunits->count - dispatcher->total_workunits);
+		// 	printf("total: %d\n", dispatcher->total_workunits);
+		// 	printf("sent: %d\n", G_sent_wu);
+		// 	printf("count: %d\n", dispatcher->workunits->count);
+		// 	sleep(20);
+		// }
 		send_workunit(worker, (t_workunit *)(worker->workunit_queue->first->data));
 	}
 	free(msg.data);

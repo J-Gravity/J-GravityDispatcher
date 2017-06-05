@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 11:13:05 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/05 01:45:38 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 
 	if (dispatcher->workunits_done == dispatcher->total_workunits)
 		all_workunits_done(dispatcher);
-	else if (dispatcher->workunits)
+	else if (dispatcher->workunits->count > 0)
 	{
 		t_msg m = new_message(WORK_UNITS_READY, 0, "");
 		send_worker_msg(worker, m);
