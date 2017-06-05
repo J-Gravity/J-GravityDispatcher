@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/05 01:45:38 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/05 05:07:51 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 {
 	t_WU		complete_WU;
 	t_cell		*local_cell;
+	t_workunit	*workunit;
 
 	complete_WU = deserialize_WU(msg);
 	free(msg.data);
@@ -67,7 +68,8 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
 	delete_WU(complete_WU);
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
-	queue_pop(&worker->workunit_queue);
+	workunit = queue_pop(&worker->workunit_queue);
+	delete_workunit(&workunit);
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 
