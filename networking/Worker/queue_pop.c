@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:20:42 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/04 16:33:45 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/05 00:08:22 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@ t_workunit	*queue_pop(t_queue **queue)
 		node = (*queue)->first;
 		if (node)
 		{
+			(*queue)->count--;
 			workunit = node->data;
 			(*queue)->first = (*queue)->first->next;
 			free(node);
 		}
-		(*queue)->count--;
 		if ((*queue)->count == 0)
 			(*queue)->last = NULL;
 		pthread_mutex_unlock(&(*queue)->mutex);

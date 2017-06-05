@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 19:58:55 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/04 21:24:17 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ int main(int argc, char **argsv)
 
 	memset(&serv_addr, '0', sizeof(serv_addr));
 	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(4242);
+	serv_addr.sin_port = htons(PORT);
 	// Convert IPv4 and IPv6 addresses from text to binary form
 	if (inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
 	{

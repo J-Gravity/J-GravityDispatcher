@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:21:21 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/03 22:06:01 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/05 00:08:15 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ t_lst	*queue_enqueue(t_queue **queue, t_lst *new)
 		pthread_mutex_init(&(*queue)->mutex, NULL);
 	}
 	pthread_mutex_lock(&((*queue)->mutex));
+	(*queue)->count++;
 	if (NULL == (*queue)->first)
 	{
 		(*queue)->first = new;
@@ -37,11 +38,9 @@ t_lst	*queue_enqueue(t_queue **queue, t_lst *new)
 		pthread_mutex_unlock(&(*queue)->mutex);
 		return (new);
 	}
-	node = (*queue)->last;
-	node->next = new;
-	(*queue)->last = node;
-	(*queue)->count++;
-	pthread_mutex_unlock(&(*queue)->mutex);
+	(*queue)->last->next = new;
+    (*queue)->last = (*queue)->last->next;
+	pthread_mutex_unlock(&((*queue)->mutex));
 	return ((*queue)->last);
 }
 
