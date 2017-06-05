@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 22:11:01 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/05 02:36:41 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,11 +58,11 @@ long G_total_workunit_cnt;
 
 # define DEBUG 1
 # define MSG_DEBUG 1
-# define WORKER_DEBUG 1
-# define MSG_DETAILS_DEBUG 1
-# define MUTEX_DEBUG 1
+# define WORKER_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
 # define DIVIDE_DATASET_DEBUG 1
-# define NETWORK_DEBUG 1
+# define NETWORK_DEBUG 0
 
 # include <stdio.h>
 # include <sys/socket.h>

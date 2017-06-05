@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/31 11:14:48 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/05 02:35:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,7 @@ char	read_body(int fd, t_msg *msg)
 	bodybytes = 0;
 	while (bodybytes < msg->size)
 	{
-		recv_bytes = recv(fd, msg->data + bodybytes, msg->size, 0);
+		recv_bytes = recv(fd, msg->data + bodybytes, msg->size - bodybytes, 0);
 		if (recv_bytes > 0)
 			bodybytes += recv_bytes;
 		else
