@@ -13,7 +13,7 @@
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define _GNU_SOURCE
-# define PORT 4242
+# define PORT 4243
 # define HEADER_SIZE 5
 
 # define BROADCAST_SUPER_PARTICLE 1
@@ -25,6 +25,10 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+
+/* ************ */
+/* TEMP         */
+int G_sent_wu;
 
 /* ************ */
 /* METRIC FLAGS */
@@ -46,13 +50,13 @@ long G_total_workunit_size;
 double G_worker_calcs;
 double G_total_time;
 long G_total_workunit_cnt;
-
-long c_count;
+/* *********** */
 
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 0
+
+# define DEBUG 1
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 1
@@ -196,7 +200,7 @@ typedef struct			s_dispatcher
 	int					ticks_cnt;
 	int					ticks_done;
 	t_queue				*workunits;
-	int					workunits_cnt;
+	int					total_workunits;
 	int					workunits_done;
 	t_cell				**cells;
 	int					cell_count;

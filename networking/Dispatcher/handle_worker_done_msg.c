@@ -71,7 +71,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 
-	if (dispatcher->workunits_done == dispatcher->workunits_cnt)
+	if (dispatcher->workunits_done == dispatcher->total_workunits)
 		all_workunits_done(dispatcher);
 	else if (dispatcher->workunits)
 	{

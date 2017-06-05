@@ -66,6 +66,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	G_workerevent_locked = 0;
 	G_handle_locked = 0;
 	G_printfds_locked = 0;
+	G_sent_wu = 0;
 	G_tick_start = time(NULL);
 	dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
 	dispatcher->new_dataset->particles = calloc(dispatcher->dataset->particle_cnt, sizeof(t_body));

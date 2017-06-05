@@ -20,10 +20,10 @@ t_workunit	*queue_pop(t_queue **queue)
 	if (*queue)
 	{
 		pthread_mutex_lock(&(*queue)->mutex);
-		(*queue)->count--;
 		node = (*queue)->first;
 		if (node)
 		{
+			(*queue)->count--;
 			workunit = node->data;
 			(*queue)->first = (*queue)->first->next;
 			free(node);

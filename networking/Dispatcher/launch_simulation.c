@@ -194,16 +194,10 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 }
 
-void		launch_simulation(t_dispatcher *dispatcher)
+int		timeout_progressbar(t_dispatcher *dispatcher)
 {
-	t_worker			*cur_worker;
-	t_thread_handler	*param;
-	int 				timeout;
-	t_lst				*head;
-	
-	timeout = 256;
-	if (DEBUG)
-		printf("begin launch_simulation\n");
+	int timeout = 256;
+	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
 	while (!dispatcher->workers)
 	{
 		write(1, "[2K", 4);
@@ -218,13 +212,25 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		if (--timeout == 0)
 		{
 			printf("Timeout reached, Simulation aborted!");
-			return ;
+			return (-1);
 		}
 	}
-	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
+	write(1, "running...\n", 11);
+	return (0);
+}
+
+void		launch_simulation(t_dispatcher *dispatcher)
+{
+	t_worker			*cur_worker;
+	t_thread_handler	*param;
+	t_lst				*head;
+	
+	if (DEBUG)
+		printf("begin launch_simulation\n");
+	if (timeout_progressbar(dispatcher) == -1)
+		return ;
 	while (getchar() != 10)
 		;
-	write(1, "running...\n", 11);
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
 	printf("launch0\n");

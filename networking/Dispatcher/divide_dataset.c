@@ -431,7 +431,6 @@ static void tree_it_up(t_cell *root, t_dispatcher dispatcher)
 //	}
 	else if (root->bodycount < LEAF_THRESHOLD)
 		return ;
-	c_count++;
 	divide_cell(root);
 	for (int i = 0; i < 8; i++)
 		tree_it_up(root->children[i], dispatcher);
@@ -580,7 +579,6 @@ void	divide_dataset(t_dispatcher *dispatcher)
 {
     static t_octree *t;
 
-    c_count = 0;
     if (t != NULL)
         free_tree(t);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
@@ -593,18 +591,18 @@ void	divide_dataset(t_dispatcher *dispatcher)
     t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
 
 	tree_it_up(t->root, *dispatcher);
-    if (DEBUG && NETWORK_DEBUG)
-    	printf("cell_count = %ld\n", c_count);
     t_cell **leaves = enumerate_leaves(t->root);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
 	    printf("tree is made\n");
 	dispatcher->workunits = create_workunits(t, leaves);
     tally_workunits(dispatcher->workunits);
     int len = lstlen(dispatcher->workunits);
-    dispatcher->workunits_cnt = len;
+    dispatcher->total_workunits = len;
     dispatcher->workunits_done = 0;
     dispatcher->cells = leaves;
     dispatcher->cell_count = len;
+    if (DEBUG && NETWORK_DEBUG)
+    	printf("cell_count = %d\n", dispatcher->cell_count);
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("workunits made, done divide_dataset\n");
 	return ;
