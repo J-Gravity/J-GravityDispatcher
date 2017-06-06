@@ -18,11 +18,11 @@
 #define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
 #define SOFTENING 10000
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 19)
+#define LEAF_THRESHOLD pow(2, 12)
 
 void print_cl4(cl_float4 v)
 {
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+ 	//if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
 }
 
@@ -587,26 +587,30 @@ void	divide_dataset(t_dispatcher *dispatcher)
         free_tree(t);
  	if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("starting divide_dataset\n");
-    t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
-	bodies[dispatcher->dataset->particle_cnt] = NULL;
-    for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
-        bodies[i] = &(dispatcher->dataset->particles[i]);
-    bodies[dispatcher->dataset->particle_cnt] = NULL;
-    t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-    //printf("tree init done\n");
-    tree_it_up(t->root);
-    t_cell **leaves = enumerate_leaves(t->root);
-    if (DEBUG && DIVIDE_DATASET_DEBUG)
-	    printf("tree is made\n");
-    dispatcher->workunits = create_workunits(t, leaves);
-    tally_workunits(dispatcher->workunits);
-    int len = lstlen(dispatcher->workunits);
-    printf("2^%d stars, max 2^%d per leaf, resulted in %d units\n", (int)log2(dispatcher->dataset->particle_cnt), (int)log2(LEAF_THRESHOLD), len);
-    dispatcher->workunits_cnt = len;
-    dispatcher->workunits_done = 0;
-    dispatcher->cells = leaves;
-    dispatcher->cell_count = len;
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("workunits made, done divide_dataset\n");
+    printf("testing tree stuff\n");
+    tree_test(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
+    printf("finished testing\n");
+    
+ //    t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
+	// bodies[dispatcher->dataset->particle_cnt] = NULL;
+ //    for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
+ //        bodies[i] = &(dispatcher->dataset->particles[i]);
+ //    bodies[dispatcher->dataset->particle_cnt] = NULL;
+ //    t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
+ //    //printf("tree init done\n");
+ //    tree_it_up(t->root);
+ //    t_cell **leaves = enumerate_leaves(t->root);
+ //    if (DEBUG && DIVIDE_DATASET_DEBUG)
+	//     printf("tree is made\n");
+ //    dispatcher->workunits = create_workunits(t, leaves);
+ //    tally_workunits(dispatcher->workunits);
+ //    int len = lstlen(dispatcher->workunits);
+ //    printf("2^%d stars, max 2^%d per leaf, resulted in %d units\n", (int)log2(dispatcher->dataset->particle_cnt), (int)log2(LEAF_THRESHOLD), len);
+ //    dispatcher->workunits_cnt = len;
+ //    dispatcher->workunits_done = 0;
+ //    dispatcher->cells = leaves;
+ //    dispatcher->cell_count = len;
+ // 	if (DEBUG && DIVIDE_DATASET_DEBUG)
+ //        printf("workunits made, done divide_dataset\n");
 	return ;
 }

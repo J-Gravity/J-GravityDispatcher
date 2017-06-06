@@ -64,7 +64,7 @@ long G_total_workunit_cnt;
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
-# include <CL/opencl.h>
+# include <openCL/cl.h>
 # include <pthread.h>
 # include <fcntl.h>
 # include <unistd.h>
@@ -116,7 +116,6 @@ typedef struct s_cell
 	struct s_cell **children;
 	struct s_cell *scb;
 	cl_float4 center;
-	cl_float4 force_bias;
 	t_bounds bounds;
 }				t_cell;
 
@@ -201,6 +200,12 @@ typedef struct			s_thread_handler
 
 
 void print_cl4(cl_float4 v);
+t_body *sort_bodies(t_body *bodies, int count);
+void tree_test(t_body *bodies, int count);
+void			heap_sort(t_body *data, int n);
+// int		dict_search(t_dict *dict, t_body *body, size_t subkey);
+// void	dict_insert(t_dict *dict, t_body *body, size_t subkey);
+// t_dict	*create_dict(unsigned int size);
 
 /*
 *	The function that runs on the network event handler threads.

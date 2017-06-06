@@ -57,6 +57,6 @@ int	main(int ac, char **av)
 		printf("There are %ld particles\n", dispatcher->dataset->particle_cnt);
 	if (METRICS && STARTUP_METRICS)
 		printf("divide_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
-	launch_simulation(dispatcher); // blocks thread until all workers are done.
+	// launch_simulation(dispatcher); // blocks thread until all workers are done.
 	return (0);
 }
