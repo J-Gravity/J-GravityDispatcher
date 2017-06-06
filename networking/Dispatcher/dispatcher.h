@@ -413,6 +413,16 @@ void		clear_work_units(t_queue **work_units);
 */
 void		clear_unit(t_lst **work_units);
 
+/*
+*	returns first workunit in queue without deletion from queue
+*/
+t_workunit	*queue_peak(t_queue **queue);
+
+/*
+*	returns the total count of items in queue
+*/
+int queue_count(t_queue **queue);
+
 /*******************************************************************************
 ********************************************************************************
                  POTENTIAL OPTIMIZATIONS AFTER MVP COMPLETE
