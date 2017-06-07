@@ -15,7 +15,8 @@
 int		send_workunit(t_worker *worker, t_workunit *work_unit)
 {
 	t_msg	msg;
-
+	if (DEBUG)
+	  printf("sending wu: %d", work_unit->id);
 	msg = serialize_workunit(*work_unit);
 	msg.id = WORK_UNIT;
 	worker->w_calc_time = time(NULL);

@@ -32,6 +32,8 @@ int	main(int ac, char **av)
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
+	dispatcher->workunits = (t_queue *)calloc(1, sizeof(t_queue));
+	pthread_mutex_init(&dispatcher->workunits->mutex, NULL);
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
 	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);
