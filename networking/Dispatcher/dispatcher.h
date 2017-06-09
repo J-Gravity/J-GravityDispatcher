@@ -72,7 +72,11 @@ long G_total_workunit_cnt;
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
-# include <openCL/cl.h>
+#if defined(__APPLE__) || defined(__MACOSX)
+#include <OpenCL/opencl.h>
+#else
+#include <CL/cl.h>
+#endif
 # include <pthread.h>
 # include <fcntl.h>
 # include <unistd.h>
