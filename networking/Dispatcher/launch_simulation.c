@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 18:52:28 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/08 18:59:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,7 +228,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	if (sem_unlink("/exit"))
 		printf("sem_unlink err %d\n", errno);
 	dispatcher->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
-	if (worker->exit_sem == SEM_FAILED)
+	if (dispatcher->exit_sem == SEM_FAILED)
 		printf("sem3 open failed with %d\n", errno);
 	
 	if (DEBUG)
@@ -242,7 +242,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	G_tick_start = time(NULL);
 	printf("launch0\n");
 	launch_worker_event_threads(dispatcher);
-	if (sem_wait(worker->exit_sem) < 0)
+	if (sem_wait(dispatcher->exit_sem) < 0)
 		printf("sem_wait failed with err:%d\n", errno);
 	if (sem_unlink("/exit"))
 	printf("sem_unlink err %d\n", errno);
