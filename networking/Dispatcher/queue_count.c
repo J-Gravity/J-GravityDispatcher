@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   queue_count.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iwagner <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: iwagner <iwagner@student.42.us.org>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/05 20:21:03 by iwagner           #+#    #+#             */
-/*   Updated: 2017/06/05 20:21:07 by iwagner          ###   ########.fr       */
+/*   Updated: 2017/06/08 18:24:24 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-int	*queue_count(t_queue **queue)
+int	queue_count(t_queue **queue)
 {
 	int x;
 
