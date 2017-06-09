@@ -3,7 +3,7 @@
 #include <limits.h>
 
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 14)
+#define LEAF_THRESHOLD pow(2, 16)
 
 // Expands a 10-bit integer into 30 bits
 // by inserting 2 zeros after each bit.
@@ -527,7 +527,8 @@ void    divide_dataset(t_dispatcher *dispatcher)
         //printf("leaf %d has %d locals\n", i, leaves[i]->count);
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     }
-    int wcount = dispatcher->worker_cnt ? dispatcher->worker_cnt : 4;
+    // int wcount = dispatcher->worker_cnt ? dispatcher->worker_cnt : 4;
+    int wcount = 4; // hard-code this temporarily
     int leaves_per_bundle = (count_tree_array(leaves) / wcount) + 1;
     for (int i = 0; i < wcount; i++)
     {

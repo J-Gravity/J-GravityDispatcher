@@ -70,23 +70,24 @@ void transpose_matches(t_bundle *wb)
     wb->matches_counts = manifest_lens;
 }
 
-t_workunit *unbundle_workunits(t_bundle *b, int *count)
+t_workunit **unbundle_workunits(t_bundle *b, int *count)
 {
-    t_workunit *WUs = calloc(b->idcount, sizeof(t_workunit));
+    t_workunit **WUs = calloc(b->idcount, sizeof(t_workunit *));
     transpose_matches(b);
     for (int i = 0; i < b->idcount; i++)
     {
-        WUs[i].id = b->ids[i];
-        WUs[i].localcount = b->local_counts[i];
-        WUs[i].local_bodies = b->locals[i];
-        WUs[i].neighborcount = 0;
+        WUs[i] = calloc(1, sizeof(t_workunit));
+        WUs[i]->id = b->ids[i];
+        WUs[i]->localcount = b->local_counts[i];
+        WUs[i]->local_bodies = b->locals[i];
+        WUs[i]->neighborcount = 0;
         for (int j = 0; j < b->matches_counts[i]; j++)
-            WUs[i].neighborcount += b->cell_sizes[b->matches[i][j]];
-        WUs[i].neighborhood = (cl_float4 *)calloc(WUs[i].neighborcount, sizeof(cl_float4));
+            WUs[i]->neighborcount += b->cell_sizes[b->matches[i][j]];
+        WUs[i]->neighborhood = (cl_float4 *)calloc(WUs[i]->neighborcount, sizeof(cl_float4));
         int offset = 0;
         for (int j = 0; j < b->matches_counts[i]; j++)
         {
-            memcpy(WUs[i].neighborhood + offset, b->cells[b->matches[i][j]], b->cell_sizes[b->matches[i][j]] * sizeof(cl_float4));
+            memcpy(WUs[i]->neighborhood + offset, b->cells[b->matches[i][j]], b->cell_sizes[b->matches[i][j]] * sizeof(cl_float4));
             offset += b->cell_sizes[b->matches[i][j]];
         }
     }

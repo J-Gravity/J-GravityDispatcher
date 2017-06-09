@@ -33,7 +33,7 @@ static void *sender_thread(void *param)
 		send_msg(worker->socket.fd, msg);
 		free(workunit->local_bodies);
 		free(workunit->neighborhood);
-        free(workunit);
+		free(workunit);
 	   	if (DEBUG)
             printf("SEND- finished sending work unit\n");
     }

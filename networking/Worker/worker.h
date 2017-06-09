@@ -143,7 +143,7 @@ typedef struct s_bundle
 
 t_bundle *deserialize_bundle(t_msg m);
 void transpose_matches(t_bundle *wb);
-t_workunit *unbundle_workunits(t_bundle *b, int *count);
+t_workunit **unbundle_workunits(t_bundle *b, int *count);
 
 /*
  * 	Creates a new node and returns it

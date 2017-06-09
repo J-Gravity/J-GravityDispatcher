@@ -12,24 +12,36 @@
 
 #include "worker.h"
 
+// typedef struct s_bundle
+// {
+//     int idcount;
+//     int *ids;
+//     int *matches_counts;
+//     int **matches;
+//     int *local_counts;
+//     t_body **locals;
+//     int *cell_sizes;
+//     cl_float4 **cells;
+//     int cellcount;
+// }               t_bundle;
+
 void	delete_bundle(t_bundle *bundle)
 {
+	if (!bundle)
+		return ;
 	for (int i = 0; i < bundle->idcount; i++)
 	{
-		free(bundle->locals[i]);
-	}
-	for (int i = 0; i < bundle->cellcount; i++)
-	{
 		free(bundle->matches[i]);
-		free(bundle->cells[i]);
 	}
-	free(bundle->locals);
 	free(bundle->matches);
-	free(bundle->cells);
-	free(bundle->ids);
 	free(bundle->matches_counts);
-	free(bundle->local_counts);
+	for (int i = 0; i < bundle->cellcount; i++)
+		free(bundle->cells[i]);
+	free(bundle->cells);
 	free(bundle->cell_sizes);
+	free(bundle->ids);
+	free(bundle->local_counts);
+	free(bundle->locals);
 	free(bundle);
 }
 
@@ -47,15 +59,15 @@ static void	handle_event(t_worker *worker, t_msg msg)
 		int count;
 		t_bundle *bundle;
 		bundle = deserialize_bundle(msg);
-		t_workunit *WUs = unbundle_workunits(bundle, &count);
+		t_workunit **WUs = unbundle_workunits(bundle, &count);
 		delete_bundle(bundle);
 		for (int i = 0; i < count; i++)
 		{
-			queue_enqueue(&worker->todo_work, queue_create_new(&WUs[i]));
+			queue_enqueue(&worker->todo_work, queue_create_new(WUs[i]));
 			total_wu_rec++;
 			sem_post(worker->calc_thread_sem);
 		}
-
+		free(WUs);
 		if (DEBUG)
         	printf("EVENT- work units from bundle added to local queue\n");
 		if (DEBUG)
