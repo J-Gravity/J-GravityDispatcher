@@ -6,7 +6,7 @@
 /*   By: iwagner <iwagner@student.42.us.org>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/05 20:21:03 by iwagner           #+#    #+#             */
-/*   Updated: 2017/06/08 18:28:00 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/08 18:32:13 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,12 +22,10 @@ int	queue_count(t_queue **queue)
 		if((x = ((*queue)->count)))
 		{
 			pthread_mutex_unlock(&(*queue)->mutex);
-			return(x);
+			return (x);
 		}
 		else
-		{
 			pthread_mutex_unlock(&(*queue)->mutex);
-			return(0);
-		}
 	}
+	return (0);
 }
