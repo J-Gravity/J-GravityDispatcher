@@ -25,11 +25,13 @@ static void	handle_event(t_worker *worker, t_msg msg)
 		int count;
 		t_workunit *WUs = unbundle_workunits(deserialize_bundle(msg), &count);
 		for (int i = 0; i < count; i++)
+		{
 			queue_enqueue(&worker->todo_work, queue_create_new(WUs[i]));
+			sem_post(worker->calc_thread_sem);
+		}
 		if (DEBUG)
         	printf("EVENT- work units from bundle added to local queue\n");
 		free(msg.data);
-		sem_post(worker->calc_thread_sem);
 	}
 }
 

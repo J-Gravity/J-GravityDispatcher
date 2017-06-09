@@ -535,11 +535,13 @@ void    divide_dataset(t_dispatcher *dispatcher)
     for (int i = 0; leaves[i]; i++)
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     int wcount = dispatcher->worker_cnt ? dispatcher->worker_cnt : 4;
-    t_bundle **bundles = calloc(wcount, sizeof(t_bundle *));
     int leaves_per_bundle = count_tree_array(leaves) / wcount;
     for (int i = 0; i < wcount; i++)
-        bundles[i] = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
+    {
+        queue_enqueue(&dispatcher->bundles, queue_create_new(*bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle)));
+    }
+
     dispatcher->cells = leaves;
-    dispatcher->total_workunits = wcount;
+    dispatcher->total_workunits = count_tree_array(leaves);
     dispatcher->cell_count = count_tree_array(leaves);
 }
