@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/05 02:36:41 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/08 18:55:31 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ long G_total_workunit_cnt;
 # include <fcntl.h>
 # include <unistd.h>
 # include <signal.h>
+# include <semaphore.h>
 
 typedef struct			s_lst
 {
@@ -192,6 +193,7 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_mutex;
 	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
+	sem_t				*exit_sem;
 	char				*name;
 	t_lst				*workers;
 	int					worker_cnt;
