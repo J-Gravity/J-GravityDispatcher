@@ -18,6 +18,7 @@ void	free_dict(t_dict *dict)
 	unsigned int	i;
 	t_pair			*head;
 	t_pair			*tmp;
+	t_pair			*sub;
 
 	if (dict)
 	{
@@ -27,6 +28,13 @@ void	free_dict(t_dict *dict)
 			head = dict->table[i];
 			while (head != NULL)
 			{
+				sub = head->subkeys;
+				while (sub)
+				{
+					tmp = sub;
+					sub = sub->next_key;
+					free(tmp);
+				}
 				tmp = head;
 				head = head->next_key;
 				free(tmp);
@@ -167,9 +175,12 @@ t_bundle *bundle_dict(t_dict *dict, t_pair *ids)
 	next = ids;
 	while (next)
 	{
+		t_pair *temp;
 		len--;
 		keys[len] = next->key;
+		temp = next;
 		next = next->next_key;
+		free(temp);
 	}
 	//count cells in union so we can malloc
 	int count = 0;
@@ -208,6 +219,7 @@ t_bundle *bundle_dict(t_dict *dict, t_pair *ids)
 	b->keycount = keycount;
 	b->cellcount = count;
 	b->matches_counts = matches_counts;
+	free_dict(dict);
 	return (b);
 }
 

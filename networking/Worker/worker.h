@@ -37,7 +37,7 @@
 
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 10000
-#define TIME_STEP 3000000
+#define TIME_STEP 30000
 #define THREADCOUNT pow(2, 11)
 #define GROUPSIZE 256
 

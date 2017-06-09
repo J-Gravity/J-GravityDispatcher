@@ -3,7 +3,7 @@
 #include <limits.h>
 
 #define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 12)
+#define LEAF_THRESHOLD pow(2, 14)
 
 // Expands a 10-bit integer into 30 bits
 // by inserting 2 zeros after each bit.
@@ -508,17 +508,7 @@ static void free_tree(t_tree *t)
         free(t->as_single->bodies);
         free(t->as_single);
     }
-}
-
-void free_bundle(t_bundle *b)
-{
-    free(b->keys);
-    free(b->cells);
-    free(b->matches_counts);
-    for (int i = 0; i < b->cellcount; i++)
-        free(b->matches[i]);
-    free(b->matches);
-    free(b);
+    free(t);
 }
 
 void    divide_dataset(t_dispatcher *dispatcher)
@@ -533,14 +523,17 @@ void    divide_dataset(t_dispatcher *dispatcher)
     t_tree **leaves = enumerate_leaves(t);
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
     for (int i = 0; leaves[i]; i++)
+    {
+        //printf("leaf %d has %d locals\n", i, leaves[i]->count);
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
+    }
     int wcount = dispatcher->worker_cnt ? dispatcher->worker_cnt : 4;
-    int leaves_per_bundle = count_tree_array(leaves) / wcount;
+    int leaves_per_bundle = (count_tree_array(leaves) / wcount) + 1;
     for (int i = 0; i < wcount; i++)
     {
-        queue_enqueue(&dispatcher->bundles, queue_create_new(*bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle)));
+        t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
+        queue_enqueue(&dispatcher->bundles, queue_create_new(b));
     }
-
     dispatcher->cells = leaves;
     dispatcher->total_workunits = count_tree_array(leaves);
     dispatcher->cell_count = count_tree_array(leaves);

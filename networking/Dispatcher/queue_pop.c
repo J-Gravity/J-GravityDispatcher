@@ -17,6 +17,7 @@ t_bundle	*queue_pop(t_queue **queue)
 	t_bundle	*bundle;
 	t_lst		*node;
 
+	bundle = NULL;
 	if (*queue)
 	{
 		pthread_mutex_lock(&(*queue)->mutex);

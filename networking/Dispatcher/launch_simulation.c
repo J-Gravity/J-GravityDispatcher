@@ -55,7 +55,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
 		G_movelist_locked += msec%1000;
 		while (worker->workunit_queue->count > 0)
-			queue_enqueue(&dispatcher->bundles, queue_create_new(*queue_pop(&worker->workunit_queue)));
+			queue_enqueue(&dispatcher->bundles, queue_create_new(queue_pop(&worker->workunit_queue)));
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	}
 	worker->workunit_queue = NULL;

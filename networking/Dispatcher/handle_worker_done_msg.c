@@ -47,6 +47,19 @@ void integrate_WU_results(t_dispatcher *disp, t_tree *old_cell, t_WU *new_WU)
 	memcpy(start_addr, new_WU->local_bodies, old_cell->count * sizeof(t_body));
 }
 
+void free_bundle(t_bundle *b)
+{
+	if (!b)
+		return;
+    free(b->keys);
+    free(b->cells);
+    free(b->matches_counts);
+    for (int i = 0; i < b->cellcount; i++)
+        free(b->matches[i]);
+    free(b->matches);
+    free(b);
+}
+
 void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		t_msg msg)
 {
@@ -58,7 +71,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
 	delete_WU(complete_WU);
-	queue_pop(&worker->workunit_queue);
+	free_bundle(queue_pop(&worker->workunit_queue));
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
