@@ -12,13 +12,12 @@
 
 #include "dispatcher.h"
 
-t_lst	*queue_create_new(t_bundle bundle)
+t_lst	*queue_create_new(t_bundle *bundle)
 {
 	t_lst	*node;
 
 	node = (t_lst *)calloc(1, sizeof(t_lst));
-	node->data = (t_bundle *)calloc(1, sizeof(t_bundle));
-	*(t_bundle *)(node->data) = bundle;
+	node->data = bundle;
 	node->next = NULL;
 	return (node);
 }

@@ -34,7 +34,7 @@ int G_sent_wu;
 /* METRIC FLAGS */
 /* ************ */
 
-# define METRICS 1
+# define METRICS 0
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
 int G_total_locked;
@@ -56,7 +56,7 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 1
+# define DEBUG 0
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 1
@@ -270,7 +270,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_bundle bundle);
+t_lst		*queue_create_new(t_bundle *bundle);
 
 /*
  * 	Pops a node off the queue

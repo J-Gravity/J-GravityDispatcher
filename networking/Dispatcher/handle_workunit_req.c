@@ -20,7 +20,7 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker,
 	while (worker->active && dispatcher->bundles->count > 0)
 	{
 		bundle = queue_pop(&dispatcher->bundles);
-		queue_enqueue(&worker->workunit_queue, queue_create_new(*bundle));
+		queue_enqueue(&worker->workunit_queue, queue_create_new(bundle));
 		if (bundle)
 			send_bundle(worker, bundle, dispatcher->cells);
 		G_sent_wu++;
