@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/05 01:45:38 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/08 18:12:27 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,11 +66,10 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
 	delete_WU(complete_WU);
-	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	queue_pop(&worker->workunit_queue);
+	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
-
 	if (dispatcher->workunits_done == dispatcher->total_workunits)
 		all_workunits_done(dispatcher);
 	else if (dispatcher->workunits->count > 0)
