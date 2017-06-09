@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/04 20:00:21 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/08 17:56:30 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ static void *sender_thread(void *param)
     while (1)
     {
 	    if (sem_wait(worker->sender_thread_sem) < 0)
-		    printf("SEND- wem_wait failed with err:%d\n", errno);
+		    printf("SEND- sem_wait failed with err:%d\n", errno);
 	   	if (DEBUG)
             printf("SEND- sending work unit\n");
         workunit = queue_pop(&worker->completed_work);

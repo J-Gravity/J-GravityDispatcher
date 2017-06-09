@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/05 01:34:47 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/08 17:56:07 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,35 @@ void	send_msg(int fd, t_msg msg)
 		free(buffer);
 }
 
+static void unlink_semaphores()
+{
+	int ret;
+
+	ret = sem_unlink("/calc_thread");
+    if (ret)
+        printf("sem_unlink err %d\n", errno);
+	ret = sem_unlink("/sender_thread");
+    if (ret)
+        printf("sem_unlink err %d\n", errno);
+	ret = sem_unlink("/exit");
+    if (ret)
+        printf("sem_unlink err %d\n", errno);
+}
+
+static void initialize_semaphores(t_worker *worker)
+{
+	unlink_semaphores();
+	worker->calc_thread_sem = sem_open("/calc_thread", O_CREAT, 0777, 0);
+	if (worker->calc_thread_sem == SEM_FAILED)
+		printf("sem1 open failed with %d\n", errno);
+	worker->sender_thread_sem = sem_open("/sender_thread", O_CREAT, 0777, 0);
+	if (worker->sender_thread_sem == SEM_FAILED)
+		printf("sem2 open failed with %d\n", errno);
+	worker->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
+	if (worker->exit_sem == SEM_FAILED)
+		printf("sem3 open failed with %d\n", errno);
+}
+
 int main(int argc, char **argsv)
 {
 	int			err;
@@ -89,15 +118,7 @@ int main(int argc, char **argsv)
 	printf("Successfully connected to %s\n", argsv[1]);
 	worker->socket.fd = conn_socket;
 
-	worker->calc_thread_sem = sem_open("/calc_thread", O_CREAT, 0644, 0);
-	if (worker->calc_thread_sem == SEM_FAILED)
-		printf("sem1 open failed with %d\n", errno);
-	worker->sender_thread_sem = sem_open("/sender_thread", O_CREAT, 0644, 0);
-	if (worker->sender_thread_sem == SEM_FAILED)
-		printf("sem2 open failed with %d\n", errno);
-	worker->exit_sem = sem_open("/exit", O_CREAT, 0644, 0);
-	if (worker->exit_sem == SEM_FAILED)
-		printf("sem3 open failed with %d\n", errno);
+	initialize_semaphores(worker);
 	if (DEBUG)
 		printf("semaphores initalized\n");
 	launch_event_thread(worker);
@@ -107,26 +128,9 @@ int main(int argc, char **argsv)
 		printf("threads launched\n");
 	int val = sem_wait(worker->exit_sem);
 	if (val < 0)
-		printf("wem_wait failed with err:%d\n", errno);
-	printf("A exit sem: %d\n", val);
-	//cleanup	
-	printf("A\n");
-	sem_close(worker->calc_thread_sem);
-	printf("B\n");
-	sem_close(worker->sender_thread_sem);
-	printf("C\n");
-	sem_close(worker->exit_sem);
-	printf("D\n");
-	
-	int rc = sem_unlink("/calc_thread");
-    if (rc)
-        printf("sem_unlink err %d\n", errno);
-	rc = sem_unlink("/sender_thread");
-    if (rc)
-        printf("sem_unlink err %d\n", errno);
-	rc = sem_unlink("/exit");
-    if (rc)
-        printf("sem_unlink err %d\n", errno);
-	printf("F\n");
+		printf("sem_wait failed with err:%d\n", errno);
+	printf("worker done, good bye\n");
+	//cleanup
+	unlink_semaphores();
 	return (0);
 }
