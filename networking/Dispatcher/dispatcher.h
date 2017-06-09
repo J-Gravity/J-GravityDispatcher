@@ -56,13 +56,13 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
-# define WORKER_DEBUG 0
-# define MSG_DETAILS_DEBUG 0
-# define MUTEX_DEBUG 0
+# define WORKER_DEBUG 1
+# define MSG_DETAILS_DEBUG 1
+# define MUTEX_DEBUG 1
 # define DIVIDE_DATASET_DEBUG 1
-# define NETWORK_DEBUG 0
+# define NETWORK_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -72,7 +72,7 @@ long G_total_workunit_cnt;
 # include <netdb.h>
 # include <string.h>
 # include <errno.h>
-# include <CL/opencl.h>
+# include <openCL/cl.h>
 # include <pthread.h>
 # include <fcntl.h>
 # include <unistd.h>
@@ -188,6 +188,40 @@ typedef struct			s_dataset
 	t_body				*particles;
 }						t_dataset;
 
+typedef struct		s_pair
+{
+	size_t			key;
+	struct s_pair	*subkeys;
+	struct s_pair	*next_key;
+}					t_pair;
+
+typedef struct		s_dict
+{
+	unsigned int	size;
+	t_pair			**table;
+}					t_dict;
+
+typedef struct s_tree
+{
+	t_body *bodies;
+	int 	count;
+	struct s_tree **children;
+	struct s_tree *parent;
+	struct s_tree **neighbors;
+	struct s_tree *as_single;
+	t_bounds bounds;
+}				t_tree;
+
+typedef struct s_bundle
+{
+	int *keys;
+	int keycount;
+	t_tree **cells;
+	int cellcount;
+	int **matches;
+	int *matches_counts;
+}				t_bundle;
+
 typedef struct			s_dispatcher
 {
 	pthread_mutex_t		workunits_mutex;
@@ -216,6 +250,17 @@ typedef struct			s_thread_handler
 	t_dispatcher		*dispatcher;
 	t_lst				*worker;
 }						t_thread_handler;
+
+void print_cl4(cl_float4 v);
+t_body *sort_bodies(t_body *bodies, int count);
+void tree_test(t_body *bodies, int count);
+void			heap_sort(t_body *data, int n);
+int		dict_search(t_dict *dict, t_tree *cell, size_t subkey);
+void	dict_insert(t_dict *dict, t_tree *cell, size_t subkey);
+t_dict	*create_dict(unsigned int size);
+t_pair	*create_pair(size_t key);
+t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
+t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
 
 /*
  * 	Creates a new node and returns it
@@ -366,7 +411,7 @@ int			send_workunit(t_worker *worker, t_workunit *workunit);
 *		@param	workunit	non-completed work unit
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
-int			send_bundle(t_worker *worker, t_bundle *bundle);
+int			send_bundle(t_worker *worker, t_bundle *bundle, t_tree **leaves);
 
 /*
 *	Serializes the workunit struct and stores it in the message struct
@@ -426,7 +471,7 @@ void		clear_unit(t_lst **work_units);
 /*
 *	returns first workunit in queue without deletion from queue
 */
-t_workunit	*queue_peak(t_queue **queue);
+t_bundle	*queue_peak(t_queue **queue);
 
 /*
 *	returns the total count of items in queue

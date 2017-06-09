@@ -12,10 +12,10 @@
 
 #include "dispatcher.h"
 
-int		send_bundle(t_worker *worker, t_bundle *bundle)
+int		send_bundle(t_worker *worker, t_bundle *bundle, t_tree **leaves)
 {
 	t_msg	msg;
-	msg = serialize_bundle(bundle);
+	msg = serialize_bundle(bundle, leaves);
 	msg.id = WORK_UNIT;
 	worker->w_calc_time = time(NULL);
 	send_worker_msg(worker, msg);

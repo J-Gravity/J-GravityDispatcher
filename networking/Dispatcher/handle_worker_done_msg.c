@@ -41,25 +41,17 @@ t_body	*translate_to_new_dataset(t_dispatcher *d, t_body *old)
 	return ref;
 }
 
-void integrate_WU_results(t_dispatcher *disp, t_cell *old_cell, t_WU *new_WU)
+void integrate_WU_results(t_dispatcher *disp, t_tree *old_cell, t_WU *new_WU)
 {
-	t_body	*old_body;
-	int		i;
-  
-	i = 0;
-	while (i < new_WU->localcount)
-	{
-		old_body = translate_to_new_dataset(disp, old_cell->bodies[i]);
-		*old_body = new_WU->local_bodies[i];
-		i++;
-	}
+	t_body *start_addr = (t_body *)(old_cell->bodies - disp->dataset->particles + disp->new_dataset->particles);
+	memcpy(start_addr, new_WU->local_bodies, old_cell->count * sizeof(t_body));
 }
 
 void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		t_msg msg)
 {
 	t_WU		complete_WU;
-	t_cell		*local_cell;
+	t_tree		*local_cell;
 
 	complete_WU = deserialize_WU(msg);
 	free(msg.data);

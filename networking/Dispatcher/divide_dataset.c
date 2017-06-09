@@ -1,56 +1,147 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   divide_dataset.c                                   :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/09 22:43:16 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/04 17:01:16 by cyildiri         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "dispatcher.h"
-
 #include <math.h>
-#define xmid c->bounds.xmax - (c->bounds.xmax - c->bounds.xmin) / 2
-#define ymid c->bounds.ymax - (c->bounds.ymax - c->bounds.ymin) / 2
-#define zmid c->bounds.zmax - (c->bounds.zmax - c->bounds.zmin) / 2
-#define SOFTENING 10000
-#define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 15)
+#include <limits.h>
 
-void print_cl4(cl_float4 v)
+#define THETA 1.5
+#define LEAF_THRESHOLD pow(2, 12)
+
+// Expands a 10-bit integer into 30 bits
+// by inserting 2 zeros after each bit.
+unsigned int expandBits(unsigned int v)
 {
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
+    v = (v * 0x00010001u) & 0xFF0000FFu;
+    v = (v * 0x00000101u) & 0x0F00F00Fu;
+    v = (v * 0x00000011u) & 0xC30C30C3u;
+    v = (v * 0x00000005u) & 0x49249249u;
+    return v;
 }
 
-static t_bounds bounds_from_bodies(t_body **bodies)
+// Calculates a 30-bit Morton code for the
+// given 3D point located within the unit cube [0,1].
+unsigned int morton3D(float x, float y, float z)
 {
-    //at the start of making the tree, we need a box that bounds all the bodies.
-    float xmin = 0, xmax = 0;
-    float ymin = 0, ymax = 0;
-    float zmin = 0, zmax = 0;
+    x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
+    y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
+    z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
+    unsigned int xx = expandBits((unsigned int)x);
+    unsigned int yy = expandBits((unsigned int)y);
+    unsigned int zz = expandBits((unsigned int)z);
+    return xx * 4 + yy * 2 + zz;
+}
 
-    for (int i = 0; bodies[i]; i++)
+unsigned int morton_body(t_body b)
+{
+    return (morton3D(b.position.x, b.position.y, b.position.z));
+}
+
+int cache_comp(const void *a, const void *b)
+{
+    return (*(unsigned int *)((float *)a + 7) - *(unsigned int *)((float *)b + 7));
+}
+
+t_tree *new_tnode(t_body *bodies, int count, t_tree *parent)
+{
+    t_tree *node = (t_tree *)calloc(1, sizeof(t_tree));
+    node->bodies = bodies;
+    node->count = count;
+    node->parent = parent;
+    node->children = NULL;
+    return (node);
+}
+
+int node_depth(t_tree *node)
+{
+    //should do this better (ie not use this function) but gets the job done for now
+    int depth = 0; //the root has depth 0.
+    while (node->parent)
     {
-        if (bodies[i]->position.x < xmin)
-            xmin = bodies[i]->position.x;
-        if (bodies[i]->position.x > xmax)
-            xmax = bodies[i]->position.x;
-
-        if (bodies[i]->position.y < ymin)
-            ymin = bodies[i]->position.y;
-        if (bodies[i]->position.y > ymax)
-            ymax = bodies[i]->position.y;
-
-        if (bodies[i]->position.z < zmin)
-            zmin = bodies[i]->position.z;
-        if (bodies[i]->position.z > zmax)
-            zmax = bodies[i]->position.z;
+        node = node->parent;
+        depth++;
     }
-    return ((t_bounds){xmin, xmax, ymin, ymax, zmin, zmax});
+    return depth;
+}
+
+#define xmid parent.xmax - (parent.xmax - parent.xmin) / 2
+#define ymid parent.ymax - (parent.ymax - parent.ymin) / 2
+#define zmid parent.zmax - (parent.zmax - parent.zmin) / 2
+
+t_bounds bounds_from_code(t_bounds parent, unsigned int code)
+{
+    t_bounds bounds;
+    if(code >> 2)
+    {
+        bounds.xmin = xmid;
+        bounds.xmax = parent.xmax;
+    }
+    else
+    {
+        bounds.xmin = parent.xmin;
+        bounds.xmax = xmid;
+    }
+    code %= 4;
+    if (code >> 1)
+    {
+        bounds.ymin = ymid;
+        bounds.ymax = parent.xmax;
+    }
+    else
+    {
+        bounds.ymin = parent.ymin;
+        bounds.ymax = ymid;
+    }
+    code %= 2;
+    if (code)
+    {
+        bounds.zmin = zmid;
+        bounds.zmax = parent.zmax;
+    }
+    else
+    {
+        bounds.zmin = parent.zmin;
+        bounds.zmax = zmid;
+    }
+    return (bounds);
+}
+
+void split(t_tree *node)
+{
+    node->children = (t_tree **)calloc(8, sizeof(t_tree *));
+    int depth = node_depth(node);
+    //printf("count of node we're splitting: %d\n", node->count);
+
+    unsigned int offset = 0;
+    for (unsigned int i = 0; i < 8; i++)
+    {
+        node->children[i] = (t_tree *)calloc(1, sizeof(t_tree));
+        node->children[i]->bodies = &(node->bodies[offset]);
+        node->children[i]->count = 0;
+        node->children[i]->parent = node;
+        node->children[i]->children = NULL;
+        node->children[i]->bounds = bounds_from_code(node->bounds, i);
+        unsigned int j = 0;
+        while (j + offset < node->count)
+        {
+            unsigned int m = *(unsigned int *)&(node->bodies[offset + j].velocity.w);
+            m = m << (2 + 3 * depth);
+            m = m >> 29;
+            if (m != i)
+                break;
+            j++;
+        }
+        offset += j;
+        node->children[i]->count = j;
+        //printf("made cell %u, it's got %u bodies in it. offset is now %u\n", i, node->children[i]->count, offset);
+    }
+}
+
+void split_tree(t_tree *root)
+{
+    if (root->count < LEAF_THRESHOLD || node_depth(root) == 9)
+        return;
+    //printf("splitting at level %d\n", node_depth(root));
+    split(root);
+    for (int i = 0; i < 8; i++)
+        split_tree(root->children[i]);
 }
 
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
@@ -59,70 +150,81 @@ static cl_float4 vadd(cl_float4 a, cl_float4 b)
     return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w});
 }
 
-static int count_bodies(t_body **bodies)
-{
-    //returns the number of bodies in a null terminated array of bodies.
-    int i;
-    i = 0;
-    while (bodies[i])
-        i++;
-    return (i);
-}
-
-static int count_cell_array(t_cell **cells)
-{
-    //returns the length of a null terminated array of cell pointers
-    int i = 0;
-    if (!cells)
-        return 0;
-    while (cells[i])
-        i++;
-    return (i);
-}
-
-static cl_float4 center_of_mass(t_cell *c, t_body **bodies, int *count)
+static t_tree *make_as_single(t_tree *c)
 {
     //as an optimization, center_of_mass also counts the bodies and stores that
     cl_float4 v;
 
     v = (cl_float4){0,0,0,0};
-    int i;
-    for (i = 0; bodies[i]; i++)
-        v = vadd(v, bodies[i]->position);
-    *count = i;
-    if (v.w == 0)
-      	return (cl_float4){xmid, ymid, zmid, 0};
-    return ((cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w});
+    if (c->children == NULL)
+        for (int i = 0; i < c->count; i++)
+            v = vadd(v, c->bodies[i].position);
+    else
+        for (int i = 0; i < 8; i++)
+            if (c->children[i]->count != 0)
+                v = vadd(v, c->children[i]->as_single->bodies[0].position);
+    t_body *b = calloc(1, sizeof(t_body));
+    if (c->count == 0)
+        b->position = (cl_float4){0,0,0,0};
+    else
+        b->position = (cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w};
+
+    t_tree *s = calloc(1, sizeof(t_tree));
+    s->parent = NULL;
+    s->children = NULL;
+    s->count = 1;
+    s->as_single = NULL;
+    s->bodies = b;
+    return (s);
 }
 
-static t_cell *init_cell(t_body **bodies, t_cell *parent, t_bounds bounds)
+static int count_tree_array(t_tree **arr)
 {
-    //allocates and sets up a cell struct.
-    t_cell *c;
-
-    c = (t_cell *)calloc(1, sizeof(t_cell));
-    c->bodies = bodies;
-    c->bodycount = 0;
-    c->parent = parent;
-    c->children = NULL;
-    c->bounds = bounds;
-    c->center = center_of_mass(c, bodies, &(c->bodycount));
-    c->force_bias = (cl_float4){0, 0, 0, 0};
-    c->scb = NULL;
-    return (c);
+    int count;
+    if (!arr)
+        return 0;
+    for (count = 0; arr[count]; count++)
+        ;
+    return (count);
 }
 
-static t_octree *init_tree(t_body **bodies, size_t n, t_bounds bounds)
+static t_tree **enumerate_leaves(t_tree *root)
 {
-    //allocates and sets up a tree and creates its root cell
-    t_octree *t;
+    //return a linear t_tree** that's all the leaf nodes (ie childless nodes) in the tree
+    //this is an excellent opportunity to very quickly do centers of gravity/as_single
+    t_tree **ret;
 
-    t = (t_octree *)calloc(1, sizeof(t_octree));
-    t->bodies = bodies;
-    t->n_bodies = n;
-    t->bounds = bounds;
-    t->root = init_cell(bodies, NULL, bounds);
-    return (t);
+    if (!root->children)
+    {
+        root->as_single = make_as_single(root);
+        ret = (t_tree **)calloc(2, sizeof(t_tree *));
+        ret[0] = root->count ? root : NULL; //we do not bother enumerating empty leaves (empty cells cant have children so this covers all)
+        ret[1] = NULL;
+        return (ret);
+    }
+    t_tree ***returned = (t_tree ***)calloc(8, sizeof(t_tree **));
+    int total = 0;
+    for (int i = 0; i < 8; i++)
+    {
+        returned[i] = enumerate_leaves(root->children[i]);
+        total += count_tree_array(returned[i]);
+    }
+    root->as_single = make_as_single(root);
+    ret = (t_tree **)calloc(total + 1, sizeof(t_tree *));
+    for (int i = 0; i < total;)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            for (int k = 0; returned[j][k]; k++, i++)
+            {
+                ret[i] = returned[j][k];
+            }
+            free(returned[j]);
+        }
+        free(returned);
+    }
+    ret[total] = NULL;
+    return (ret);
 }
 
 static cl_float4 midpoint_from_bounds(t_bounds b)
@@ -130,7 +232,7 @@ static cl_float4 midpoint_from_bounds(t_bounds b)
     return (cl_float4){(b.xmax - b.xmin) / 2, (b.ymax - b.ymin) / 2, (b.zmax - b.zmin) / 2};
 }
 
-static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
+static float multipole_acceptance_criterion(t_tree *us, t_tree *them)
 {
     //assess whether a cell is "near" or "far" for the sake of barnes-hut
     //if the value returned is less than THETA, that cell is far
@@ -143,9 +245,9 @@ static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
         return (THETA);
     us_midpoint = midpoint_from_bounds(us->bounds);
     s = them->bounds.xmax - them->bounds.xmin;
-    r.x = them->center.x - us_midpoint.x;
-    r.y = them->center.y - us_midpoint.y;
-    r.z = them->center.z - us_midpoint.z;
+    r.x = them->as_single->bodies[0].position.x - us_midpoint.x;
+    r.y = them->as_single->bodies[0].position.y - us_midpoint.y;
+    r.z = them->as_single->bodies[0].position.z - us_midpoint.z;
     d = sqrt(r.x * r.x + r.y * r.y + r.z * r.z);
 
     //in normal Barnes-Hut, the MAC is evaluated for every body vs every cell. 
@@ -157,27 +259,10 @@ static float multipole_acceptance_criterion(t_cell *us, t_cell *them)
     return (s/d);
 }
 
-static t_cell *single_body_cell(t_cell *cell)
+static t_tree **assemble_neighborhood(t_tree *cell, t_tree *root)
 {
-    //returns a new cell that's just one body. basically just a wrapper for the body,
-    //it's a little inelegant to do this rather than just make a body, but it fits in the existing code well.
-    //when this is rewritten for GPU i'll do it differently.
-    t_cell *single = (t_cell *)calloc(1, sizeof(t_cell));
-    single->bodies = (t_body **)calloc(2, sizeof(t_body *));
-    single->bodies[0] = (t_body *)calloc(1, sizeof(t_body));
-    single->bodies[0]->position = cell->center;
-    single->bodies[0]->velocity = (cl_float4){0, 0, 0, 0};
-    single->bodies[1] = NULL;
-    single->bodycount = 1;
-    single->bounds = (t_bounds){0,0,0,0,0,0};
-    cell->scb = single;
-    return (single);
-}
-
-static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
-{
-    t_cell **ret;
-    t_cell ***returned;
+    t_tree **ret;
+    t_tree ***returned;
 
     /*
         recursively flow through the tree, determining if cells are near or far from
@@ -196,30 +281,30 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
         in this way, we enumerate the "Neighborhood" of the cell, ie the bodies we'll need to compare with on the GPU.
     */
 
-    if (root != t->root && multipole_acceptance_criterion(cell, root) < THETA)
+    if (root->parent && multipole_acceptance_criterion(cell, root) < THETA)
     {
-        ret = (t_cell **)calloc(2, sizeof(t_cell *));
-        ret[0] = single_body_cell(root);
+        ret = (t_tree **)calloc(2, sizeof(t_tree *));
+        ret[0] = root->as_single; //empty cells are an issue here
         ret[1] = NULL;
         return (ret);
     }
     else if (!(root->children))
     {
-        ret = (t_cell **)calloc(2, sizeof(t_cell *));
+        ret = (t_tree **)calloc(2, sizeof(t_tree *));
         ret[0] = root;
         ret[1] = NULL;
         return (ret);
     }
     else
     {
-        returned = (t_cell ***)calloc(8, sizeof(t_cell **));
+        returned = (t_tree ***)calloc(8, sizeof(t_tree **));
         int total = 0;
         for (int i = 0; i < 8; i++)
         {
-            returned[i] = find_inners_do_outers(cell, root->children[i], t);
-            total += count_cell_array(returned[i]);
+            returned[i] = assemble_neighborhood(cell, root->children[i]);
+            total += count_tree_array(returned[i]);
         }
-        ret = (t_cell **)calloc(total + 1, sizeof(t_cell *));
+        ret = (t_tree **)calloc(total + 1, sizeof(t_tree *));
         for (int i = 0; i < total;)
         {
             for (int j = 0; j < 8; j++)
@@ -239,371 +324,222 @@ static t_cell **find_inners_do_outers(t_cell *cell, t_cell *root, t_octree *t)
     }
 }
 
-static int boundequ(t_bounds a, t_bounds b)
+static t_bounds bounds_from_bodies(t_body *bodies, int count)
 {
-    //simple helper function to determine if two t_bounds are equal.
-    if (a.xmin == b.xmin && a.xmax == b.xmax)
-        if (a.ymin == b.ymin && a.ymax == b.ymax)
-            if (a.zmin == b.zmin && a.zmax == b.zmax)
-                return (1);
-    return (0);
-}
+    //at the start of making the tree, we need a box that bounds all the bodies.
+    float xmin = 0, xmax = 0;
+    float ymin = 0, ymax = 0;
+    float zmin = 0, zmax = 0;
 
-static t_body **bodies_from_cells(t_cell **cells, int *neighborcount)
-{
-    //given a null terminated list of cells, make a null terminated array of all the bodies in those cells.
-    //also sets neighborcount to the length of the array.
-    int count;
-    t_body **bodies;
-
-    //printf("entering b_f_c\n");
-    count = 0;
-    for (int i = 0; cells[i]; i++)
-        count += cells[i]->bodycount;
-    bodies = (t_body **)calloc(count + 1, sizeof(t_body *));
-    bodies[count] = NULL;
-    int k = 0;
-    for (int i = 0; cells[i]; i++)
+    for (int i = 0; i < count; i++)
     {
-        memcpy(&(bodies[k]), cells[i]->bodies, cells[i]->bodycount * sizeof(t_body *));
-        k += cells[i]->bodycount;
+        //expand bounds if needed
+        if (bodies[i].position.x < xmin)
+            xmin = bodies[i].position.x;
+        if (bodies[i].position.x > xmax)
+            xmax = bodies[i].position.x;
+
+        if (bodies[i].position.y < ymin)
+            ymin = bodies[i].position.y;
+        if (bodies[i].position.y > ymax)
+            ymax = bodies[i].position.y;
+
+        if (bodies[i].position.z < zmin)
+            zmin = bodies[i].position.z;
+        if (bodies[i].position.z > zmax)
+            zmax = bodies[i].position.z;
     }
-    //printf("leaving b_f_c\n");
-    *neighborcount = count;
-    return (bodies);
-}
 
-static t_workunit *new_workunit(t_cell *c, t_body **neighborhood, int neighborcount, int index)
-{
-    //constructor for workunit.
-    t_workunit *w;
-
-    w = (t_workunit *)calloc(1, sizeof(t_workunit));
-    w->id = index;
-    w->localcount = c->bodycount;
-    w->neighborcount = neighborcount;
-    w->force_bias = c->force_bias;
-    w->local_bodies = c->bodies;
-    w->neighborhood = neighborhood;
-    return (w);
-
-}
-
-static t_workunit *make_workunit_for_cell(t_cell *cell, t_octree *t, int index)
-{
-    t_cell **inners;
-    t_body **direct_bodies;
-    t_workunit *w;
-    int neighborcount;
-
-    //skip empty cells
-    if (cell->bodycount == 0)
-        return NULL;
-    //traverse tree and assemble its neighborhood (here "inners," I need to do a sweep to unify naming)
-    inners = find_inners_do_outers(cell, t->root, t);
-    //use the result to make a list of particles we need to direct compare against
-    direct_bodies = bodies_from_cells(inners, &neighborcount);
-    free(inners);
-    w = new_workunit(cell, direct_bodies, neighborcount, index);
-    return (w);
-}
-
-static void    paint_bodies_octants(t_body **bodies, t_cell *c)
-{
-    //mark each body with a value for which octant it will be in after cell is split
-    for (int i = 0; i < c->bodycount; i++)
+    //bounds must be a cube.
+    float min = xmin;
+    float max = xmax;
+    float dim = xmax - xmin;
+    if (ymax - ymin > dim)
     {
-        if (bodies[i]->position.x < xmid)
-        {
-            if (bodies[i]->position.y < ymid)
-            {
-                if (bodies[i]->position.z < zmid)
-                    bodies[i]->velocity.w = 0;
-                else
-                    bodies[i]->velocity.w = 1;
-            }
-            else
-            {
-                if (bodies[i]->position.z < zmid)
-                    bodies[i]->velocity.w = 2;
-                else
-                    bodies[i]->velocity.w = 3;
-            }
-        }
+        dim = ymax - ymin;
+        min = ymin;
+        max = ymax;
+    }
+    if (zmax - zmin > dim)
+    {
+        dim = zmax - zmin;
+        min = zmin;
+        max = zmax;
+    }
+    return ((t_bounds){min, max, min, max, min, max});
+}
+
+static void scale_coords(t_body *bodies, t_bounds bounds, int count)
+{
+    //all positions need to be translated by -xmin, -ymin, -zmin
+    //then scale down by corner-corner bound distance
+    //and no reason not to morton while we're here.
+
+    float distance = (bounds.xmax - bounds.xmin) * (bounds.xmax - bounds.xmin);
+    distance += (bounds.ymax - bounds.ymin) * (bounds.ymax - bounds.ymin);
+    distance += (bounds.zmax - bounds.zmin) * (bounds.zmax - bounds.zmin);
+    distance = 1.0 / sqrt(distance);
+    for (int i = 0; i < count; i++)
+    {
+        bodies[i].position = (cl_float4){(bodies[i].position.x - bounds.xmin) * distance, \
+                                        (bodies[i].position.y - bounds.ymin) * distance, \
+                                        (bodies[i].position.z - bounds.zmin) * distance,
+                                        bodies[i].position.w};
+        //opportunistic mortenizing
+        unsigned int m = morton_body(bodies[i]);
+        bodies[i].velocity.w = *(float *)&m;
+    }
+}
+
+static void descale_coords(t_body *bodies, t_bounds bounds, int count)
+{
+    //all positions need to be translated by +xmin, +ymin, +zmin
+    //then scale up by corner-corner bound distance
+    //and no reason not to morton while we're here.
+
+    float distance = (bounds.xmax - bounds.xmin) * (bounds.xmax - bounds.xmin);
+    distance += (bounds.ymax - bounds.ymin) * (bounds.ymax - bounds.ymin);
+    distance += (bounds.zmax - bounds.zmin) * (bounds.zmax - bounds.zmin);
+    distance = sqrt(distance);
+    for (int i = 0; i < count; i++)
+    {
+        bodies[i].position = (cl_float4){bodies[i].position.x * distance + bounds.xmin, \
+                                        bodies[i].position.y * distance + bounds.ymin, \
+                                        bodies[i].position.z * distance + bounds.zmin,
+                                        bodies[i].position.w};
+    }
+}
+
+t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
+{
+    t_dict *dict = create_dict(1000); //fiddle with this number later. it doesnt need to be big.
+    
+    //take up to Count leaves starting at offset and pour their neighborhoods
+    //into the double-key hash. track which leaves we put in.
+    t_pair *ids = NULL;
+    //int *ids = calloc(count, sizeof(int)); // remember to address offset+count >leavescount
+    for (int i = 0; i < count && leaves[offset + i]; i++)
+    {
+        if (!ids)
+            ids = create_pair(i + offset);
         else
         {
-            if (bodies[i]->position.y < ymid)
-            {
-                if (bodies[i]->position.z < zmid)
-                    bodies[i]->velocity.w = 6;
-                else
-                    bodies[i]->velocity.w = 7;
-            }
-            else
-            {
-                if (bodies[i]->position.z < zmid)
-                    bodies[i]->velocity.w = 4;
-                else
-                    bodies[i]->velocity.w = 5;
-            }
+            t_pair *p = create_pair(i + offset);
+            p->next_key = ids;
+            ids = p;
         }
+        t_tree **adding = leaves[offset + i]->neighbors;
+        for (int j = 0; adding[j]; j++)
+            dict_insert(dict, adding[j], i);
     }
+    return (bundle_dict(dict, ids));
 }
 
-static t_body ***scoop_octants(t_body **bodies, int count)
+t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
 {
-    //return 8 arrays of bodies, one for each octant (used after paint_octants)
-    int counts[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    for (int i = 0; i < count; i++)
-        counts[(int)bodies[i]->velocity.w] += 1;
-    t_body ***ret = (t_body ***)calloc(8, sizeof(t_body **));
-    for (int i = 0; i < 8; i++)
+    t_msg m;
+    m.size = sizeof(int) * 2;
+    for (int i = 0; i < b->keycount; i++)
     {
-        ret[i] = (t_body **)calloc(counts[i] + 1, sizeof(t_body *));
-        ret[i][counts[i]] = NULL;
+        m.size += sizeof(int) * 2;
+        m.size += leaves[b->keys[i]]->count * sizeof(t_body);
     }
-    int indices[8] = {0, 0, 0, 0, 0, 0, 0, 0};
-    for (int i = 0; i < count; i++)
+    for (int i = 0; i < b->cellcount; i++)
     {
-        ret[(int)bodies[i]->velocity.w][indices[(int)bodies[i]->velocity.w]] = bodies[i];
-        indices[(int)bodies[i]->velocity.w] += 1;
+        m.size += sizeof(int) * 2;
+        m.size += b->cells[i]->count * sizeof(cl_float4);
+        m.size += b->matches_counts[i] * sizeof(int);
     }
-    return (ret);
-}
-
-static void divide_cell(t_cell *c)
-{
-    //split a cell into 8 octants.
-
-    t_bounds subbounds[8];
-    //min->max is left->right, bottom->top, near->far
-    subbounds[0] = (t_bounds){c->bounds.xmin, xmid, \
-                                c->bounds.ymin, ymid, \
-                                c->bounds.zmin, zmid}; //bottom left near
-
-    subbounds[6] = (t_bounds){xmid, c->bounds.xmax, \
-                                c->bounds.ymin, ymid, \
-                                c->bounds.zmin, zmid}; //bottom right near
-    subbounds[2] = (t_bounds){c->bounds.xmin, xmid, \
-                                ymid, c->bounds.ymax, \
-                                c->bounds.zmin, zmid}; // top left near
-    subbounds[1] = (t_bounds){c->bounds.xmin, xmid, \
-                                c->bounds.ymin, ymid, \
-                                zmid, c->bounds.zmax}; // bottom left far
-
-    subbounds[3] = (t_bounds){c->bounds.xmin, xmid, \
-                                ymid, c->bounds.ymax, \
-                                zmid, c->bounds.zmax}; //top left far
-    subbounds[7] = (t_bounds){xmid, c->bounds.xmax, \
-                                c->bounds.ymin, ymid, \
-                                zmid, c->bounds.zmax}; //bottom right far
-    subbounds[4] = (t_bounds){xmid, c->bounds.xmax, \
-                                ymid, c->bounds.ymax, \
-                                c->bounds.zmin, zmid}; //right top near
-
-    subbounds[5] = (t_bounds){xmid, c->bounds.xmax, \
-                                ymid, c->bounds.ymax, \
-                                zmid, c->bounds.zmax}; //right top far
-
-    //////Numbering is a bit weird here ^ but the idea is that even indices are near, odd far
-                                //0..3 are left, 4..7 are right
-                                //0, 1, 6, 7 bottom, 2345 top
-    //note: I made up this numbering scheme but it's actually not used anywhere ever.
-    t_cell **children = (t_cell **)calloc(8, sizeof(t_cell *));
-    paint_bodies_octants(c->bodies, c);
-    t_body ***kids = scoop_octants(c->bodies, c->bodycount);
-    for (int i = 0; i < 8; i++)
-        children[i] = init_cell(kids[i], c, subbounds[i]);
-    free(kids);
-    c->children = children;
-}
-
-static void tree_it_up(t_cell *root, t_dispatcher dispatcher)
-{
-    //recursively flesh out the barnes-hut tree from the root node.
-    //just keep splitting into 8 sub-octants and recursing on them until the number of stars in the cell is manageable.
-	if (!root)
-		return ;
-//	if (root->bodycount < dispatcher.dataset->particle_cnt / 2 && dispatcher.ticks_done >= 1)
-//	{
-//		printf("2\n");
-//		return ;
-//	}
-	else if (root->bodycount < LEAF_THRESHOLD)
-		return ;
-	divide_cell(root);
-	for (int i = 0; i < 8; i++)
-		tree_it_up(root->children[i], dispatcher);
-}
-
-static t_cell **enumerate_leaves(t_cell *root)
-{
-    //return a linear t_cell** that's all the leaf nodes (ie childless nodes) in the tree
-
-    t_cell **ret;
-
-    if (!root->children)
+    m.data = malloc(m.size);
+    int offset = 0;
+    memcpy(m.data + offset, &(b->keycount), sizeof(int));
+    offset += sizeof(int);
+    memcpy(m.data + offset, &(b->cellcount), sizeof(int));
+    offset += sizeof(int);
+    for (int i = 0; i < b->keycount; i++)
     {
-        ret = (t_cell **)calloc(2, sizeof(t_cell *));
-        ret[0] = root;
-        ret[1] = NULL;
-        return (ret);
+        memcpy(m.data + offset, &(b->keys[i]), sizeof(int));
+        offset += sizeof(int);
+        memcpy(m.data + offset, &(leaves[b->keys[i]]->count), sizeof(int));
+        offset += sizeof(int);
+        memcpy(m.data + offset, leaves[b->keys[i]]->bodies, leaves[b->keys[i]]->count * sizeof(t_body));
+        offset += leaves[b->keys[i]]->count * sizeof(t_body);
     }
-    t_cell ***returned = (t_cell ***)calloc(8, sizeof(t_cell **));
-    int total = 0;
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < b->cellcount; i++)
     {
-        returned[i] = enumerate_leaves(root->children[i]);
-        total += count_cell_array(returned[i]);
-    }
-    ret = (t_cell **)calloc(total + 1, sizeof(t_cell *));
-    for (int i = 0; i < total;)
-    {
-        for (int j = 0; j < 8; j++)
+        memcpy(m.data + offset, &(b->matches_counts[i]), sizeof(int));
+        offset += sizeof(int);
+        memcpy(m.data + offset, b->matches[i], b->matches_counts[i] * sizeof(int));
+        offset += b->matches_counts[i] * sizeof(int);
+        memcpy(m.data + offset, &(b->cells[i]->count), sizeof(int));
+        offset += sizeof(int);
+        for (int j = 0; j < b->cells[i]->count; j++)
         {
-            for (int k = 0; returned[j][k]; k++, i++)
-            {
-                ret[i] = returned[j][k];
-            }
-            free(returned[j]);
+            memcpy(m.data + offset, &(b->cells[i]->bodies[j].position), sizeof(cl_float4));
+            offset += sizeof(cl_float4);
         }
-        free(returned);
     }
-    ret[total] = NULL;
-    return (ret);
+    return (m);
 }
 
-static t_lst *new_node(t_workunit *w)
+t_tree *make_tree(t_body *bodies, int count)
 {
-    t_lst *n;
-
-    n = (t_lst *)calloc(1,sizeof(t_lst));
-    n->data_size = sizeof(t_workunit *);
-    n->data = w;
-    n->next = NULL;
-    return (n);
+    t_bounds root_bounds = bounds_from_bodies(bodies, count);
+    scale_coords(bodies, root_bounds, count);
+    qsort(bodies, count, sizeof(t_body), cache_comp);
+    t_tree *root = new_tnode(bodies, count, NULL);
+    root->bounds = root_bounds;
+    split_tree(root);
+    descale_coords(bodies, root_bounds, count);
+    return (root);
 }
 
-int lstlen(t_queue *queue)
+static void free_tree(t_tree *t)
 {
-	t_lst	*lst = queue->first;
-    if (!lst)
-        return (0);
-    int i = 0;
-    while (lst)
-    {
-        lst = lst->next;
-        i++;
-    }
-    return (i);
-}
-
-static t_queue   *create_workunits(t_octree *t, t_cell **leaves)
-{
-	long		sizetotal = 0;
-	t_queue		*head = NULL;
-	t_workunit	*w = NULL;
-
-	for (int i = 0; leaves[i]; i++)
-	{
-		w = make_workunit_for_cell(leaves[i], t, i);
-		if (w)
-		{
-			sizetotal += w->localcount + w->neighborcount;
-			queue_enqueue(&head, queue_create_new(*w));
-		}
-	}
-	return (head);
-}
-
-static void recursive_tree_free(t_cell *c)
-{
-    //the bodies** array in non-empty leaf cells is freed elsewhere (where workunits are freed). 
-    //still needs to be freed in inner cells and empty leaves. (technically the bodies** in an empty leaf is size 0 but its still good practice)
-    if (!c->children)
-    {
-        if (c->bodycount == 0)
-            free(c->bodies);
+    if (!t)
         return;
-    }
-    for (int i = 0; i < 8; i++)
+    if (t->children)
+        for (int i = 0; i < 8; i++)
+            free_tree(t->children[i]);
+    free(t->neighbors);
+    free(t->children);
+    if (t->as_single)
     {
-        recursive_tree_free(c->children[i]);
-        free(c->children[i]);
+        free(t->as_single->bodies);
+        free(t->as_single);
     }
-    if (c->scb)
-    {
-        free(c->scb->bodies[0]);
-        free(c->scb->bodies);
-        free(c->scb);
-    }
-    free(c->children);
-    free(c->bodies);
 }
 
-static void free_tree(t_octree *t)
+void free_bundle(t_bundle *b)
 {
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("freeing the tree\n");
-    recursive_tree_free(t->root);
-    free(t->root);
-    free(t);
+    free(b->keys);
+    free(b->cells);
+    free(b->matches_counts);
+    for (int i = 0; i < b->cellcount; i++)
+        free(b->matches[i]);
+    free(b->matches);
+    free(b);
 }
 
-static int unit_size(t_workunit *w)
+void    divide_dataset(t_dispatcher *dispatcher)
 {
-    int total = 12; //id, localcount, neighborcount
-    total += w->localcount * sizeof(t_body);
-    total += w->neighborcount * sizeof(cl_float4);
-    return total;
-}
-
-static void tally_workunits(t_queue *queue)
-{
-	t_lst	*units = queue->first;
-    long total = 0;
-    int local = 0;
-	while (units)
-    {
-        int this = unit_size((t_workunit *)units->data);
-        total += this;
-        local += ((t_workunit *)units->data)->localcount;
-        //printf("WU %d was %dKB\n",((t_workunit *)units->data)->id, this / 1024);
-        units = units->next;
-    }
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("total size of all workunits: %ldMB\n", total / (1024 * 1024));
-}
-
-void	divide_dataset(t_dispatcher *dispatcher)
-{
-    static t_octree *t;
+    static t_tree *t;
 
     if (t != NULL)
         free_tree(t);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
-	    printf("starting divide_dataset\n");
-    t_body **bodies = (t_body **)calloc(dispatcher->dataset->particle_cnt + 1, sizeof(t_body*));
-    bodies[dispatcher->dataset->particle_cnt] = NULL;
-    for (int i = 0; i < dispatcher->dataset->particle_cnt; i++)
-	    bodies[i] = &(dispatcher->dataset->particles[i]);
-    bodies[dispatcher->dataset->particle_cnt] = NULL;
-    t = init_tree(bodies, dispatcher->dataset->particle_cnt, bounds_from_bodies(bodies));
-
-	tree_it_up(t->root, *dispatcher);
-    t_cell **leaves = enumerate_leaves(t->root);
-    if (DEBUG && DIVIDE_DATASET_DEBUG)
-	    printf("tree is made\n");
-	dispatcher->workunits = create_workunits(t, leaves);
-    tally_workunits(dispatcher->workunits);
-    int len = lstlen(dispatcher->workunits);
-    dispatcher->total_workunits = len;
-    dispatcher->workunits_done = 0;
+        printf("starting divide_dataset\n");
+    t = make_tree(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
+    t_tree **leaves = enumerate_leaves(t);
+    printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
+    for (int i = 0; leaves[i]; i++)
+        leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
+    int wcount = dispatcher->worker_cnt ? dispatcher->worker_cnt : 4;
+    t_bundle **bundles = calloc(wcount, sizeof(t_bundle *));
+    int leaves_per_bundle = count_tree_array(leaves) / wcount;
+    for (int i = 0; i < wcount; i++)
+        bundles[i] = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
     dispatcher->cells = leaves;
-    dispatcher->cell_count = len;
-    if (DEBUG && NETWORK_DEBUG)
-    	printf("cell_count = %d\n", dispatcher->cell_count);
- 	if (DEBUG && DIVIDE_DATASET_DEBUG)
-        printf("workunits made, done divide_dataset\n");
-	return ;
+    dispatcher->total_workunits = wcount;
+    dispatcher->cell_count = count_tree_array(leaves);
 }

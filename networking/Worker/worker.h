@@ -53,11 +53,11 @@ long G_time_waiting_for_wu;
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 0
-# define MSG_DEBUG 0
-# define MSG_DETAILS_DEBUG 0
-# define MUTEX_DEBUG 0
-# define NETWORK_DEBUG 0
+# define DEBUG 1
+# define MSG_DEBUG 1
+# define MSG_DETAILS_DEBUG 1
+# define MUTEX_DEBUG 1
+# define NETWORK_DEBUG 1
 
 typedef struct s_context
 {
@@ -126,6 +126,24 @@ typedef struct			s_worker
 	sem_t				*exit_sem;
 	t_socket			socket;
 }						t_worker;
+
+typedef struct s_bundle
+{
+    int idcount;
+    int *ids;
+    int *matches_counts;
+    int **matches;
+    int *local_counts;
+    t_body **locals;
+    int *cell_sizes;
+    cl_float4 **cells;
+    int cellcount;
+}               t_bundle;
+
+
+t_bundle *deserialize_bundle(t_msg m);
+void transpose_matches(t_bundle *wb);
+t_workunit *unbundle_workunits(t_bundle *b, int *count);
 
 /*
  * 	Creates a new node and returns it
