@@ -62,6 +62,8 @@ void transpose_matches(t_bundle *wb)
             manifest_lens[wb->matches[i][j]]++;
         }
     }
+	for (int i = 0; i < wb->cellcount; i++)
+		free(wb->matches[i]);
     free(wb->matches);
     free(wb->matches_counts);
     wb->matches = manifests;

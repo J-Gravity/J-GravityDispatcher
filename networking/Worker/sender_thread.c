@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 17:56:30 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 03:18:08 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,11 @@ static void *sender_thread(void *param)
         workunit = queue_pop(&worker->completed_work);
         //send complete work unit
         msg = serialize_workunit(*workunit);
-        printf("sending: %d\n", workunit->id);
+		if (DEBUG)
+        	printf("sending: %d\n", workunit->id);
 		send_msg(worker->socket.fd, msg);
-        if (workunit->local_bodies)
-            free(workunit->local_bodies);
+		free(workunit->local_bodies);
+		free(workunit->neighborhood);
         free(workunit);
 	   	if (DEBUG)
             printf("SEND- finished sending work unit\n");

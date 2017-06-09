@@ -55,7 +55,7 @@ long G_time_waiting_for_wu;
 /* *********** */
 # define DEBUG 1
 # define MSG_DEBUG 1
-# define MSG_DETAILS_DEBUG 1
+# define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 1
 # define NETWORK_DEBUG 1
 
@@ -149,7 +149,7 @@ t_workunit *unbundle_workunits(t_bundle *b, int *count);
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_workunit workunit);
+t_lst		*queue_create_new(t_workunit *workunit);
 
 /*
  * 	Pops a node off the queue

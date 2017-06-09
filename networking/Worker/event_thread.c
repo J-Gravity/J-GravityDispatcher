@@ -6,14 +6,36 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/03 21:05:26 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/09 03:13:26 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "worker.h"
 
+void	delete_bundle(t_bundle *bundle)
+{
+	for (int i = 0; i < bundle->idcount; i++)
+	{
+		free(bundle->locals[i]);
+	}
+	for (int i = 0; i < bundle->cellcount; i++)
+	{
+		free(bundle->matches[i]);
+		free(bundle->cells[i]);
+	}
+	free(bundle->locals);
+	free(bundle->matches);
+	free(bundle->cells);
+	free(bundle->ids);
+	free(bundle->matches_counts);
+	free(bundle->local_counts);
+	free(bundle->cell_sizes);
+	free(bundle);
+}
+
 static void	handle_event(t_worker *worker, t_msg msg)
 {
+	static total_wu_rec = 0;
 	if (msg.id == WORK_UNITS_READY)
 	{
 		//may need to mutex the socket to avoid conflict with sender_thread
@@ -23,14 +45,21 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	else if (msg.id == WORK_UNIT)
 	{
 		int count;
-		t_workunit *WUs = unbundle_workunits(deserialize_bundle(msg), &count);
+		t_bundle *bundle;
+		bundle = deserialize_bundle(msg);
+		t_workunit *WUs = unbundle_workunits(bundle, &count);
+		delete_bundle(bundle);
 		for (int i = 0; i < count; i++)
 		{
-			queue_enqueue(&worker->todo_work, queue_create_new(WUs[i]));
+			queue_enqueue(&worker->todo_work, queue_create_new(&WUs[i]));
+			total_wu_rec++;
 			sem_post(worker->calc_thread_sem);
 		}
+
 		if (DEBUG)
         	printf("EVENT- work units from bundle added to local queue\n");
+		if (DEBUG)
+        	printf("%d workunits recieved\n", total_wu_rec);
 		free(msg.data);
 	}
 }
