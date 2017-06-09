@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 18:12:27 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 00:23:04 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 	if (dispatcher->workunits_done == dispatcher->total_workunits)
 		all_workunits_done(dispatcher);
-	else if (dispatcher->workunits->count > 0)
+	else if (dispatcher->bundles->count > 0)
 	{
 		t_msg m = new_message(WORK_UNITS_READY, 0, "");
 		send_worker_msg(worker, m);

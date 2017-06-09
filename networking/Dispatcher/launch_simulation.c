@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 18:59:33 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 00:23:03 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		int msec = diff * 1000 / CLOCKS_PER_SEC;
 		G_movelist_locked += msec%1000;
 		while (worker->workunit_queue->count > 0)
-			queue_enqueue(&dispatcher->workunits, queue_create_new(*queue_pop(&worker->workunit_queue)));
+			queue_enqueue(&dispatcher->bundles, queue_create_new(*queue_pop(&worker->workunit_queue)));
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
 	}
 	worker->workunit_queue = NULL;

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/08 18:10:35 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 00:16:23 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker,
 		t_msg msg)
 {
-	t_workunit *workunit;
+	t_bundle *bundle;
 
-	while (worker->active && dispatcher->workunits->count > 0)
+	while (worker->active && dispatcher->bundles->count > 0)
 	{
-		workunit = queue_pop(&dispatcher->workunits);
-		queue_enqueue(&worker->workunit_queue, queue_create_new(*workunit));
-		if (workunit)
-			send_workunit(worker, workunit);
+		bundle = queue_pop(&dispatcher->bundles);
+		queue_enqueue(&worker->workunit_queue, queue_create_new(*bundle));
+		if (bundle)
+			send_bundle(worker, bundle);
 		G_sent_wu++;
 	}
 	free(msg.data);

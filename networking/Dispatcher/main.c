@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/30 23:29:19 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 00:23:02 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,8 @@ int	main(int ac, char **av)
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
-	dispatcher->workunits = (t_queue *)calloc(1, sizeof(t_queue));
-	pthread_mutex_init(&dispatcher->workunits->mutex, NULL);
+	dispatcher->bundles = (t_queue *)calloc(1, sizeof(t_queue));
+	pthread_mutex_init(&dispatcher->bundles->mutex, NULL);
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
 	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);

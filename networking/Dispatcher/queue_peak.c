@@ -3,18 +3,18 @@
 /*                                                        :::      ::::::::   */
 /*   queue_peak.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: iwagner <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/05 20:20:46 by iwagner           #+#    #+#             */
-/*   Updated: 2017/06/05 20:20:50 by iwagner          ###   ########.fr       */
+/*   Updated: 2017/06/09 00:11:37 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_workunit	*queue_peak(t_queue **queue)
+t_bundle	*queue_peak(t_queue **queue)
 {
-	t_workunit	*workunit;
+	t_bundle	*bundle;
 	t_lst		*node;
 
 	if (*queue)
@@ -22,8 +22,8 @@ t_workunit	*queue_peak(t_queue **queue)
 		pthread_mutex_lock(&(*queue)->mutex);
 		node = (*queue)->first;
 		if (node)
-			workunit = node->data;
+			bundle = node->data;
 		pthread_mutex_unlock(&(*queue)->mutex);
 	}
-	return (workunit);
+	return (bundle);
 }

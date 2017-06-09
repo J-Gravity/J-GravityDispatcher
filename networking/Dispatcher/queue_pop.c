@@ -6,15 +6,15 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:20:42 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/04 16:34:02 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 00:10:46 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_workunit	*queue_pop(t_queue **queue)
+t_bundle	*queue_pop(t_queue **queue)
 {
-	t_workunit	*workunit;
+	t_bundle	*bundle;
 	t_lst		*node;
 
 	if (*queue)
@@ -24,7 +24,7 @@ t_workunit	*queue_pop(t_queue **queue)
 		if (node)
 		{
 			(*queue)->count--;
-			workunit = node->data;
+			bundle = node->data;
 			(*queue)->first = (*queue)->first->next;
 			free(node);
 		}
@@ -32,5 +32,5 @@ t_workunit	*queue_pop(t_queue **queue)
 			(*queue)->last = NULL;
 		pthread_mutex_unlock(&(*queue)->mutex);
 	}
-	return (workunit);
+	return (bundle);
 }

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 18:55:31 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 00:24:58 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,10 +201,10 @@ typedef struct			s_dispatcher
 	t_dataset			*new_dataset;
 	int					ticks_cnt;
 	int					ticks_done;
-	t_queue				*workunits;
+	t_queue				*bundles;
 	int					total_workunits;
 	int					workunits_done;
-	t_cell				**cells;
+	t_tree				**cells;
 	int					cell_count;
 	t_socket			sin;
 	char				is_connect;
@@ -221,13 +221,13 @@ typedef struct			s_thread_handler
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_workunit workunit);
+t_lst		*queue_create_new(t_bundle bundle);
 
 /*
  * 	Pops a node off the queue
  * 		@param **queue	A queue struct that holds first, last and size
  */
-t_workunit	*queue_pop(t_queue **queue);
+t_bundle	*queue_pop(t_queue **queue);
 
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
@@ -359,6 +359,14 @@ void 		save_output(t_dispatcher *dispatcher, char *name);
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
 int			send_workunit(t_worker *worker, t_workunit *workunit);
+
+/*
+*	Send a work unit to a specified worker
+*		@param	worker	worker to recieve the work unit
+*		@param	workunit	non-completed work unit
+*		@return	0 if the request was fullfilled. 1 otherwise
+*/
+int			send_bundle(t_worker *worker, t_bundle *bundle);
 
 /*
 *	Serializes the workunit struct and stores it in the message struct
