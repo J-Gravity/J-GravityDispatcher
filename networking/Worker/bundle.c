@@ -39,7 +39,7 @@ t_bundle *deserialize_bundle(t_msg m)
         memcpy(b->cells[i], m.data + offset, b->cell_sizes[i] * sizeof(cl_float4));
         offset += b->cell_sizes[i] * sizeof(cl_float4);
     }
-    printf("incoming bundle msg was %d MB\n", m.size / (1024 * 1024));
+    printf("\nincoming bundle msg was %d MB\n", m.size / (1024 * 1024));
     return (b);
 }
 
