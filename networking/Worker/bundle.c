@@ -62,7 +62,7 @@ t_bundle *deserialize_bundle(t_msg m)
         memcpy(b->cells[i], m.data + offset, b->cell_sizes[i] * sizeof(cl_float4));
         offset += b->cell_sizes[i] * sizeof(cl_float4);
     }
-    printf("incoming bundle msg was %d MB\n", m.size / (1024 * 1024));
+    printf("\nincoming bundle msg was %d MB\n", m.size / (1024 * 1024));
     return (b);
 }
 
@@ -122,28 +122,3 @@ t_workunit **unbundle_workunits(t_bundle *b, int *count)
     *count = b->idcount;
     return (WUs);
 }
-
-// t_workunit **unbundle_workunits(t_bundle *b, int *count)
-// {
-//     t_workunit **WUs = calloc(b->idcount, sizeof(t_workunit *));
-//     transpose_matches(b);
-//     for (int i = 0; i < b->idcount; i++)
-//     {
-//         WUs[i] = calloc(1, sizeof(t_workunit));
-//         WUs[i]->id = b->ids[i];
-//         WUs[i]->localcount = b->local_counts[i];
-//         WUs[i]->local_bodies = b->locals[i];
-//         WUs[i]->neighborcount = 0;
-//         for (int j = 0; j < b->matches_counts[i]; j++)
-//             WUs[i]->neighborcount += b->cell_sizes[b->matches[i][j]];
-//         WUs[i]->neighborhood = (cl_float4 **)calloc(b->matches_counts[i] + 1, sizeof(cl_float4 *));
-//         WUs[i]->cell_lens = (int *)calloc(b->matches_counts[i], sizeof(int));
-//         for (int j = 0; j < b->matches_counts[i]; j++)
-//         {
-//             WUs[i]->neighborhood[j] = b->cells[b->matches[i][j]];
-//             WUs[i]->cell_lens[j] = b->cell_sizes[b->matches[i][j]];
-//         }
-//     }
-//     *count = b->idcount;
-//     return (WUs);
-// }

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 21:28:54 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/10 14:57:50 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,6 +142,18 @@ int main(int argc, char **argsv)
 	int val = sem_wait(worker->exit_sem);
 	if (val < 0)
 		printf("sem_wait failed with err:%d\n", errno);
+	clock_t diff = clock() - G_start_time;
+	double sum = G_total_event_time + G_total_calc_time + G_total_send_time;
+	if (METRICS)
+	{
+		printf("Total runtime: %.2lu\n", time(NULL) - G_start_time);
+		printf("%-24s %-3ld %-6.2f%%\n", "Time spent eventing:",
+				G_total_event_time, (G_total_event_time / sum) * 100);
+		printf("%-24s %-3ld %-6.2f%%\n", "Time spent calculating:",
+				G_total_calc_time, (G_total_calc_time / sum) * 100);
+		printf("%-24s %-3ld %-6.2f%%\n", "Time spent sending:",
+				G_total_send_time, (G_total_send_time / sum) * 100);
+	}
 	printf("worker done, good bye\n");
 	//cleanup
 	unlink_semaphores();
