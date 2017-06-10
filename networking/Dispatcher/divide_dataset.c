@@ -147,7 +147,7 @@ void split_tree(t_tree *root)
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
 {
     //add two vectors.
-    return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w});
+    return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + fabs(b.w)});
 }
 
 static t_tree *make_as_single(t_tree *c)
@@ -284,7 +284,7 @@ static t_tree **assemble_neighborhood(t_tree *cell, t_tree *root)
     if (root->parent && multipole_acceptance_criterion(cell, root) < THETA)
     {
         ret = (t_tree **)calloc(2, sizeof(t_tree *));
-        ret[0] = root->as_single; //empty cells are an issue here
+        ret[0] = root->as_single;
         ret[1] = NULL;
         return (ret);
     }
@@ -527,10 +527,10 @@ void    divide_dataset(t_dispatcher *dispatcher)
         //printf("leaf %d has %d locals\n", i, leaves[i]->count);
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     }
-    // int wcount = dispatcher->worker_cnt ? dispatcher->worker_cnt : 4;
-    int wcount = 4; // hard-code this temporarily
-    int leaves_per_bundle = (count_tree_array(leaves) / wcount) + 1;
-    for (int i = 0; i < wcount; i++)
+    int lcount = count_tree_array(leaves);
+    int wcount = 8; // hard-code this temporarily
+    int leaves_per_bundle = (lcount / wcount);
+    for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
