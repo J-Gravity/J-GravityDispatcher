@@ -194,7 +194,7 @@ void		launch_calculation_thread(t_worker *worker);
  */
 void		launch_sender_thread(t_worker *worker);
 
-t_workunit	*do_workunit(t_workunit *w);
+void do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
 t_msg		serialize_workunit(t_workunit w);
 

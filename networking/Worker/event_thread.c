@@ -47,7 +47,7 @@ void	delete_bundle(t_bundle *bundle)
 
 static void	handle_event(t_worker *worker, t_msg msg)
 {
-	static total_wu_rec = 0;
+	static int total_wu_rec = 0;
 	if (msg.id == WORK_UNITS_READY)
 	{
 		//may need to mutex the socket to avoid conflict with sender_thread

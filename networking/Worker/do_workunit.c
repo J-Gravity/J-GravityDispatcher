@@ -151,7 +151,6 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     cl_kernel k;
     cl_program p;
     int err;
-    char *source;
 
     //source = load_cl_file(sourcefile);
     p = clCreateProgramWithSource(c->context, 1, (const char **) & thesource, NULL, &err);
@@ -173,8 +172,6 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     // Create the compute kernel from the program
     k = clCreateKernel(p, name, &err);
     checkError(err, "Creating kernel");
-    if (source)
-      free(source);
     clReleaseProgram(p);
     return (k);
 }
@@ -287,7 +284,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     return (ret);
 }
 
-t_workunit *do_workunit(t_workunit *w)
+void do_workunit(t_workunit *w)
 {
     // printf("before computation, from WU\n");
     // print_cl4(w->local_bodies[0].position);
@@ -322,5 +319,5 @@ t_workunit *do_workunit(t_workunit *w)
     // printf("after computation, in WU\n");
     // print_cl4(w->local_bodies[0].position);
     // print_cl4(w->local_bodies[0].velocity);
-    return (w);
+    //return (w);
 }
