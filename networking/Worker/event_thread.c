@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 03:13:26 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/10 13:53:06 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,9 @@ static void	*event_thread(void *param)
 	while (worker->active)
 	{
 		msg = receive_msg(worker->socket.fd);
+		clock_t event_time = clock();
+		if (G_start_time == 0)
+			G_start_time = clock();
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("EVENT- done receiving message\n");
@@ -105,6 +108,7 @@ static void	*event_thread(void *param)
 			handle_event(worker, msg);
 		if (DEBUG)
 			printf("EVENT- finished event_thread\n");
+		G_total_event_time += clock() - event_time;
 	}
 	printf("EVENT- exiting event thread\n");
 	sem_post(worker->exit_sem);

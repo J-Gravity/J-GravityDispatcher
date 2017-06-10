@@ -49,6 +49,10 @@
 /* METRICS */
 /* ******* */
 long G_time_waiting_for_wu;
+clock_t G_start_time;
+clock_t G_total_event_time;
+clock_t G_total_send_time;
+long G_total_calc_time;
 
 /* *********** */
 /* DEBUG FLAGS */
