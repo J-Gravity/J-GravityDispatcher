@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/05 02:34:13 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:25:49 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,17 @@ void	*connect_worker_thread(void *param)
 			printf("accept returned 0!");
 			continue;
 		}
-		printf("%d workers are connected\n", dispatcher->worker_cnt);
+		if (fd == -1)
+		{
+			if (DEBUG && WORKER_DEBUG)
+				printf("worker accept call failed\n");
+			return (0);
+		}
+		printf("%d worker", dispatcher->worker_cnt + 1);
+		if (dispatcher->worker_cnt + 1 == 1)
+			printf(" is connected!\n");
+		else
+			printf("s are connected!\n");
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
@@ -62,13 +72,7 @@ void	*connect_worker_thread(void *param)
 		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
-		if (new_worker->socket.fd == -1)
-		{
-			printf("worker accept call failed\n");
-			return (0);
-		}
-		
-		if (dispatcher->is_running && fd != -1)
+		if (dispatcher->is_running)
 		{
 			if (DEBUG && WORKER_DEBUG)
 			{

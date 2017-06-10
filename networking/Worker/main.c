@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 17:56:07 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:28:54 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,13 +60,13 @@ static void unlink_semaphores()
 	int ret;
 
 	ret = sem_unlink("/calc_thread");
-    if (ret)
+    if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
 	ret = sem_unlink("/sender_thread");
-    if (ret)
+    if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
 	ret = sem_unlink("/exit");
-    if (ret)
+    if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
 }
 
