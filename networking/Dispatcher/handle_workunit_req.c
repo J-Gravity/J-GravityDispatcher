@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/09 20:19:45 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:48:02 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,8 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker,
 		if (bundle)
 		{
 			send_bundle(worker, bundle, dispatcher->cells);
-			worker->w_calc_time = time(NULL);
+			if (METRICS && WORKER_TIME_METRIC)
+				worker->w_calc_time = time(NULL);
 		}
 		G_sent_wu++;
 	}

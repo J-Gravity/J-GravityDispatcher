@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 20:11:54 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:48:05 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ int G_sent_wu;
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
 # define MUTEX_METRIC 0
+# define WORKER_TIME_METRIC 0
 
 
 int G_total_locked;

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 20:54:22 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:47:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,13 +47,19 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	{
 		if (DEBUG && WORKER_DEBUG)
 			printf("adding lost worker's work unit back to the pool!\n");
-		clock_t start, diff;
-		start = clock();
+		if (METRICS && MUTEX_METRIC)
+		{
+			clock_t start, diff;
+			start = clock();
+		}
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
 		dispatcher->worker_cnt--;
-		diff = clock() - start;
-		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_movelist_locked += msec%1000;
+		if (METRICS && MUTEX_METRIC)
+		{
+			diff = clock() - start;
+			int msec = diff * 1000 / CLOCKS_PER_SEC;
+			G_movelist_locked += msec%1000;
+		}
 		while (worker->workunit_queue->count > 0)
 			queue_enqueue(&dispatcher->bundles, queue_create_new(queue_pop(&worker->workunit_queue)));
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
@@ -61,12 +67,18 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	worker->workunit_queue = NULL;
 	if (DEBUG && WORKER_DEBUG)
 		printf("removing worker link!\n");
-	clock_t start, diff;
-	start = clock();
+	if (METRICS && MUTEX_METRIC)
+	{
+		clock_t start, diff;
+		start = clock();
+	}
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
-	diff = clock() - start;
-	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_removeworker_locked += msec%1000;
+	if (METRICS && MUTEX_METRIC)
+	{
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_removeworker_locked += msec%1000;
+	}
 	remove_link(&dispatcher->workers, worker);
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 	free(worker_link);
@@ -88,7 +100,10 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
 	{
-		G_worker_calcs += time(NULL) - worker->w_calc_time;
+		if (METRICS && WORKER_TIME_METRIC)
+		{
+			G_worker_calcs += time(NULL) - worker->w_calc_time;
+		}
 		handle_worker_done_msg(dispatcher, worker, msg);
 		worker->w_calc_time = 0;
 	}
@@ -100,12 +115,18 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 {
 	t_lst	*head;
 
-	clock_t start, diff;
-	start = clock();
+	if (METRICS && MUTEX_METRIC)
+	{
+		clock_t start, diff;
+		start = clock();
+	}
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
-	diff = clock() - start;
-	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_printfds_locked += msec%1000;
+	if (METRICS && MUTEX_METRIC)
+	{
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_printfds_locked += msec%1000;
+	}
 	head = dispatcher->workers;
 	printf("-------------\n");
   	while (head)
@@ -172,11 +193,17 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
 
-	clock_t start = clock(), diff;
+	if (METRICS && MUTEX_METRIC)
+	{
+		clock_t start = clock(), diff;
+	}
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
-	diff = clock() - start;
-	int msec = diff * 1000 / CLOCKS_PER_SEC;
-	G_workerevent_locked += msec%1000;
+	if (METRICS && MUTEX_METRIC)
+	{
+		diff = clock() - start;
+		int msec = diff * 1000 / CLOCKS_PER_SEC;
+		G_workerevent_locked += msec%1000;
+	}
 	head = dispatcher->workers;
 	while (head)
 	{	
