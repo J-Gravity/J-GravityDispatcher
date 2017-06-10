@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 21:47:33 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:53:53 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,9 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	{
 		if (DEBUG && WORKER_DEBUG)
 			printf("adding lost worker's work unit back to the pool!\n");
+		clock_t start, diff;
 		if (METRICS && MUTEX_METRIC)
 		{
-			clock_t start, diff;
 			start = clock();
 		}
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
@@ -67,9 +67,9 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	worker->workunit_queue = NULL;
 	if (DEBUG && WORKER_DEBUG)
 		printf("removing worker link!\n");
+	clock_t start, diff;
 	if (METRICS && MUTEX_METRIC)
 	{
-		clock_t start, diff;
 		start = clock();
 	}
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
@@ -115,9 +115,9 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 {
 	t_lst	*head;
 
+	clock_t start, diff;
 	if (METRICS && MUTEX_METRIC)
 	{
-		clock_t start, diff;
 		start = clock();
 	}
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
@@ -193,9 +193,10 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
 
+	clock_t start, diff;
 	if (METRICS && MUTEX_METRIC)
 	{
-		clock_t start = clock(), diff;
+		start = clock();
 	}
 	pthread_mutex_lock(&dispatcher->worker_list_mutex);
 	if (METRICS && MUTEX_METRIC)
