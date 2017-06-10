@@ -6,7 +6,7 @@
 /*   By: cyildiri <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 19:52:54 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/18 17:33:26 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/10 14:42:40 by elee             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,11 @@ t_socket		setup_server_socket(int port)
 		printf("Creating the server socket failed with code: %d\n", errno);
 		exit(1);
 	}
+	/*
 	sin.addr.sin_family = AF_INET;
 	sin.addr.sin_addr.s_addr = INADDR_ANY;
 	sin.addr.sin_port = htons(port);
+	*/
 
 	optval = 1;
 	setsockopt(sin.fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof optval);
