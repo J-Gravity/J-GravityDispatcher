@@ -1,6 +1,8 @@
 #include "dispatcher.h"
 #include <math.h>
 #include <limits.h>
+#include "lz4.h"
+#include "transpose.h"
 
 #define THETA 1.5
 #define LEAF_THRESHOLD pow(2, 16)
@@ -147,6 +149,11 @@ void split_tree(t_tree *root)
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
 {
     //add two vectors.
+    return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w});
+}
+
+static cl_float4 abs_vadd(cl_float4 a, cl_float4 b)
+{
     return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + fabs(b.w)});
 }
 
@@ -154,20 +161,18 @@ static t_tree *make_as_single(t_tree *c)
 {
     //as an optimization, center_of_mass also counts the bodies and stores that
     cl_float4 v;
-
     v = (cl_float4){0,0,0,0};
-    if (c->children == NULL)
-        for (int i = 0; i < c->count; i++)
-            v = vadd(v, c->bodies[i].position);
-    else
-        for (int i = 0; i < 8; i++)
-            if (c->children[i]->count != 0)
-                v = vadd(v, c->children[i]->as_single->bodies[0].position);
+    float mass = 0;
+    for (int i = 0; i < c->count; i++)
+    {
+        v = abs_vadd(v, c->bodies[i].position);
+        mass += c->bodies[i].position.w;
+    }
     t_body *b = calloc(1, sizeof(t_body));
     if (c->count == 0)
         b->position = (cl_float4){0,0,0,0};
     else
-        b->position = (cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, v.w};
+        b->position = (cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, mass};
 
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
@@ -435,6 +440,27 @@ t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
     return (bundle_dict(dict, ids));
 }
 
+t_msg compress_msg(t_msg m)
+{
+    t_msg c;
+
+    //something is wrong with this or its partner on worker side. ratio is good (~75%) so fixing this is worth
+    char *transposed = calloc(1, m.size);
+    tpenc((unsigned char *)m.data, m.size, (unsigned char *)transposed, sizeof(int));
+    int max_compressed_size = LZ4_compressBound(m.size);
+    char *compressed = calloc(1, max_compressed_size);
+    int result_compressed_size = LZ4_compress_default(transposed, compressed, m.size, max_compressed_size);
+    free(m.data);
+    free(transposed);
+    c.size = result_compressed_size + sizeof(int);
+    c.data = calloc(1, c.size);
+    memcpy(c.data, &m.size, sizeof(int));
+    memcpy(c.data + sizeof(int), compressed, result_compressed_size);
+    free(compressed);
+    printf("m.size was %d, now it's %d\n", m.size, result_compressed_size);
+    return c;
+}
+
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
 {
     t_msg m;
@@ -479,6 +505,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
             offset += sizeof(cl_float4);
         }
     }
+    //m = compress_msg(m);
     return (m);
 }
 

@@ -56,8 +56,8 @@ long G_time_waiting_for_wu;
 # define DEBUG 0
 # define MSG_DEBUG 1
 # define MSG_DETAILS_DEBUG 0
-# define MUTEX_DEBUG 1
-# define NETWORK_DEBUG 1
+# define MUTEX_DEBUG 0
+# define NETWORK_DEBUG 0
 
 typedef struct s_context
 {
@@ -118,12 +118,16 @@ typedef struct			s_worker
 	char				active;
 	t_queue				*todo_work;
 	t_queue				*completed_work;
+	t_queue 			*bundle_queue;
 	pthread_t			*event_thread;
 	pthread_t			*calc_thread;
 	pthread_t			*sender_thread;
+	pthread_t 			*debundle_thread;
 	sem_t				*sender_thread_sem;
 	sem_t				*calc_thread_sem;
 	sem_t				*exit_sem;
+	sem_t 				*ready_for_bundle;
+	sem_t 				*debundle_sem;
 	t_socket			socket;
 }						t_worker;
 
@@ -149,13 +153,13 @@ t_workunit **unbundle_workunits(t_bundle *b, int *count);
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_workunit *workunit);
+t_lst		*queue_create_new(void *workunit);
 
 /*
  * 	Pops a node off the queue
  * 		@param **queue	A queue struct that holds first, last and size
  */
-t_workunit	*queue_pop(t_queue **queue);
+void	*queue_pop(t_queue **queue);
 
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
@@ -203,3 +207,6 @@ void print_cl4(cl_float4 v);
 void	strbjoin(t_msg *msg, char const *s2, size_t size);
 char	*itob(int value);
 char	*clftob(cl_float4 star);
+
+
+void launch_debundle_thread(t_worker *worker);

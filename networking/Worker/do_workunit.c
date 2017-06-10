@@ -286,9 +286,6 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
 
 void do_workunit(t_workunit *w)
 {
-    // printf("before computation, from WU\n");
-    // print_cl4(w->local_bodies[0].position);
-    // print_cl4(w->local_bodies[0].velocity);
     size_t ncount = w->localcount;
     size_t mcount = w->neighborcount;
     size_t npadding = nearest_mult_256(ncount) - ncount;
@@ -302,9 +299,6 @@ void do_workunit(t_workunit *w)
         N[i] = w->local_bodies[i].position;
         V[i] = w->local_bodies[i].velocity;
     }
-    // printf("before computation, in input buffers\n");
-    // print_cl4(N[0]);
-    // print_cl4(V[0]);
     for (int i = 0; i < mcount; i++)
     {
         M[i] = w->neighborhood[i];
@@ -317,8 +311,5 @@ void do_workunit(t_workunit *w)
     if (N) free(N);
     if (M) free(M);
     if (V) free(V);
-    // printf("after computation, in WU\n");
-    // print_cl4(w->local_bodies[0].position);
-    // print_cl4(w->local_bodies[0].velocity);
-    //return (w);
+
 }

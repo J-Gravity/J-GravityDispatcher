@@ -68,6 +68,12 @@ static void unlink_semaphores()
 	ret = sem_unlink("/exit");
     if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
+    ret = sem_unlink("/debundle");
+    if (DEBUG && ret)
+        printf("sem_unlink err %d\n", errno);
+    ret = sem_unlink("/readybundle");
+    if (DEBUG && ret)
+        printf("sem_unlink err %d\n", errno);
 }
 
 static void initialize_semaphores(t_worker *worker)
@@ -82,6 +88,12 @@ static void initialize_semaphores(t_worker *worker)
 	worker->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
 	if (worker->exit_sem == SEM_FAILED)
 		printf("sem3 open failed with %d\n", errno);
+	worker->debundle_sem = sem_open("/debundle", O_CREAT, 077, 0);
+	if (worker->debundle_sem == SEM_FAILED)
+		printf("sem4 open failed with %d\n", errno);
+	worker->ready_for_bundle = sem_open("/readybundle", O_CREAT, 077, 1);
+	if (worker->ready_for_bundle == SEM_FAILED)
+		printf("sem4 open failed with %d\n", errno);
 }
 
 int main(int argc, char **argsv)
@@ -124,6 +136,7 @@ int main(int argc, char **argsv)
 	launch_event_thread(worker);
 	launch_calculation_thread(worker);
 	launch_sender_thread(worker);
+	launch_debundle_thread(worker);
 	if (DEBUG)
 		printf("threads launched\n");
 	int val = sem_wait(worker->exit_sem);

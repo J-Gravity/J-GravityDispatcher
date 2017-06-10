@@ -12,7 +12,7 @@
 
 #include "worker.h"
 
-t_lst	*queue_create_new(t_workunit *workunit)
+t_lst	*queue_create_new(void *workunit)
 {
 	t_lst	*node;
 

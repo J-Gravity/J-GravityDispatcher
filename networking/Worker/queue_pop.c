@@ -12,9 +12,9 @@
 
 #include "worker.h"
 
-t_workunit	*queue_pop(t_queue **queue)
+void	*queue_pop(t_queue **queue)
 {
-	t_workunit	*workunit;
+	void	*workunit;
 	t_lst		*node;
 
 	workunit = NULL;

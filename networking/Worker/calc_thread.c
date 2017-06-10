@@ -30,6 +30,8 @@ static void *calc_thread(void *param)
 			printf("CALC- finished calculating work unit\n");
 		queue_enqueue(&worker->completed_work, queue_create_new(workunit));
 		sem_post(worker->sender_thread_sem);
+		if (worker->todo_work->count == 0)
+			sem_post(worker->ready_for_bundle);
 	}
 	return (0);
 }
