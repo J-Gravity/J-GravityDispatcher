@@ -60,15 +60,7 @@ int	main(int ac, char **av)
 	diff = clock() - start;
 	msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)
-		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
-	start = clock();
-	divide_dataset(dispatcher);
-	diff = clock() - start;
-	msec = diff * 1000 / CLOCKS_PER_SEC;
-	if (METRICS && STARTUP_METRICS)
-		printf("There are %ld particles\n", dispatcher->dataset->particle_cnt);
-	if (METRICS && STARTUP_METRICS)
-		printf("divide_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);w
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	return (0);
 }

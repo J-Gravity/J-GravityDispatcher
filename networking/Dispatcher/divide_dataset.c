@@ -555,7 +555,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     }
     int lcount = count_tree_array(leaves);
-    int wcount = 8; // hard-code this temporarily
+    int wcount = dispatcher->worker_cnt;
     int leaves_per_bundle = (lcount / wcount);
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {

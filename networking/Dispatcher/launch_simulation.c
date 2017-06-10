@@ -257,9 +257,9 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		return ;
 	while (getchar() != 10)
 		;
-	
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
+	divide_dataset(dispatcher);
 	launch_worker_event_threads(dispatcher);
 	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)
