@@ -296,6 +296,7 @@ void do_workunit(t_workunit *w)
     cl_float4 *N = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
     cl_float4 *M = (cl_float4 *)calloc(mcount + mpadding, sizeof(cl_float4));
     cl_float4 *V = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
+    printf("computing %lu x %lu\n", ncount+npadding, mcount+mpadding);
     for (int i = 0; i < ncount; i++)
     {
         N[i] = w->local_bodies[i].position;

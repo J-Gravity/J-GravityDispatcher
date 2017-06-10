@@ -39,6 +39,7 @@ t_bundle *deserialize_bundle(t_msg m)
         memcpy(b->cells[i], m.data + offset, b->cell_sizes[i] * sizeof(cl_float4));
         offset += b->cell_sizes[i] * sizeof(cl_float4);
     }
+    printf("incoming bundle msg was %d MB\n", m.size / (1024 * 1024));
     return (b);
 }
 
@@ -74,16 +75,19 @@ t_workunit **unbundle_workunits(t_bundle *b, int *count)
 {
     t_workunit **WUs = calloc(b->idcount, sizeof(t_workunit *));
     transpose_matches(b);
+    unsigned long totalsize = 0;
     for (int i = 0; i < b->idcount; i++)
     {
         WUs[i] = calloc(1, sizeof(t_workunit));
         WUs[i]->id = b->ids[i];
         WUs[i]->localcount = b->local_counts[i];
         WUs[i]->local_bodies = b->locals[i];
+        totalsize += WUs[i]->localcount * sizeof(t_body);
         WUs[i]->neighborcount = 0;
         for (int j = 0; j < b->matches_counts[i]; j++)
             WUs[i]->neighborcount += b->cell_sizes[b->matches[i][j]];
         WUs[i]->neighborhood = (cl_float4 *)calloc(WUs[i]->neighborcount, sizeof(cl_float4));
+        totalsize += WUs[i]->neighborcount * sizeof(cl_float4);
         int offset = 0;
         for (int j = 0; j < b->matches_counts[i]; j++)
         {
@@ -91,6 +95,7 @@ t_workunit **unbundle_workunits(t_bundle *b, int *count)
             offset += b->cell_sizes[b->matches[i][j]];
         }
     }
+    printf("bundle turned into %lu MB\n", totalsize / (1024 * 1024));
     *count = b->idcount;
     return (WUs);
 }
