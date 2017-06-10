@@ -6,11 +6,21 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 03:38:08 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 20:27:13 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
+
+void initialize_metrics()
+{
+	G_tick_start = 0;
+	G_workunit_size = 0;
+	G_total_workunit_size = 0;
+	G_worker_calcs = 0;
+	G_total_time = 0;
+	G_total_workunit_cnt = 0;
+}
 
 int	main(int ac, char **av)
 {
@@ -24,8 +34,8 @@ int	main(int ac, char **av)
 		return (0);
 	}
 	signal(SIGPIPE, SIG_IGN);
-	G_total_workunit_cnt = 0;
-	G_total_time = 0;
+	if (METRICS)
+		initialize_metrics();
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 4;

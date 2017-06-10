@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 00:23:03 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 20:54:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,12 +85,11 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 	if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		printf("handling request!\n");
 	if (msg.id == WORK_UNIT_REQUEST)	
-
 		handle_workunit_req(dispatcher, worker, msg);
 	else if (msg.id == WORK_UNIT_DONE)
 	{
-		handle_worker_done_msg(dispatcher, worker, msg);
 		G_worker_calcs += time(NULL) - worker->w_calc_time;
+		handle_worker_done_msg(dispatcher, worker, msg);
 		worker->w_calc_time = 0;
 	}
 	else
@@ -196,26 +195,19 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 
 int		timeout_progressbar(t_dispatcher *dispatcher)
 {
-	int timeout = 256;
+	int timeout = 60;
 	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
+	write(1, "[2K", 4);
+	write(1, "\rWaiting for workers to connect...\n", 35);
 	while (!dispatcher->workers)
 	{
-		write(1, "[2K", 4);
-		write(1, "\rWaiting for workers to connect", 31);
-		sleep(1);
-		write(1, ".", 1);
-		sleep(1);
-		write(1, ".", 1);
-		sleep(1);
-		write(1, ".", 1);
-		sleep(1);
+		sleep(5);
 		if (--timeout == 0)
 		{
 			printf("Timeout reached, Simulation aborted!");
 			return (-1);
 		}
 	}
-	write(1, "running...\n", 11);
 	return (0);
 }
 
@@ -240,8 +232,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
-	printf("launch0\n");
 	launch_worker_event_threads(dispatcher);
+	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)
 		printf("sem_wait failed with err:%d\n", errno);
 	if (sem_unlink("/exit"))
