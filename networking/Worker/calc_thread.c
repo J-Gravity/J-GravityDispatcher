@@ -25,7 +25,7 @@ static void *calc_thread(void *param)
 		if (DEBUG)
 			printf("CALC- calculating work unit\n");
 		workunit = queue_pop(&worker->todo_work);
-		//do_workunit(workunit);
+		do_workunit(workunit);
 		if (DEBUG)
 			printf("CALC- finished calculating work unit\n");
 		queue_enqueue(&worker->completed_work, queue_create_new(workunit));
