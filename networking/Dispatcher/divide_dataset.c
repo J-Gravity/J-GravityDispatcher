@@ -38,7 +38,9 @@ unsigned int morton3D(float x, float y, float z)
     unsigned int xx = expandBits((unsigned int)x);
     unsigned int yy = expandBits((unsigned int)y);
     unsigned int zz = expandBits((unsigned int)z);
-    return xx * 4 + yy * 2 + zz;
+	xx = xx << 2;
+	yy = yy << 1;
+	return (zz | yy | xx);
 }
 
 unsigned int morton_body(cl_float4 b)

@@ -101,7 +101,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	}
 	else
 	{
-		printf("total simulation time: %f seconds\n", G_total_time);
+		printf("total simulation time: %.f seconds\n", G_total_time);
 		printf("Simulation Complete!\n");
 		close(dispatcher->sin.fd);
 		sem_post(dispatcher->exit_sem);
