@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 18:43:44 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 20:27:13 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ int	main(int ac, char **av)
 	diff = clock() - start;
 	msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)
-		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);w
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	return (0);
 }

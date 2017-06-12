@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 18:38:44 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:53:53 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,9 +210,12 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	{	
 		cur_worker = (t_worker *)head->data;
 		if (cur_worker->tid == 0)
-			make_new_event_thread(dispatcher, head);
-		if (cur_worker->sender_tid == 0)
-			start_sender_thread(dispatcher, head);
+		{
+			param = new_thread_handler(dispatcher, head);
+			cur_worker->tid = calloc(1, sizeof(pthread_t));
+			pthread_create(cur_worker->tid, NULL, handle_worker_connection,
+				param);
+		}
 		head = head->next;
 	}
 	pthread_mutex_unlock(&dispatcher->worker_list_mutex);

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 18:45:13 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/09 21:48:05 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,14 +175,11 @@ typedef struct			s_workunit
 typedef struct			s_worker
 {
 	char				active;
-	char				sending;
 	t_queue				*workunit_queue;
 	char				compute_class;
 	pthread_t			*tid;
-	pthread_t			*sender_tid;
 	t_socket			socket;
 	long				w_calc_time;
-	sem_t 				*start_sending;
 }						t_worker;
 
 typedef struct			s_serial
@@ -307,13 +304,6 @@ void	*handle_worker_connection(void *input);
 *		@param	worker_link	A link of the link list of workers
 */
 void	make_new_event_thread(t_dispatcher *disp, t_lst *worker_link);
-
-/*
-*	Create a sender thread for the provided worker
-*		@param	disp	The dispatcher's main struct
-*		@param	worker_link	A link of the link list of workers
-*/
-void	start_sender_thread(t_dispatcher *disp, t_lst *worker_link);
 
 /*
 *	Takes an cl_float4 value and converts to a binary string
