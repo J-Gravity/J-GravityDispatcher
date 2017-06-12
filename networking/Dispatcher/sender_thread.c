@@ -33,7 +33,7 @@ void	*sender_thread(void *input)
 	{
 		if (sem_wait(worker->start_sending) < 0)
 			printf("SEND- sem_wait failed with err:%d\n", errno);
-		while (worker->sending && queue_count(&dispatcher->bundles) > 0)
+		if (worker->sending && queue_count(&dispatcher->bundles) > 0)
 		{
 			if (DEBUG)
 				printf("SEND- sending work unit\n");
