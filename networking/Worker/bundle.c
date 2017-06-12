@@ -4,27 +4,26 @@
 
 t_msg decompress_message(t_msg m)
 {
-    //something is wrong with either this or the equivalent on dispatch side
+    //something is wrong with either this or the equivalent on dispatch side 
     t_msg dc;
     int decomp_len;
     memcpy(&decomp_len, m.data, sizeof(int));
     printf("going to decomp to len %d, incoming message is %d\n", decomp_len, m.size);
     char *decompressed = calloc(1, decomp_len);
-    LZ4_decompress_safe(m.data + sizeof(int), (char *)decompressed, m.size - sizeof(int), decomp_len);
+    LZ4_decompress_safe(m.data + sizeof(int), decompressed, m.size - sizeof(int), decomp_len);
     char *detransposed = calloc(1, decomp_len);
-    tpdec((unsigned char *)decompressed, m.size - sizeof(int), (unsigned char *)detransposed, sizeof(int));
+    tpdec((unsigned char *)decompressed, decomp_len, (unsigned char *)detransposed, sizeof(int));
     dc.size = decomp_len;
     dc.data = detransposed;
     free(decompressed);
-    free(m.data);
     return dc;
 }
 
 t_bundle *deserialize_bundle(t_msg m)
 {
 
-    // m = decompress_message(m);
-    // printf("decompressed, m.size is %d\n", m.size);
+   m = decompress_message(m);
+   // printf("decompressed, m.size is %d\n", m.size);
     t_bundle *b = calloc(1, sizeof(t_bundle));
     int offset = 0;
 
@@ -62,7 +61,12 @@ t_bundle *deserialize_bundle(t_msg m)
         memcpy(b->cells[i], m.data + offset, b->cell_sizes[i] * sizeof(cl_float4));
         offset += b->cell_sizes[i] * sizeof(cl_float4);
     }
-    printf("\nincoming bundle msg was %d MB\n", m.size / (1024 * 1024));
+    //print some bundle details
+    printf("idcount is %d\n", b->idcount);
+    printf("cellcount is %d\n", b->cellcount);
+    printf("finished with offset %d\n", offset);
+    printf("incoming bundle msg was %d MB\n", m.size / (1024 * 1024));
+    free(m.data);
     return (b);
 }
 
@@ -94,6 +98,11 @@ void transpose_matches(t_bundle *wb)
     wb->matches_counts = manifest_lens;
 }
 
+size_t nearest_mult_256(size_t n)
+{
+    return (((n / 256) + 1) * 256);
+}
+
 t_workunit **unbundle_workunits(t_bundle *b, int *count)
 {
     t_workunit **WUs = calloc(b->idcount, sizeof(t_workunit *));
@@ -104,17 +113,26 @@ t_workunit **unbundle_workunits(t_bundle *b, int *count)
         WUs[i] = calloc(1, sizeof(t_workunit));
         WUs[i]->id = b->ids[i];
         WUs[i]->localcount = b->local_counts[i];
-        WUs[i]->local_bodies = b->locals[i];
+        WUs[i]->npadding = nearest_mult_256(WUs[i]->localcount) - WUs[i]->localcount;
+        WUs[i]->N = calloc(nearest_mult_256(WUs[i]->localcount), sizeof(cl_float4));
+        WUs[i]->V = calloc(nearest_mult_256(WUs[i]->localcount), sizeof(cl_float4));
+        for(int j = 0; j < WUs[i]->localcount; j++)
+        {
+            WUs[i]->N[j] = b->locals[i][j].position;
+            WUs[i]->V[j] = b->locals[i][j].velocity;
+        }
+        free(b->locals[i]);
         totalsize += WUs[i]->localcount * sizeof(t_body);
         WUs[i]->neighborcount = 0;
         for (int j = 0; j < b->matches_counts[i]; j++)
             WUs[i]->neighborcount += b->cell_sizes[b->matches[i][j]];
-        WUs[i]->neighborhood = (cl_float4 *)calloc(WUs[i]->neighborcount, sizeof(cl_float4));
+        WUs[i]->mpadding = nearest_mult_256(WUs[i]->neighborcount) - WUs[i]->neighborcount;
+        WUs[i]->M = (cl_float4 *)calloc(nearest_mult_256(WUs[i]->neighborcount), sizeof(cl_float4));
         totalsize += WUs[i]->neighborcount * sizeof(cl_float4);
         int offset = 0;
         for (int j = 0; j < b->matches_counts[i]; j++)
         {
-            memcpy(WUs[i]->neighborhood + offset, b->cells[b->matches[i][j]], b->cell_sizes[b->matches[i][j]] * sizeof(cl_float4));
+            memcpy(WUs[i]->M + offset, b->cells[b->matches[i][j]], b->cell_sizes[b->matches[i][j]] * sizeof(cl_float4));
             offset += b->cell_sizes[b->matches[i][j]];
         }
     }

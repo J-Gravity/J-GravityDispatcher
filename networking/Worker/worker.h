@@ -38,7 +38,6 @@
 #define G 1.327 * __exp10(13) //kilometers, solar masses, (km/s)^2
 #define SOFTENING 10000
 #define TIME_STEP 30000
-#define THREADCOUNT pow(2, 11)
 #define GROUPSIZE 256
 
 # ifndef DEVICE
@@ -48,7 +47,7 @@
 /* ******* */
 /* METRICS */
 /* ******* */
-# define METRICS 1
+# define METRICS 0
 long G_time_waiting_for_wu;
 clock_t G_start_time;
 clock_t G_total_event_time;
@@ -96,9 +95,13 @@ typedef struct			s_workunit
 {
 	int					id;
 	int					localcount;
+	int 				npadding;
 	int					neighborcount;
+	int 				mpadding;
+	cl_float4 			*N;
+	cl_float4 			*M;
+	cl_float4 			*V;
 	t_body				*local_bodies;
-	cl_float4			*neighborhood;
 }						t_workunit;
 
 typedef struct			s_msg

@@ -4,8 +4,18 @@
 #include "lz4.h"
 #include "transpose.h"
 
-#define THETA 1.5
-#define LEAF_THRESHOLD pow(2, 16)
+#define THETA 1
+#define LEAF_THRESHOLD pow(2, 14)
+
+void print_bounds(t_bounds b)
+{
+    printf("bounds: %f %f %f %f %f %f\n", b.xmin, b.xmax, b.ymin, b.ymax, b.zmin, b.zmax);
+}
+
+void print_cl4(cl_float4 v)
+{
+    printf("cl4: %f %f %f %f\n", v.x, v.y, v.z, v.w);
+}
 
 // Expands a 10-bit integer into 30 bits
 // by inserting 2 zeros after each bit.
@@ -31,9 +41,27 @@ unsigned int morton3D(float x, float y, float z)
     return xx * 4 + yy * 2 + zz;
 }
 
-unsigned int morton_body(t_body b)
+unsigned int morton_body(cl_float4 b)
 {
-    return (morton3D(b.position.x, b.position.y, b.position.z));
+    unsigned int m  = morton3D(b.x, b.y, b.z);
+    // printf("this star:\n");
+    // print_cl4(b);
+    // printf("has this morton code:\n");
+    // printf("%u\n", m);
+    return (m);
+}
+
+
+
+int body_in_bounds(t_body body, t_bounds bounds)
+{
+    if (body.position.x > bounds.xmax || body.position.x < bounds.xmin)
+        return (0);
+    if (body.position.y > bounds.ymax || body.position.y < bounds.ymin)
+        return (0);
+    if (body.position.z > bounds.zmax || body.position.z < bounds.zmin)
+        return (0);
+    return (1);
 }
 
 int cache_comp(const void *a, const void *b)
@@ -84,7 +112,7 @@ t_bounds bounds_from_code(t_bounds parent, unsigned int code)
     if (code >> 1)
     {
         bounds.ymin = ymid;
-        bounds.ymax = parent.xmax;
+        bounds.ymax = parent.ymax;
     }
     else
     {
@@ -102,6 +130,11 @@ t_bounds bounds_from_code(t_bounds parent, unsigned int code)
         bounds.zmin = parent.zmin;
         bounds.zmax = zmid;
     }
+    // printf("\nparent bounds were:\n");
+    // print_bounds(parent);
+    // printf("result bounds were\n");
+    // print_bounds(bounds);
+    // printf("\n");
     return (bounds);
 }
 
@@ -110,7 +143,6 @@ void split(t_tree *node)
     node->children = (t_tree **)calloc(8, sizeof(t_tree *));
     int depth = node_depth(node);
     //printf("count of node we're splitting: %d\n", node->count);
-
     unsigned int offset = 0;
     for (unsigned int i = 0; i < 8; i++)
     {
@@ -132,7 +164,6 @@ void split(t_tree *node)
         }
         offset += j;
         node->children[i]->count = j;
-        //printf("made cell %u, it's got %u bodies in it. offset is now %u\n", i, node->children[i]->count, offset);
     }
 }
 
@@ -152,28 +183,38 @@ static cl_float4 vadd(cl_float4 a, cl_float4 b)
     return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w});
 }
 
-static cl_float4 abs_vadd(cl_float4 a, cl_float4 b)
+static cl_float4 center_add(cl_float4 total, cl_float4 add)
 {
-    return ((cl_float4){a.x + b.x, a.y + b.y, a.z + b.z, a.w + fabs(b.w)});
+    add.w = fabs(add.w);
+    add.x *= add.w;
+    add.y *= add.w;
+    add.z *= add.w;
+    return (cl_float4){total.x + add.x, total.y + add.y, total.z + add.z, total.w + add.w};
+}
+
+static cl_float4 COG_from_bodies(t_body *bodies, int count)
+{
+    cl_float4 center = (cl_float4){0,0,0,0};
+    if (count == 0)
+        return center;
+    float real_total = 0;
+    for (int i = 0; i < count; i++)
+    {
+        center = center_add(center, bodies[i].position);
+        real_total += bodies[i].position.w;
+    }
+    center.x /= center.w;
+    center.y /= center.w;
+    center.z /= center.w;
+
+    center.w = real_total;
+    return (center);
 }
 
 static t_tree *make_as_single(t_tree *c)
 {
-    //as an optimization, center_of_mass also counts the bodies and stores that
-    cl_float4 v;
-    v = (cl_float4){0,0,0,0};
-    float mass = 0;
-    for (int i = 0; i < c->count; i++)
-    {
-        v = abs_vadd(v, c->bodies[i].position);
-        mass += c->bodies[i].position.w;
-    }
     t_body *b = calloc(1, sizeof(t_body));
-    if (c->count == 0)
-        b->position = (cl_float4){0,0,0,0};
-    else
-        b->position = (cl_float4){v.x / v.w, v.y / v.w, v.z / v.w, mass};
-
+    b->position = COG_from_bodies(c->bodies, c->count);
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
     s->children = NULL;
@@ -358,60 +399,28 @@ static t_bounds bounds_from_bodies(t_body *bodies, int count)
     //bounds must be a cube.
     float min = xmin;
     float max = xmax;
-    float dim = xmax - xmin;
-    if (ymax - ymin > dim)
-    {
-        dim = ymax - ymin;
+    if (ymin < min)
         min = ymin;
-        max = ymax;
-    }
-    if (zmax - zmin > dim)
-    {
-        dim = zmax - zmin;
+    if (zmin < min)
         min = zmin;
+    if (ymax > max)
+        max = ymax;
+    if (zmax > max)
         max = zmax;
-    }
+    printf("bounds from bodies were %f %f %f %f %f %f\n", min, max, min, max, min, max);
     return ((t_bounds){min, max, min, max, min, max});
 }
 
-static void scale_coords(t_body *bodies, t_bounds bounds, int count)
+static void morton_coords(t_body *bodies, t_bounds bounds, int count)
 {
-    //all positions need to be translated by -xmin, -ymin, -zmin
-    //then scale down by corner-corner bound distance
-    //and no reason not to morton while we're here.
-
-    float distance = (bounds.xmax - bounds.xmin) * (bounds.xmax - bounds.xmin);
-    distance += (bounds.ymax - bounds.ymin) * (bounds.ymax - bounds.ymin);
-    distance += (bounds.zmax - bounds.zmin) * (bounds.zmax - bounds.zmin);
-    distance = 1.0 / sqrt(distance);
+    float distance =  1.0 / (bounds.xmax - bounds.xmin);
     for (int i = 0; i < count; i++)
     {
-        bodies[i].position = (cl_float4){(bodies[i].position.x - bounds.xmin) * distance, \
+        unsigned int m = morton_body((cl_float4){(bodies[i].position.x - bounds.xmin) * distance, \
                                         (bodies[i].position.y - bounds.ymin) * distance, \
                                         (bodies[i].position.z - bounds.zmin) * distance,
-                                        bodies[i].position.w};
-        //opportunistic mortenizing
-        unsigned int m = morton_body(bodies[i]);
+                                        bodies[i].position.w});
         bodies[i].velocity.w = *(float *)&m;
-    }
-}
-
-static void descale_coords(t_body *bodies, t_bounds bounds, int count)
-{
-    //all positions need to be translated by +xmin, +ymin, +zmin
-    //then scale up by corner-corner bound distance
-    //and no reason not to morton while we're here.
-
-    float distance = (bounds.xmax - bounds.xmin) * (bounds.xmax - bounds.xmin);
-    distance += (bounds.ymax - bounds.ymin) * (bounds.ymax - bounds.ymin);
-    distance += (bounds.zmax - bounds.zmin) * (bounds.zmax - bounds.zmin);
-    distance = sqrt(distance);
-    for (int i = 0; i < count; i++)
-    {
-        bodies[i].position = (cl_float4){bodies[i].position.x * distance + bounds.xmin, \
-                                        bodies[i].position.y * distance + bounds.ymin, \
-                                        bodies[i].position.z * distance + bounds.zmin,
-                                        bodies[i].position.w};
     }
 }
 
@@ -422,7 +431,6 @@ t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
     //take up to Count leaves starting at offset and pour their neighborhoods
     //into the double-key hash. track which leaves we put in.
     t_pair *ids = NULL;
-    //int *ids = calloc(count, sizeof(int)); // remember to address offset+count >leavescount
     for (int i = 0; i < count && leaves[offset + i]; i++)
     {
         if (!ids)
@@ -444,20 +452,20 @@ t_msg compress_msg(t_msg m)
 {
     t_msg c;
 
-    //something is wrong with this or its partner on worker side. ratio is good (~75%) so fixing this is worth
+    //something is wrong with this or its partner on worker side. ratio is good (~75%) so fixing this is worth 
     char *transposed = calloc(1, m.size);
     tpenc((unsigned char *)m.data, m.size, (unsigned char *)transposed, sizeof(int));
     int max_compressed_size = LZ4_compressBound(m.size);
     char *compressed = calloc(1, max_compressed_size);
     int result_compressed_size = LZ4_compress_default(transposed, compressed, m.size, max_compressed_size);
-    free(m.data);
-    free(transposed);
-    c.size = result_compressed_size + sizeof(int);
-    c.data = calloc(1, c.size);
+    printf("compressed to %d from %d, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
+    c.data = calloc(1, result_compressed_size + sizeof(int));
     memcpy(c.data, &m.size, sizeof(int));
     memcpy(c.data + sizeof(int), compressed, result_compressed_size);
+    c.size = result_compressed_size + sizeof(int);
+    free(transposed);
     free(compressed);
-    printf("m.size was %d, now it's %d\n", m.size, result_compressed_size);
+    free(m.data);
     return c;
 }
 
@@ -480,6 +488,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
     int offset = 0;
     memcpy(m.data + offset, &(b->keycount), sizeof(int));
     offset += sizeof(int);
+    
     memcpy(m.data + offset, &(b->cellcount), sizeof(int));
     offset += sizeof(int);
     for (int i = 0; i < b->keycount; i++)
@@ -505,19 +514,21 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
             offset += sizeof(cl_float4);
         }
     }
-    //m = compress_msg(m);
+    //printf("idcount is %d\n", b->keycount);
+    //printf("cellcount is %d\n", b->cellcount);
+    //printf("offset and m.size should match, %d %d\n", offset, m.size);
+    m = compress_msg(m);
     return (m);
 }
 
 t_tree *make_tree(t_body *bodies, int count)
 {
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
-    scale_coords(bodies, root_bounds, count);
+    morton_coords(bodies, root_bounds, count);
     qsort(bodies, count, sizeof(t_body), cache_comp);
     t_tree *root = new_tnode(bodies, count, NULL);
     root->bounds = root_bounds;
     split_tree(root);
-    descale_coords(bodies, root_bounds, count);
     return (root);
 }
 
@@ -546,6 +557,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
         free_tree(t);
     if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("starting divide_dataset\n");
+    printf("there are %ld stars\n", dispatcher->dataset->particle_cnt);
     t = make_tree(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
     t_tree **leaves = enumerate_leaves(t);
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
@@ -556,6 +568,8 @@ void    divide_dataset(t_dispatcher *dispatcher)
     }
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
+    if (wcount < 4)
+        wcount = 4;
     int leaves_per_bundle = (lcount / wcount);
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {

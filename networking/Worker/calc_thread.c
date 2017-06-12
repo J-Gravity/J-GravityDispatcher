@@ -25,7 +25,7 @@ static void *calc_thread(void *param)
 		if (DEBUG)
 			printf("CALC- calculating work unit\n");
 		clock_t calc_time = time(NULL);
-		printf("workunit count: %d\n", worker->todo_work->count);
+		//printf("workunit count: %d\n", worker->todo_work->count);
 		workunit = queue_pop(&worker->todo_work);
 		do_workunit(workunit);
 		if (DEBUG)

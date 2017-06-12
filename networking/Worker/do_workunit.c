@@ -137,6 +137,7 @@ static t_context *setup_context(void)
     // Create a command queue
     c->commands = clCreateCommandQueue(c->context, (c->device_id), 0, &err);
     checkError(err, "Creating command queue");
+    printf("setup context\n");
     return (c);
 }
 
@@ -151,9 +152,10 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     cl_kernel k;
     cl_program p;
     int err;
+    char *source;
 
-    //source = load_cl_file(sourcefile);
-    p = clCreateProgramWithSource(c->context, 1, (const char **) & thesource, NULL, &err);
+    source = load_cl_file(sourcefile);
+    p = clCreateProgramWithSource(c->context, 1, (const char **) & source, NULL, &err);
     checkError(err, "Creating program");
 
     // Build the program
@@ -173,19 +175,14 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     k = clCreateKernel(p, name, &err);
     checkError(err, "Creating kernel");
     clReleaseProgram(p);
+    printf("made kernel\n");
     return (k);
-}
-
-size_t nearest_mult_256(size_t n)
-{
-    return (((n / 256) + 1) * 256);
 }
 
 // vvv N CROSS M vvv
 
 static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount)
 {
-    srand ( time(NULL) ); //before we do anything, seed rand() with the current time
     static t_context   *context;
     static cl_kernel   k_nbody;
     int err;
@@ -193,7 +190,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     if (context == NULL)
         context = setup_context();
     if (k_nbody == NULL)
-        k_nbody = make_kernel(context, "nxm.cl", "nbody");
+        k_nbody = make_kernel(context, "nxm2.cl", "nbody");
 
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
@@ -222,7 +219,8 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
 
     cl_event loadevents[3] = {eN, eM, eV};
 
-    size_t global = ncount;
+    size_t tps = 4;
+    size_t global = ncount * tps;
     size_t mscale = mcount;
     size_t local = GROUPSIZE < global ? GROUPSIZE : global;
     float soften = SOFTENING;
@@ -241,6 +239,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clSetKernelArg(k_nbody, 8, sizeof(float), &grav);
     clSetKernelArg(k_nbody, 9, sizeof(unsigned int), &global);
     clSetKernelArg(k_nbody, 10, sizeof(unsigned int), &mscale);
+    clSetKernelArg(k_nbody, 11, sizeof(unsigned int), &tps);
 
     //printf("global is %zu, local is %zu\n", global, local);
     //printf("going onto the GPU\n");
@@ -286,30 +285,10 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
 
 void do_workunit(t_workunit *w)
 {
-    size_t ncount = w->localcount;
-    size_t mcount = w->neighborcount;
-    size_t npadding = nearest_mult_256(ncount) - ncount;
-    size_t mpadding = nearest_mult_256(mcount) - mcount;
-    cl_float4 *N = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
-    cl_float4 *M = (cl_float4 *)calloc(mcount + mpadding, sizeof(cl_float4));
-    cl_float4 *V = (cl_float4 *)calloc(ncount + npadding, sizeof(cl_float4));
-    printf("computing %lu x %lu\n", ncount+npadding, mcount+mpadding);
-    for (int i = 0; i < ncount; i++)
-    {
-        N[i] = w->local_bodies[i].position;
-        V[i] = w->local_bodies[i].velocity;
-    }
-    for (int i = 0; i < mcount; i++)
-    {
-        M[i] = w->neighborhood[i];
-    }
-    if (w->local_bodies) free(w->local_bodies);
-    w->local_bodies = crunch_NxM(N, V, M, ncount + npadding, mcount + mpadding);
-    if (w->neighborhood) free(w->neighborhood);
-    w->neighborhood = NULL;
+    //printf("N X M: %d x %d\n", w->localcount + w->npadding, w->neighborcount + w->mpadding);
+    w->local_bodies = crunch_NxM(w->N, w->V, w->M, w->localcount + w->npadding, w->neighborcount + w->mpadding);
     w->neighborcount = 0;
-    if (N) free(N);
-    if (M) free(M);
-    if (V) free(V);
-
+    if (w->N) free(w->N);
+    if (w->M) free(w->M);
+    if (w->V) free(w->V);
 }

@@ -170,7 +170,6 @@ typedef struct			s_workunit
 	int					neighborcount;
 	t_body				**local_bodies;
 	t_body				**neighborhood;
-	cl_float4			force_bias;
 }						t_workunit;
 
 typedef struct			s_worker

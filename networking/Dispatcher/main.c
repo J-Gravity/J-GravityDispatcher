@@ -38,7 +38,7 @@ int	main(int ac, char **av)
 		initialize_metrics();
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
-	dispatcher->ticks_cnt = 10;
+	dispatcher->ticks_cnt = 120;
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
@@ -60,7 +60,7 @@ int	main(int ac, char **av)
 	diff = clock() - start;
 	msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)
-		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);w
+		printf("request_dataset took %d seconds %d milliseconds\n", msec/1000, msec%1000);
 	launch_simulation(dispatcher); // blocks thread until all workers are done.
 	return (0);
 }
