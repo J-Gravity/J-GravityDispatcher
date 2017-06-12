@@ -3,8 +3,10 @@ all: worker
 CCFLAGS += -D DEVICE=$(DEVICE)
 
 tt:
+	make -C ../TurboTranspose-master clean
 	make -C ../TurboTranspose-master
 lz4:
+	make -C ../lz4-lib clean
 	make -C ../lz4-lib
 
 worker: tt lz4

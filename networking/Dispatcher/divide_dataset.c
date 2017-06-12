@@ -572,7 +572,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     int wcount = dispatcher->worker_cnt;
     if (wcount < 4)
         wcount = 4;
-    int leaves_per_bundle = (lcount / wcount);
+    int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);

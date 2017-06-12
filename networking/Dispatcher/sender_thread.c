@@ -38,6 +38,8 @@ void	*sender_thread(void *input)
 			if (DEBUG)
 				printf("SEND- sending work unit\n");
 			bundle = queue_pop(&dispatcher->bundles);
+			if (!bundle)
+				break ;
 			queue_enqueue(&worker->workunit_queue, queue_create_new(bundle));
 			if (bundle)
 			{

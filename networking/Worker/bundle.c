@@ -8,7 +8,6 @@ t_msg decompress_message(t_msg m)
     t_msg dc;
     int decomp_len;
     memcpy(&decomp_len, m.data, sizeof(int));
-    printf("going to decomp to len %d, incoming message is %d\n", decomp_len, m.size);
     char *decompressed = calloc(1, decomp_len);
     LZ4_decompress_safe(m.data + sizeof(int), decompressed, m.size - sizeof(int), decomp_len);
     char *detransposed = calloc(1, decomp_len);
@@ -62,10 +61,6 @@ t_bundle *deserialize_bundle(t_msg m)
         offset += b->cell_sizes[i] * sizeof(cl_float4);
     }
     //print some bundle details
-    printf("idcount is %d\n", b->idcount);
-    printf("cellcount is %d\n", b->cellcount);
-    printf("finished with offset %d\n", offset);
-    printf("incoming bundle msg was %d MB\n", m.size / (1024 * 1024));
     free(m.data);
     return (b);
 }
