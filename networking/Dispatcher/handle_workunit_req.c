@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/09 21:48:02 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 16:35:39 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker,
 {
 	t_bundle *bundle;
 
-	while (worker->active && dispatcher->bundles->count > 0)
+	if (worker->active && dispatcher->bundles->count > 0)
 	{
 		bundle = queue_pop(&dispatcher->bundles);
 		queue_enqueue(&worker->workunit_queue, queue_create_new(bundle));
