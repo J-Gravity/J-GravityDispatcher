@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 21:48:05 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 18:42:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,6 +234,8 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_mutex;
 	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
+	pthread_t			**sender_threads;
+	sem_t				*start_sending;
 	sem_t				*exit_sem;
 	char				*name;
 	t_lst				*workers;
@@ -273,13 +275,13 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_bundle *bundle);
+t_lst		*queue_create_new(void *bundle);
 
 /*
  * 	Pops a node off the queue
  * 		@param **queue	A queue struct that holds first, last and size
  */
-t_bundle	*queue_pop(t_queue **queue);
+void	*queue_pop(t_queue **queue);
 
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
@@ -478,12 +480,12 @@ void		clear_unit(t_lst **work_units);
 /*
 *	returns first workunit in queue without deletion from queue
 */
-t_bundle	*queue_peak(t_queue **queue);
+void	*queue_peak(t_queue **queue);
 
 /*
 *	returns the total count of items in queue
 */
-int queue_count(t_queue **queue);
+int queue_count(t_queue *queue);
 
 /*******************************************************************************
 ********************************************************************************

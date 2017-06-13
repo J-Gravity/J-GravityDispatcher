@@ -6,13 +6,13 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:20:42 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/09 00:10:46 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 18:37:06 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_bundle	*queue_pop(t_queue **queue)
+void	*queue_pop(t_queue **queue)
 {
 	t_bundle	*bundle;
 	t_lst		*node;

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 21:53:53 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 18:18:04 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -245,8 +245,13 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	t_thread_handler	*param;
 	t_lst				*head;	
 
-	if (sem_unlink("/exit"))
+	if (sem_unlink("/exit") && DEBUG)
 		printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_thread") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
+	dispatcher->sender_sem = sem_open("/sender_thread", O_CREAT, 0777, 0);
+	if (dispatcher->sender_sem == SEM_FAILED)
+		printf("start_sending sem open failed with %d\n", errno);
 	dispatcher->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
 	if (dispatcher->exit_sem == SEM_FAILED)
 		printf("sem3 open failed with %d\n", errno);
@@ -260,11 +265,14 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
 	divide_dataset(dispatcher);
+	start_sender_threads(dispatcher, 1);
 	launch_worker_event_threads(dispatcher);
 	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)
 		printf("sem_wait failed with err:%d\n", errno);
-	if (sem_unlink("/exit"))
-	printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_thread") && DEBUG)
+	 	printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/exit") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
 	printf("dispatcher done, good bye\n");
 }
