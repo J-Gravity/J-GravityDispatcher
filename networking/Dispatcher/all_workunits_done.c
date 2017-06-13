@@ -89,12 +89,13 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("2.x:%f\n", dispatcher->dataset->particles[2].position.x);
 		}
 		divide_dataset(dispatcher);
+		sem_post(dispatcher->start_sending);
 		// Inform all workers work units are ready
-		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-		if (DEBUG && MUTEX_DEBUG)
-			printf("worker list mutex locked!\n");
-		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
-		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+		// pthread_mutex_lock(&dispatcher->worker_list_mutex);
+		// if (DEBUG && MUTEX_DEBUG)
+		// 	printf("worker list mutex locked!\n");
+		// broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
+		// pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
 

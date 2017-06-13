@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 18:42:33 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 22:34:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -238,7 +238,8 @@ typedef struct			s_dispatcher
 	sem_t				*start_sending;
 	sem_t				*exit_sem;
 	char				*name;
-	t_lst				*workers;
+	//t_lst				*workers;
+	t_queue				*workers_queue;
 	int					worker_cnt;
 	t_dataset			*dataset;
 	t_dataset			*new_dataset;
@@ -270,6 +271,7 @@ t_dict	*create_dict(unsigned int size);
 t_pair	*create_pair(size_t key);
 t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
+void	start_sender_threads(t_dispatcher *disp, int count);
 
 /*
  * 	Creates a new node and returns it

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/10 17:44:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 18:39:54 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 20:01:14 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void	*sender_thread(void *input)
 			printf("SEND- sem_wait failed with err:%d\n", errno);
 		while (queue_count(dispatcher->bundles) > 0)
 		{
-			worker = queue_pop(&dispatcher->workers);
+			worker = queue_pop(&dispatcher->workers_queue);
 			if (worker)
 			{
 				bundle = queue_pop(&dispatcher->bundles);
@@ -50,7 +50,7 @@ void	*sender_thread(void *input)
 				printf("NULL from poping the worker queue!\n");
 				break ;
 			}
-			queue_enqueue(&dispatcher->workers, queue_create_new(worker));
+			queue_enqueue(&dispatcher->workers_queue, queue_create_new(worker));
 		}
 	}
 	if (DEBUG)

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 16:16:39 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 22:05:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ int	main(int ac, char **av)
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	clock_t start = clock(), diff;
-	connect_workers(dispatcher, &dispatcher->workers);
+	connect_workers(dispatcher, NULL);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)
