@@ -38,10 +38,16 @@ kernel void nbody(
     int threadcount = get_global_size(0);
     int chunksize = get_local_size(0);
     int localid = get_local_id(0);
-    float4 pos = n_start[globalid / threads_per_star];
-    float4 vel = v_start[globalid / threads_per_star];
+    if (localid % threads_per_star == 0)
+    {
+        cached_stars[localid] = n_start[globalid / threads_per_star];
+        cached_stars[localid + 1] = v_start[globalid / threads_per_star];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    float4 pos = cached_stars[localid - localid % threads_per_star];
+    float4 vel = cached_stars[localid - localid % threads_per_star + 1];
     float4 force = {0,0,0,0};
-
+    barrier(CLK_LOCAL_MEM_FENCE);
     int chunk = 0;
     for (int i = 0; i < M; i += chunksize, chunk++)
     {
@@ -49,9 +55,13 @@ kernel void nbody(
         cached_stars[localid] = m[local_pos];
 
         barrier(CLK_LOCAL_MEM_FENCE);
-        for (int j = localid % threads_per_star; j < chunksize; j += threads_per_star)
+        int offset = localid - localid % threads_per_star;
+        for (int j = 0; j < chunksize / threads_per_star;)
         {
-            force = pair_force(pos, cached_stars[j], force, softening);
+            force = pair_force(pos, cached_stars[offset + j++], force, softening);
+            force = pair_force(pos, cached_stars[offset + j++], force, softening);
+            force = pair_force(pos, cached_stars[offset + j++], force, softening);
+            force = pair_force(pos, cached_stars[offset + j++], force, softening);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }

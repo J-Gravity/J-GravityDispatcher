@@ -562,12 +562,9 @@ void    divide_dataset(t_dispatcher *dispatcher)
     printf("there are %ld stars\n", dispatcher->dataset->particle_cnt);
     t = make_tree(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
     t_tree **leaves = enumerate_leaves(t);
-    printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
+    printf("%d leaves, assembling neighborhoods\n", count_tree_array(leaves));
     for (int i = 0; leaves[i]; i++)
-    {
-        //printf("leaf %d has %d locals\n", i, leaves[i]->count);
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
-    }
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
     if (wcount < 4)

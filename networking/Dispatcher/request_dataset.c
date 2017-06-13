@@ -35,8 +35,8 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 		exit(0);
 	}
 	t_dataset *data = (t_dataset *)calloc(1, sizeof(t_dataset));
-	read(fd, &(count), sizeof(count));
-	read(fd, &(scale), sizeof(scale));
+	read(fd, &(count), sizeof(long));
+	read(fd, &(scale), sizeof(long));
 	t_body *particles = calloc(count, sizeof(t_body));
 	data->max_scale = scale;
 	data->particle_cnt = count;
