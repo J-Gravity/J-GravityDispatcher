@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/10 17:44:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 20:01:14 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 23:08:51 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ void	*sender_thread(void *input)
 					if (DEBUG)
 						printf("bundle sent to worker %d\n", worker->socket.fd);
 					send_bundle(worker, bundle, dispatcher->cells);
+					if (DEBUG)
+						printf("done sending bundle sent to worker %d\n", worker->socket.fd);
 				}
 				else
 				{

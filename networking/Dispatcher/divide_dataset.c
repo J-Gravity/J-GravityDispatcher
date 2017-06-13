@@ -473,6 +473,7 @@ t_msg compress_msg(t_msg m)
 
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
 {
+	printf("entering serialize bundle\n");
     t_msg m;
     m.size = sizeof(int) * 2;
     for (int i = 0; i < b->keycount; i++)
@@ -519,7 +520,10 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
     //printf("idcount is %d\n", b->keycount);
     //printf("cellcount is %d\n", b->cellcount);
     //printf("offset and m.size should match, %d %d\n", offset, m.size);
+	printf("entering compress message\n");
     m = compress_msg(m);
+	printf("exit compress message\n");
+	printf("exit serialize bundle\n");
     return (m);
 }
 

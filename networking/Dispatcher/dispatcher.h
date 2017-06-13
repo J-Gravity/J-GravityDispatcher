@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 22:34:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 23:06:05 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 1
@@ -272,6 +272,7 @@ t_pair	*create_pair(size_t key);
 t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
 void	start_sender_threads(t_dispatcher *disp, int count);
+void 		print_worker_fds(t_dispatcher *dispatcher);
 
 /*
  * 	Creates a new node and returns it

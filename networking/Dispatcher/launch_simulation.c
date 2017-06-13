@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 22:32:59 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 23:01:58 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,6 +150,8 @@ void		*handle_worker_connection(void *input)
 	signal(SIGPIPE, SIG_IGN);
 	if (DEBUG && WORKER_DEBUG)
 		printf("Launched worker network handler thread!\n");
+	if (DEBUG && WORKER_DEBUG)
+		print_worker_fds(params->dispatcher);
 	params = (t_thread_handler *)input;
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;
