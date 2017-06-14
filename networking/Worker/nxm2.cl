@@ -1,7 +1,6 @@
 static float4 pair_force(
     float4 pi,
     float4 pj,
-    float4 ai,
     const float softening)
 {
     float4 r;
@@ -14,10 +13,7 @@ static float4 pair_force(
     float invDist = native_rsqrt(distSquare);
     float invDistCube = invDist * invDist * invDist;
     float s = pj.w * invDistCube * r.w;
-    ai.x += r.x * s;
-    ai.y += r.y * s;
-    ai.z += r.z * s;
-    return ai;
+    return float4(r.x * s, r.y * s, r.z * s, 0);
 }
 
 kernel void nbody(
@@ -35,7 +31,6 @@ kernel void nbody(
     const int threads_per_star)
 {
     int globalid = get_global_id(0);
-    int threadcount = get_global_size(0);
     int chunksize = get_local_size(0);
     int localid = get_local_id(0);
     if (localid % threads_per_star == 0)
@@ -44,24 +39,22 @@ kernel void nbody(
         cached_stars[localid + 1] = v_start[globalid / threads_per_star];
     }
     barrier(CLK_LOCAL_MEM_FENCE);
-    float4 pos = cached_stars[localid - localid % threads_per_star];
-    float4 vel = cached_stars[localid - localid % threads_per_star + 1];
+    int offset = localid - localid % threads_per_star;
+    float4 pos = cached_stars[offset];
+    float4 vel = cached_stars[offset + 1];
     float4 force = {0,0,0,0};
     barrier(CLK_LOCAL_MEM_FENCE);
     int chunk = 0;
     for (int i = 0; i < M; i += chunksize, chunk++)
     {
-        int local_pos = chunk * chunksize + localid;
-        cached_stars[localid] = m[local_pos];
-
+        cached_stars[localid] = m[chunk * chunksize + localid];
         barrier(CLK_LOCAL_MEM_FENCE);
-        int offset = localid - localid % threads_per_star;
         for (int j = 0; j < chunksize / threads_per_star;)
         {
-            force = pair_force(pos, cached_stars[offset + j++], force, softening);
-            force = pair_force(pos, cached_stars[offset + j++], force, softening);
-            force = pair_force(pos, cached_stars[offset + j++], force, softening);
-            force = pair_force(pos, cached_stars[offset + j++], force, softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }

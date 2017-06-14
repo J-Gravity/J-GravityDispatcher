@@ -193,6 +193,7 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     checkError(err, "Creating kernel");
     clReleaseProgram(p);
     printf("made kernel\n");
+    free(source);
     return (k);
 }
 
@@ -257,7 +258,6 @@ static void crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, 
     cl_event compute;
     cl_event offN, offV;
     clEnqueueNDRangeKernel(context->commands, k_nbody, 1, NULL, &global, &local, 3, loadevents, &compute);
-    //checkError(err, "Enqueueing kernel");
     clEnqueueReadBuffer(context->commands, d_N_end, CL_FALSE, 0, sizeof(cl_float4) * count, w->N, 1, &compute, &offN);
     clEnqueueReadBuffer(context->commands, d_V_end, CL_FALSE, 0, sizeof(cl_float4) * count, w->V, 1, &compute, &offV);
 
