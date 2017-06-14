@@ -5,7 +5,7 @@
 #include "transpose.h"
 
 #define THETA 1
-#define LEAF_THRESHOLD pow(2, 14)
+#define LEAF_THRESHOLD pow(2, 12)
 
 void print_bounds(t_bounds b)
 {
@@ -17,53 +17,23 @@ void print_cl4(cl_float4 v)
     printf("cl4: %f %f %f %f\n", v.x, v.y, v.z, v.w);
 }
 
-uint64_t merge(unsigned int *vals)
+// method to seperate bits from a given integer 3 positions apart
+uint64_t splitBy3(const unsigned int a)
 {
-    uint64_t morton_code;
-    unsigned int small_bit_index;
-    uint64_t big_bit_index;
-    char offset;
-
-    morton_code = 0;
-    small_bit_index = 1;
-    big_bit_index = 1;
-    for (char i = 0; i < 3; i++)
-    {
-        offset = 2 - i;
-        for (char j = 0; j < 21; j++)
-        {
-            if (vals[i] & (small_bit_index << j))
-                morton_code |= (big_bit_index << offset);
-            offset += 3;
-        }
-    }
-    return (morton_code);
+    uint64_t x = a & 0x1fffff; // we only look at the first 21 bits
+    x = (x | x << 32) & 0x1f00000000ffff;  // shift left 32 bits, OR with self, and 00011111000000000000000000000000000000001111111111111111
+    x = (x | x << 16) & 0x1f0000ff0000ff;  // shift left 32 bits, OR with self, and 00011111000000000000000011111111000000000000000011111111
+    x = (x | x << 8) & 0x100f00f00f00f00f; // shift left 32 bits, OR with self, and 0001000000001111000000001111000000001111000000001111000000000000
+    x = (x | x << 4) & 0x10c30c30c30c30c3; // shift left 32 bits, OR with self, and 0001000011000011000011000011000011000011000011000011000100000000
+    x = (x | x << 2) & 0x1249249249249249;
+    return x;
 }
-
-// Expands a 10-bit integer into 30 bits
-// by inserting 2 zeros after each bit.
-unsigned int expandBits(unsigned int v)
+ 
+uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, const unsigned int z)
 {
-    v = (v * 0x00010001u) & 0xFF0000FFu;
-    v = (v * 0x00000101u) & 0x0F00F00Fu;
-    v = (v * 0x00000011u) & 0xC30C30C3u;
-    v = (v * 0x00000005u) & 0x49249249u;
-    return v;
-}
-
-// Calculates a 30-bit Morton code for the
-// given 3D point located within the unit cube [0,1].
-unsigned int morton3D(float x, float y, float z)
-{
-    x = fmin(fmax(x * 1024.0f, 0.0f), 1023.0f);
-    y = fmin(fmax(y * 1024.0f, 0.0f), 1023.0f);
-    z = fmin(fmax(z * 1024.0f, 0.0f), 1023.0f);
-    unsigned int xx = expandBits((unsigned int)x);
-    unsigned int yy = expandBits((unsigned int)y);
-    unsigned int zz = expandBits((unsigned int)z);
-	xx = xx << 2;
-	yy = yy << 1;
-	return (zz | yy | xx);
+    uint64_t answer = 0;
+    answer |= splitBy3(x) | splitBy3(y) << 1 | splitBy3(z) << 2;
+    return answer;
 }
 
 uint64_t morton64(float x, float y, float z)
@@ -71,28 +41,7 @@ uint64_t morton64(float x, float y, float z)
     x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
     y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
     z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
-    unsigned int *arr = calloc(3, sizeof(unsigned int));
-    arr[0] = (unsigned int)x;
-    arr[1] = (unsigned int)y;
-    arr[2] = (unsigned int)z;
-    uint64_t m = merge (arr);
-    return m;
-}
-
-uint64_t morton64_debug(float x, float y, float z)
-{
-    printf("incoming %f %f %f\n", x, y, z);
-    x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
-    y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
-    z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
-    printf("after scale %f %f %f\n", x, y, z);
-    unsigned int *arr = calloc(3, sizeof(unsigned int));
-    arr[0] = (unsigned int)x;
-    arr[1] = (unsigned int)y;
-    arr[2] = (unsigned int)z;
-    printf("as uints %u %u %u\n", arr[0], arr[1], arr[2]);
-    uint64_t m = merge (arr);
-    return m;
+    return (mortonEncode_magicbits((unsigned int)x, (unsigned int)y, (unsigned int)z));
 }
 
 int body_in_bounds(t_body body, t_bounds bounds)
@@ -104,22 +53,6 @@ int body_in_bounds(t_body body, t_bounds bounds)
     if (body.position.z > bounds.zmax || body.position.z < bounds.zmin)
         return (0);
     return (1);
-}
-
-int morton_comp(const void *a, const void *b)
-{
-    t_body *abod = (t_body *)a;
-    t_body *bbod = (t_body *)b;
-
-    uint64_t ma = morton64(abod->position.x, abod->position.y, abod->position.z);
-    uint64_t mb = morton64(bbod->position.x, bbod->position.y, bbod->position.z);
-
-    if (ma < mb)
-        return -1;
-    if (ma == mb)
-        return 0;
-    else
-        return 1;
 }
 
 t_tree *new_tnode(t_body *bodies, int count, t_tree *parent)
@@ -551,14 +484,6 @@ t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
     {
         sorts[i].morton = morton64((bodies[i].position.x - bounds.xmin) * distance, (bodies[i].position.y - bounds.ymin) * distance, (bodies[i].position.z - bounds.zmin) * distance);
         sorts[i].bod = bodies[i];
-        // if (i == 0)
-        // {
-        //     printf("body 0 looks like:\n");
-        //     print_cl4(bodies[i].position);
-        //     print_cl4(bodies[i].velocity);
-        //     printf("%llu\n", sorts[i].morton);
-        //     morton64_debug((bodies[i].position.x - bounds.xmin) * distance, (bodies[i].position.y - bounds.ymin) * distance, (bodies[i].position.z - bounds.zmin) * distance);
-        // }
     }
     return (sorts);
 }
@@ -624,13 +549,14 @@ t_tree *make_tree(t_body *bodies, int count)
     for (int i = 0; i < count; i++)
     {
         bodies[i] = sorts[i].bod;
-        mortons[i] = sorts[i].morton;
-        //print_cl4(bodies[i].position);
+        mortons[i] = sorts[i].morton;;
     }
     t_tree *root = new_tnode(bodies, count, NULL);
     root->bounds = root_bounds;
     root->mortons = mortons;
     split_tree(root);
+    free(sorts);
+    free(mortons);
     return (root);
 }
 

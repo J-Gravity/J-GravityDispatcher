@@ -34,17 +34,23 @@ char *thesource = "static float4 pair_force(\n" \
 "    const float timestep,\n" \
 "    const float G,\n" \
 "    const int N,\n" \
-"    const int M)\n" \
+"    const int M,\n" \
+"    const int threads_per_star)\n" \
 "{\n" \
 "    int globalid = get_global_id(0);\n" \
 "    int threadcount = get_global_size(0);\n" \
 "    int chunksize = get_local_size(0);\n" \
 "    int localid = get_local_id(0);\n" \
-"    \n" \
-"    float4 pos = n_start[globalid];\n" \
-"    float4 vel = v_start[globalid];\n" \
+"    if (localid % threads_per_star == 0)\n" \
+"    {\n" \
+"        cached_stars[localid] = n_start[globalid / threads_per_star];\n" \
+"        cached_stars[localid + 1] = v_start[globalid / threads_per_star];\n" \
+"    }\n" \
+"    barrier(CLK_LOCAL_MEM_FENCE);\n" \
+"    float4 pos = cached_stars[localid - localid % threads_per_star];\n" \
+"    float4 vel = cached_stars[localid - localid % threads_per_star + 1];\n" \
 "    float4 force = {0,0,0,0};\n" \
-"\n" \
+"    barrier(CLK_LOCAL_MEM_FENCE);\n" \
 "    int chunk = 0;\n" \
 "    for (int i = 0; i < M; i += chunksize, chunk++)\n" \
 "    {\n" \
@@ -52,24 +58,35 @@ char *thesource = "static float4 pair_force(\n" \
 "        cached_stars[localid] = m[local_pos];\n" \
 "\n" \
 "        barrier(CLK_LOCAL_MEM_FENCE);\n" \
-"        for (int j = 0; j < chunksize;)\n" \
+"        int offset = localid - localid % threads_per_star;\n" \
+"        for (int j = 0; j < chunksize / threads_per_star;)\n" \
 "        {\n" \
-"            force = pair_force(pos, cached_stars[j++], force, softening);\n" \
+"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
+"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
+"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
+"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
 "        }\n" \
 "        barrier(CLK_LOCAL_MEM_FENCE);\n" \
 "    }\n" \
+"    cached_stars[localid] = force;\n" \
+"    barrier(CLK_LOCAL_MEM_FENCE);\n" \
+"    if (localid % threads_per_star == 0)\n" \
+"    {\n" \
+"        for (int i = 1; i < threads_per_star; i++)\n" \
+"            force += cached_stars[localid + i];\n" \
+"        vel.x += force.x * G * timestep;\n" \
+"        vel.y += force.y * G * timestep;\n" \
+"        vel.z += force.z * G * timestep;\n" \
 "\n" \
-"    vel.x += force.x * G * timestep;\n" \
-"    vel.y += force.y * G * timestep;\n" \
-"    vel.z += force.z * G * timestep;\n" \
+"        pos.x += vel.x * timestep;\n" \
+"        pos.y += vel.y * timestep;\n" \
+"        pos.z += vel.z * timestep;\n" \
 "\n" \
-"    pos.x += vel.x * timestep;\n" \
-"    pos.y += vel.y * timestep;\n" \
-"    pos.z += vel.z * timestep;\n" \
 "\n" \
-"    n_end[globalid] = pos;\n" \
-"    v_end[globalid] = vel;\n" \
-"}";
+"        n_end[globalid / threads_per_star] = pos;\n" \
+"        v_end[globalid / threads_per_star] = vel;\n" \
+"    }\n" \
+"}\n";
 
 static int count_bodies(t_body **bodies)
 {
@@ -195,6 +212,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
 
+    //printf("NxM: %lu x %lu\n", ncount, mcount);
     //device-side data
     cl_mem      d_N_start;
     cl_mem      d_M;
@@ -219,7 +237,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
 
     cl_event loadevents[3] = {eN, eM, eV};
 
-    size_t tps = 4;
+    size_t tps = 32;
     size_t global = ncount * tps;
     size_t mscale = mcount;
     size_t local = GROUPSIZE < global ? GROUPSIZE : global;
