@@ -11,7 +11,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-# define PORT 4243
+# define PORT 4242
 # define HEADER_SIZE 5
 
 # define BROADCAST_SUPER_PARTICLE 1
@@ -57,8 +57,8 @@ long G_total_calc_time;
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 1
-# define MSG_DEBUG 1
+# define DEBUG 0
+# define MSG_DEBUG 0
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
 # define NETWORK_DEBUG 0
