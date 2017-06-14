@@ -45,8 +45,8 @@ t_msg serialize_workunit(t_workunit w)
 	int local_compressed_size;
 
 	localblob = compress_locals(w, &local_compressed_size);
-	msg.size = (sizeof(int) * 3 + local_compressed_size);
-	msg.data = malloc(msg.size);
+	msg.size = (sizeof(int) * 3 + local_compressed_size + sizeof(char));
+	msg.data = calloc(1, msg.size);
 	int offset = 0;
 	memcpy(msg.data, &(w.id), sizeof(int));
 	offset += sizeof(int);
@@ -54,6 +54,8 @@ t_msg serialize_workunit(t_workunit w)
 	offset += sizeof(int);
 	memcpy(msg.data + offset, &(local_compressed_size), sizeof(int));
 	offset += sizeof(int);
+	memcpy(msg.data + offset, &(w.is_last), sizeof(char));
+	offset += sizeof(char);
 	memcpy(msg.data + offset, localblob, local_compressed_size);
 	offset += local_compressed_size;
 	msg.id = WORK_UNIT_DONE;

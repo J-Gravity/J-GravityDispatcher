@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:29:42 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 14:52:31 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/14 00:10:56 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,13 +28,18 @@ static void *calc_thread(void *param)
 		//printf("workunit count: %d\n", worker->todo_work->count);
 		workunit = queue_pop(&worker->todo_work);
 		do_workunit(workunit);
+		if (worker->todo_work->count == 0)
+		{
+			workunit->is_last = 1;
+			sem_post(worker->ready_for_bundle);
+		}
+		if (DEBUG)
+			printf("CALC- is last workunit of a bundle: %d\n", workunit->is_last);
 		if (DEBUG)
 			printf("CALC- finished calculating work unit\n");
 		queue_enqueue(&worker->completed_work, queue_create_new(workunit));
-		G_total_calc_time += time(NULL) - calc_time;
 		sem_post(worker->sender_thread_sem);
-		if (worker->todo_work->count == 0)
-			sem_post(worker->ready_for_bundle);
+		G_total_calc_time += time(NULL) - calc_time;
 	}
 	return (0);
 }

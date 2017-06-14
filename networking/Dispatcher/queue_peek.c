@@ -6,15 +6,15 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/05 20:20:46 by iwagner           #+#    #+#             */
-/*   Updated: 2017/06/09 00:11:37 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 18:37:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_bundle	*queue_peak(t_queue **queue)
+void	*queue_peak(t_queue **queue)
 {
-	t_bundle	*bundle;
+	void	*bundle;
 	t_lst		*node;
 
 	if (*queue)

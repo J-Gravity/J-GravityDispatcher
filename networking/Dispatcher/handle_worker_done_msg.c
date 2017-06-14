@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 00:23:04 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 00:24:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,8 @@ void free_bundle(t_bundle *b)
 {
 	if (!b)
 		return;
+	if (DEBUG)
+		printf("deleting bundle %d\n", b->id);
     free(b->keys);
     free(b->cells);
     free(b->matches_counts);
@@ -66,23 +68,32 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 {
 	t_WU		complete_WU;
 	t_tree		*local_cell;
+	t_bundle	*to_delete;
 
 	complete_WU = deserialize_WU(msg);
 	free(msg.data);
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
+	if (DEBUG)
+		printf("is last workunit of a bundle: %d\n", complete_WU.is_last);
+	if (complete_WU.is_last)
+	{
+		to_delete = queue_pop(&worker->workunit_queue);
+		if (DEBUG)
+			printf("bundle %d complete\n", to_delete->id);
+		free_bundle(to_delete);
+	}
 	delete_WU(complete_WU);
-	free_bundle(queue_pop(&worker->workunit_queue));
 	pthread_mutex_lock(&dispatcher->workunits_done_mutex);
 	dispatcher->workunits_done++;
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 	if (dispatcher->workunits_done == dispatcher->total_workunits)
 		all_workunits_done(dispatcher);
-	else if (dispatcher->bundles->count > 0)
-	{
-		t_msg m = new_message(WORK_UNITS_READY, 0, "");
-		send_worker_msg(worker, m);
-		free(m.data);
-	}
+	// else if (dispatcher->bundles->count > 0)
+	// {
+		// t_msg m = new_message(WORK_UNITS_READY, 0, "");
+		// send_worker_msg(worker, m);
+		// free(m.data);
+	// }
 	
 }
