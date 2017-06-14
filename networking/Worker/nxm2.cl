@@ -13,7 +13,7 @@ static float4 pair_force(
     float invDist = native_rsqrt(distSquare);
     float invDistCube = invDist * invDist * invDist;
     float s = pj.w * invDistCube * r.w;
-    return float4(r.x * s, r.y * s, r.z * s, 0);
+    return (float4){r.x * s, r.y * s, r.z * s, 0};
 }
 
 kernel void nbody(
@@ -43,8 +43,8 @@ kernel void nbody(
     float4 pos = cached_stars[offset];
     float4 vel = cached_stars[offset + 1];
     float4 force = {0,0,0,0};
-    barrier(CLK_LOCAL_MEM_FENCE);
     int chunk = 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
     for (int i = 0; i < M; i += chunksize, chunk++)
     {
         cached_stars[localid] = m[chunk * chunksize + localid];

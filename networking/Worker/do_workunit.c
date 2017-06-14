@@ -4,7 +4,6 @@
 char *thesource = "static float4 pair_force(\n" \
 "    float4 pi,\n" \
 "    float4 pj,\n" \
-"    float4 ai,\n" \
 "    const float softening)\n" \
 "{\n" \
 "    float4 r;\n" \
@@ -17,10 +16,7 @@ char *thesource = "static float4 pair_force(\n" \
 "    float invDist = native_rsqrt(distSquare);\n" \
 "    float invDistCube = invDist * invDist * invDist;\n" \
 "    float s = pj.w * invDistCube * r.w;\n" \
-"    ai.x += r.x * s;\n" \
-"    ai.y += r.y * s;\n" \
-"    ai.z += r.z * s;\n" \
-"    return ai;\n" \
+"    return (float4){r.x * s, r.y * s, r.z * s, 0};\n" \
 "}\n" \
 "\n" \
 "kernel void nbody(\n" \
@@ -38,7 +34,6 @@ char *thesource = "static float4 pair_force(\n" \
 "    const int threads_per_star)\n" \
 "{\n" \
 "    int globalid = get_global_id(0);\n" \
-"    int threadcount = get_global_size(0);\n" \
 "    int chunksize = get_local_size(0);\n" \
 "    int localid = get_local_id(0);\n" \
 "    if (localid % threads_per_star == 0)\n" \
@@ -47,24 +42,22 @@ char *thesource = "static float4 pair_force(\n" \
 "        cached_stars[localid + 1] = v_start[globalid / threads_per_star];\n" \
 "    }\n" \
 "    barrier(CLK_LOCAL_MEM_FENCE);\n" \
-"    float4 pos = cached_stars[localid - localid % threads_per_star];\n" \
-"    float4 vel = cached_stars[localid - localid % threads_per_star + 1];\n" \
+"    int offset = localid - localid % threads_per_star;\n" \
+"    float4 pos = cached_stars[offset];\n" \
+"    float4 vel = cached_stars[offset + 1];\n" \
 "    float4 force = {0,0,0,0};\n" \
 "    barrier(CLK_LOCAL_MEM_FENCE);\n" \
 "    int chunk = 0;\n" \
 "    for (int i = 0; i < M; i += chunksize, chunk++)\n" \
 "    {\n" \
-"        int local_pos = chunk * chunksize + localid;\n" \
-"        cached_stars[localid] = m[local_pos];\n" \
-"\n" \
+"        cached_stars[localid] = m[chunk * chunksize + localid];\n" \
 "        barrier(CLK_LOCAL_MEM_FENCE);\n" \
-"        int offset = localid - localid % threads_per_star;\n" \
 "        for (int j = 0; j < chunksize / threads_per_star;)\n" \
 "        {\n" \
-"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
-"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
-"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
-"            force = pair_force(pos, cached_stars[offset + j++], force, softening);\n" \
+"            force += pair_force(pos, cached_stars[offset + j++], softening);\n" \
+"            force += pair_force(pos, cached_stars[offset + j++], softening);\n" \
+"            force += pair_force(pos, cached_stars[offset + j++], softening);\n" \
+"            force += pair_force(pos, cached_stars[offset + j++], softening);\n" \
 "        }\n" \
 "        barrier(CLK_LOCAL_MEM_FENCE);\n" \
 "    }\n" \
@@ -169,10 +162,10 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     cl_kernel k;
     cl_program p;
     int err;
-    char *source;
+    //char *source;
 
-    source = load_cl_file(sourcefile);
-    p = clCreateProgramWithSource(c->context, 1, (const char **) & source, NULL, &err);
+    //source = load_cl_file(sourcefile);
+    p = clCreateProgramWithSource(c->context, 1, (const char **) & thesource, NULL, &err);
     checkError(err, "Creating program");
 
     // Build the program
@@ -193,7 +186,7 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     checkError(err, "Creating kernel");
     clReleaseProgram(p);
     printf("made kernel\n");
-    free(source);
+    //free(source);
     return (k);
 }
 
@@ -285,10 +278,6 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clReleaseEvent(offN);
     clReleaseEvent(offV);
 
-    // printf("after computation, in output buffers\n");
-    // print_cl4(output_p[0]);
-    // print_cl4(output_v[0]);
-
     t_body *ret = (t_body *)malloc(sizeof(t_body) * ncount);
     for (int i = 0; i < ncount; i++)
     {
@@ -297,8 +286,6 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     }
     if (output_p) free(output_p);
     if (output_v) free(output_v);
-    //free_context(context);
-    //clReleaseKernel(k_nbody);
     return (ret);
 }
 
