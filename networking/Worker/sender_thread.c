@@ -27,6 +27,20 @@ static void *sender_thread(void *param)
 	   	if (DEBUG)
             printf("SEND- sending work unit\n");
         workunit = queue_pop(&worker->completed_work);
+        //wait til compute is actually done
+        clWaitForEvents(1, &workunit->done);
+        //package appropriately
+        t_body *locals = calloc(workunit->localcount, sizeof(t_body));
+        for (int i = 0; i < workunit->localcount; i++)
+        {
+        	locals[i].position = workunit->N[i];
+        	locals[i].velocity = workunit->V[i];
+        }
+        free(workunit->N);
+        free(workunit->V);
+        free(workunit->M);
+        workunit->local_bodies = locals;
+        clReleaseEvent(workunit->done);
         //send complete work unit
         msg = serialize_workunit(*workunit);
 		if (DEBUG)

@@ -102,6 +102,7 @@ typedef struct			s_workunit
 	cl_float4 			*M;
 	cl_float4 			*V;
 	t_body				*local_bodies;
+	cl_event			done;
 }						t_workunit;
 
 typedef struct			s_msg
