@@ -102,7 +102,6 @@ typedef struct			s_workunit
 	cl_float4 			*M;
 	cl_float4 			*V;
 	t_body				*local_bodies;
-	cl_event			done;
 	char				is_last;
 }						t_workunit;
 

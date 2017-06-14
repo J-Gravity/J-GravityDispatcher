@@ -197,7 +197,9 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     return (k);
 }
 
-static void crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount, t_workunit *w)
+// vvv N CROSS M vvv
+
+static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, size_t mcount)
 {
     static t_context   *context;
     static cl_kernel   k_nbody;
@@ -207,6 +209,9 @@ static void crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, 
         context = setup_context();
     if (k_nbody == NULL)
         k_nbody = make_kernel(context, "nxm2.cl", "nbody");
+
+    cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
+    cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
 
     //printf("NxM: %lu x %lu\n", ncount, mcount);
     //device-side data
@@ -227,12 +232,12 @@ static void crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, 
 
     //copy over initial data to device locations
     cl_event eN, eM, eV;
-    clEnqueueWriteBuffer(context->commands, d_N_start, CL_FALSE, 0, sizeof(cl_float4) * ncount, N, 0, NULL, &eN);
-    clEnqueueWriteBuffer(context->commands, d_M, CL_FALSE, 0, sizeof(cl_float4) * mcount, M, 0, NULL, &eM);
-    clEnqueueWriteBuffer(context->commands, d_V_start, CL_FALSE, 0, sizeof(cl_float4) * ncount, V, 0, NULL, &eV);
+    clEnqueueWriteBuffer(context->commands, d_N_start, CL_TRUE, 0, sizeof(cl_float4) * ncount, N, 0, NULL, &eN);
+    clEnqueueWriteBuffer(context->commands, d_M, CL_TRUE, 0, sizeof(cl_float4) * mcount, M, 0, NULL, &eM);
+    clEnqueueWriteBuffer(context->commands, d_V_start, CL_TRUE, 0, sizeof(cl_float4) * ncount, V, 0, NULL, &eV);
+
     cl_event loadevents[3] = {eN, eM, eV};
 
-    //set up arguments
     size_t tps = 32;
     size_t global = ncount * tps;
     size_t mscale = mcount;
@@ -255,12 +260,18 @@ static void crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, 
     clSetKernelArg(k_nbody, 10, sizeof(unsigned int), &mscale);
     clSetKernelArg(k_nbody, 11, sizeof(unsigned int), &tps);
 
+    //printf("global is %zu, local is %zu\n", global, local);
+    //printf("going onto the GPU\n");
+
     cl_event compute;
     cl_event offN, offV;
-    clEnqueueNDRangeKernel(context->commands, k_nbody, 1, NULL, &global, &local, 3, loadevents, &compute);
-    clEnqueueReadBuffer(context->commands, d_N_end, CL_FALSE, 0, sizeof(cl_float4) * count, w->N, 1, &compute, &offN);
-    clEnqueueReadBuffer(context->commands, d_V_end, CL_FALSE, 0, sizeof(cl_float4) * count, w->V, 1, &compute, &offV);
 
+    err = clEnqueueNDRangeKernel(context->commands, k_nbody, 1, NULL, &global, &local, 3, loadevents, &compute);
+    clEnqueueReadBuffer(context->commands, d_N_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_p, 1, &compute, &offN);
+    clEnqueueReadBuffer(context->commands, d_V_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_v, 1, &compute, &offV);
+    clFinish(context->commands);
+
+    //these will have to happen elsewhere in final but here is good for now
     clReleaseMemObject(d_N_start);
     clReleaseMemObject(d_N_end);
     clReleaseMemObject(d_M);
@@ -272,14 +283,31 @@ static void crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncount, 
     clReleaseEvent(eV);
     clReleaseEvent(compute);
     clReleaseEvent(offN);
-    //clReleaseEvent(offV);
+    clReleaseEvent(offV);
 
-    w->done = offV;
+    // printf("after computation, in output buffers\n");
+    // print_cl4(output_p[0]);
+    // print_cl4(output_v[0]);
+
+    t_body *ret = (t_body *)malloc(sizeof(t_body) * ncount);
+    for (int i = 0; i < ncount; i++)
+    {
+        ret[i].position = output_p[i];
+        ret[i].velocity = output_v[i];
+    }
+    if (output_p) free(output_p);
+    if (output_v) free(output_v);
+    //free_context(context);
+    //clReleaseKernel(k_nbody);
+    return (ret);
 }
 
 void do_workunit(t_workunit *w)
 {
     //printf("N X M: %d x %d\n", w->localcount + w->npadding, w->neighborcount + w->mpadding);
-    crunch_NxM(w->N, w->V, w->M, w->localcount + w->npadding, w->neighborcount + w->mpadding, w);
+    w->local_bodies = crunch_NxM(w->N, w->V, w->M, w->localcount + w->npadding, w->neighborcount + w->mpadding);
     w->neighborcount = 0;
+    if (w->N) free(w->N);
+    if (w->M) free(w->M);
+    if (w->V) free(w->V);
 }
