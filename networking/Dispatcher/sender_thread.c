@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/10 17:44:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 23:08:51 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 19:57:35 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void	*sender_thread(void *input)
 {
 	t_dispatcher		*dispatcher;
 	t_worker			*worker;
+	t_lst			*worker_link;
 	t_bundle			*bundle;
 
 	signal(SIGPIPE, SIG_IGN);
@@ -26,20 +27,23 @@ void	*sender_thread(void *input)
 	{
 		if (sem_wait(dispatcher->start_sending) < 0)
 			printf("SEND- sem_wait failed with err:%d\n", errno);
+		//printf("cleared start sending semaphore\n");
 		while (queue_count(dispatcher->bundles) > 0)
 		{
-			worker = queue_pop(&dispatcher->workers_queue);
-			if (worker)
+			//printf("bundle_count: %d\n", queue_count(dispatcher->bundles));
+			worker_link = queue_pop_link(&dispatcher->workers_queue);
+			if (worker_link && worker_link->data)
 			{
+				worker = worker_link->data;
 				bundle = queue_pop(&dispatcher->bundles);
 				if (bundle)
 				{
 					queue_enqueue(&worker->workunit_queue, queue_create_new(bundle));
 					if (DEBUG)
-						printf("bundle sent to worker %d\n", worker->socket.fd);
+						printf("bundle %d sent to worker %d\n", bundle->id, worker->socket.fd);
 					send_bundle(worker, bundle, dispatcher->cells);
 					if (DEBUG)
-						printf("done sending bundle sent to worker %d\n", worker->socket.fd);
+						printf("done sending bundle %d to worker %d\n", bundle->id, worker->socket.fd);
 				}
 				else
 				{
@@ -52,7 +56,7 @@ void	*sender_thread(void *input)
 				printf("NULL from poping the worker queue!\n");
 				break ;
 			}
-			queue_enqueue(&dispatcher->workers_queue, queue_create_new(worker));
+			queue_enqueue(&dispatcher->workers_queue, worker_link);
 		}
 	}
 	if (DEBUG)

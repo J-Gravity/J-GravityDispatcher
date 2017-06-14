@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 23:06:05 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 20:22:31 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,6 +161,7 @@ typedef struct			s_WU
 	t_body				*local_bodies;
 	t_body				*neighborhood;
 	cl_float4			force_bias;
+	char				is_last;
 }						t_WU;
 
 typedef struct			s_workunit
@@ -175,6 +176,8 @@ typedef struct			s_workunit
 typedef struct			s_worker
 {
 	char				active;
+	int					sent_wu;
+	int					rec_wu;
 	t_queue				*workunit_queue;
 	char				compute_class;
 	pthread_t			*tid;
@@ -227,6 +230,7 @@ typedef struct s_bundle
 	int cellcount;
 	int **matches;
 	int *matches_counts;
+	char id;
 }				t_bundle;
 
 typedef struct			s_dispatcher
@@ -273,6 +277,7 @@ t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
 void	start_sender_threads(t_dispatcher *disp, int count);
 void 		print_worker_fds(t_dispatcher *dispatcher);
+t_lst	*queue_pop_link(t_queue **queue);
 
 /*
  * 	Creates a new node and returns it

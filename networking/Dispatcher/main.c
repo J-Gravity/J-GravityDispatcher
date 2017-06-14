@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 22:05:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 16:23:02 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,13 +37,16 @@ int	main(int ac, char **av)
 	if (METRICS)
 		initialize_metrics();
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
+	printf("dispatcher struct is %lu bytes!!/n", sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
-	dispatcher->ticks_cnt = 120;
+	dispatcher->ticks_cnt = 2;
 	dispatcher->name = "mvp_test";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
 	dispatcher->bundles = (t_queue *)calloc(1, sizeof(t_queue));
 	pthread_mutex_init(&dispatcher->bundles->mutex, NULL);
+	dispatcher->workers_queue = (t_queue *)calloc(1, sizeof(t_queue));
+	pthread_mutex_init(&dispatcher->workers_queue->mutex, NULL);
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
 	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);

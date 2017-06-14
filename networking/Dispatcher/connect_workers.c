@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/12 23:05:20 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 02:53:06 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,7 +71,7 @@ void	*connect_worker_thread(void *param)
 		new_worker->workunit_queue = (t_queue *)calloc(1, sizeof(t_queue));
 		pthread_mutex_init(&new_worker->workunit_queue->mutex, NULL);
 		queue_enqueue(&dispatcher->workers_queue, new_link);
-		print_worker_fds(dispatcher);
+		//print_worker_fds(dispatcher);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
 		if (dispatcher->is_running)

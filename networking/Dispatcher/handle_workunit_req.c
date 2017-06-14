@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 21:28:27 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/12 22:32:10 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 18:47:27 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,5 +29,5 @@ void	handle_workunit_req(t_dispatcher *dispatcher, t_worker *worker,
 	// 	}
 	// 	G_sent_wu++;
 	// }
-	// free(msg.data);
+	free(msg.data);
 }

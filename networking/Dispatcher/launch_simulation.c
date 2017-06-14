@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 23:01:58 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 20:17:58 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 
 void 		print_worker_fds(t_dispatcher *dispatcher)
 {
-	t_lst	*head;
+	t_lst	*head = 0;
 
 	// clock_t start, diff;
 	// if (METRICS && MUTEX_METRIC)
@@ -129,14 +129,14 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	// }
 	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
 	head = dispatcher->workers_queue->first;
-	printf("-------------\n");
-  	while (head)
- 	{
-		printf("(%p)worker: %d -> (%p)\n", head,
-			((t_worker*)(head->data))->socket.fd, head->next);
-  		head = head->next;
- 	}
-	printf("-------------\n");
+	// printf("-------------\n");
+  	// while (head)
+ 	// {
+	// 	//printf("(%p)worker: %d -> (%p)\n", head,
+	// 	//	((t_worker*)(head->data))->socket.fd, head->next);
+  	// 	head = head->next;
+ 	// }
+	//printf("-------------\n");
 	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
 }
 
@@ -150,8 +150,8 @@ void		*handle_worker_connection(void *input)
 	signal(SIGPIPE, SIG_IGN);
 	if (DEBUG && WORKER_DEBUG)
 		printf("Launched worker network handler thread!\n");
-	if (DEBUG && WORKER_DEBUG)
-		print_worker_fds(params->dispatcher);
+	//  if (DEBUG && WORKER_DEBUG)
+	//  	print_worker_fds(params->dispatcher);
 	params = (t_thread_handler *)input;
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;

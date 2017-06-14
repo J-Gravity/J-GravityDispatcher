@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:22:04 by ssmith            #+#    #+#             */
-/*   Updated: 2017/05/30 15:11:32 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 21:09:31 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,8 @@ t_WU	deserialize_WU(t_msg msg)
 	offset += sizeof(int);
 	memcpy(&(local_compressed_size), msg.data + offset, sizeof(int));
 	offset += sizeof(int);
+	memcpy(&(WU.is_last), msg.data + offset, sizeof(char));
+	offset += sizeof(char);
 	WU.local_bodies = decompress_locals(msg.data + offset, local_compressed_size, WU.localcount);
 	offset += sizeof(t_body) * WU.localcount;
 	return (WU);

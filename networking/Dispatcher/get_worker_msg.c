@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 19:30:56 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 19:20:46 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,12 +45,12 @@ char	read_header(int fd, t_msg *msg)
 			print_debug(fd, *msg);
 		memcpy(&msg->size, &header[1], sizeof(int));
 		if (msg->size >= 0)
-			msg->data = (char *)calloc(1, msg->size);
+			msg->data = (char *)calloc(1, msg->size + 1);
 		else
 		{
 			printf("recieved a invalid size for the body size!!!\n");
 			msg->size = 0;
-			msg->data = (char *)calloc(1, msg->size);
+			msg->data = (char *)calloc(1, msg->size + 1);
 		}
 	}
 	else

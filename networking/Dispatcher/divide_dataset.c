@@ -577,9 +577,11 @@ void    divide_dataset(t_dispatcher *dispatcher)
     if (wcount < 4)
         wcount = 4;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
+	static int bundle_id = 0;
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
+		b->id = bundle_id++;
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
     }
     dispatcher->cells = leaves;

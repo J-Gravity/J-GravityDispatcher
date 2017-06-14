@@ -57,7 +57,7 @@ long G_total_calc_time;
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
@@ -102,6 +102,7 @@ typedef struct			s_workunit
 	cl_float4 			*M;
 	cl_float4 			*V;
 	t_body				*local_bodies;
+	char				is_last;
 }						t_workunit;
 
 typedef struct			s_msg
