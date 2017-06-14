@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/13 20:55:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 00:24:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,8 @@ void free_bundle(t_bundle *b)
 {
 	if (!b)
 		return;
-	printf("deleting bundle %d\n", b->id);
+	if (DEBUG)
+		printf("deleting bundle %d\n", b->id);
     free(b->keys);
     free(b->cells);
     free(b->matches_counts);
@@ -72,11 +73,13 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	free(msg.data);
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
-	printf("is last workunit of a bundle: %d\n", complete_WU.is_last);
+	if (DEBUG)
+		printf("is last workunit of a bundle: %d\n", complete_WU.is_last);
 	if (complete_WU.is_last)
 	{
 		to_delete = queue_pop(&worker->workunit_queue);
-		printf("bundle %d complete\n", to_delete->id);
+		if (DEBUG)
+			printf("bundle %d complete\n", to_delete->id);
 		free_bundle(to_delete);
 	}
 	delete_WU(complete_WU);

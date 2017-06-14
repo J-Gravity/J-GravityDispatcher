@@ -29,7 +29,6 @@ void	send_worker_msg(t_worker *worker, t_msg msg)
 	char	*buffer;
 	int		msg_size;
 
-	printf("entering send worker message\n");
 	if (worker->socket.fd == 0)
 		return ;
 	msg_size = HEADER_SIZE + msg.size;
@@ -45,5 +44,4 @@ void	send_worker_msg(t_worker *worker, t_msg msg)
 	if (DEBUG && MSG_DEBUG)
 		print_debug(worker, msg);
 	free(buffer);
-	printf("exiting send worker message\n");
 }
