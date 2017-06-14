@@ -217,6 +217,7 @@ typedef struct s_tree
 	struct s_tree **neighbors;
 	struct s_tree *as_single;
 	t_bounds bounds;
+	uint64_t *mortons;
 }				t_tree;
 
 typedef struct s_bundle

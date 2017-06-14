@@ -166,7 +166,7 @@ void		*handle_worker_connection(void *input)
 			printf("MSG RECIEVED: [id]=%d", msg.id);
 			printf(" size '%d'\n", msg.size);
 			printf(" body '%s'\n", msg.data);
-    }
+   		}
 		if (msg.error == -1)
 		{
 			printf("get worker message failed with err %d\n", errno);

@@ -17,6 +17,29 @@ void print_cl4(cl_float4 v)
     printf("cl4: %f %f %f %f\n", v.x, v.y, v.z, v.w);
 }
 
+uint64_t merge(unsigned int *vals)
+{
+    uint64_t morton_code;
+    unsigned int small_bit_index;
+    uint64_t big_bit_index;
+    char offset;
+
+    morton_code = 0;
+    small_bit_index = 1;
+    big_bit_index = 1;
+    for (char i = 0; i < 3; i++)
+    {
+        offset = 2 - i;
+        for (char j = 0; j < 21; j++)
+        {
+            if (vals[i] & (small_bit_index << j))
+                morton_code |= (big_bit_index << offset);
+            offset += 3;
+        }
+    }
+    return (morton_code);
+}
+
 // Expands a 10-bit integer into 30 bits
 // by inserting 2 zeros after each bit.
 unsigned int expandBits(unsigned int v)
@@ -43,17 +66,34 @@ unsigned int morton3D(float x, float y, float z)
 	return (zz | yy | xx);
 }
 
-unsigned int morton_body(cl_float4 b)
+uint64_t morton64(float x, float y, float z)
 {
-    unsigned int m  = morton3D(b.x, b.y, b.z);
-    // printf("this star:\n");
-    // print_cl4(b);
-    // printf("has this morton code:\n");
-    // printf("%u\n", m);
-    return (m);
+    x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
+    y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
+    z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
+    unsigned int *arr = calloc(3, sizeof(unsigned int));
+    arr[0] = (unsigned int)x;
+    arr[1] = (unsigned int)y;
+    arr[2] = (unsigned int)z;
+    uint64_t m = merge (arr);
+    return m;
 }
 
-
+uint64_t morton64_debug(float x, float y, float z)
+{
+    printf("incoming %f %f %f\n", x, y, z);
+    x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
+    y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
+    z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
+    printf("after scale %f %f %f\n", x, y, z);
+    unsigned int *arr = calloc(3, sizeof(unsigned int));
+    arr[0] = (unsigned int)x;
+    arr[1] = (unsigned int)y;
+    arr[2] = (unsigned int)z;
+    printf("as uints %u %u %u\n", arr[0], arr[1], arr[2]);
+    uint64_t m = merge (arr);
+    return m;
+}
 
 int body_in_bounds(t_body body, t_bounds bounds)
 {
@@ -66,9 +106,20 @@ int body_in_bounds(t_body body, t_bounds bounds)
     return (1);
 }
 
-int cache_comp(const void *a, const void *b)
+int morton_comp(const void *a, const void *b)
 {
-    return (*(unsigned int *)((float *)a + 7) - *(unsigned int *)((float *)b + 7));
+    t_body *abod = (t_body *)a;
+    t_body *bbod = (t_body *)b;
+
+    uint64_t ma = morton64(abod->position.x, abod->position.y, abod->position.z);
+    uint64_t mb = morton64(bbod->position.x, bbod->position.y, bbod->position.z);
+
+    if (ma < mb)
+        return -1;
+    if (ma == mb)
+        return 0;
+    else
+        return 1;
 }
 
 t_tree *new_tnode(t_body *bodies, int count, t_tree *parent)
@@ -132,51 +183,7 @@ t_bounds bounds_from_code(t_bounds parent, unsigned int code)
         bounds.zmin = parent.zmin;
         bounds.zmax = zmid;
     }
-    // printf("\nparent bounds were:\n");
-    // print_bounds(parent);
-    // printf("result bounds were\n");
-    // print_bounds(bounds);
-    // printf("\n");
     return (bounds);
-}
-
-void split(t_tree *node)
-{
-    node->children = (t_tree **)calloc(8, sizeof(t_tree *));
-    int depth = node_depth(node);
-    //printf("count of node we're splitting: %d\n", node->count);
-    unsigned int offset = 0;
-    for (unsigned int i = 0; i < 8; i++)
-    {
-        node->children[i] = (t_tree *)calloc(1, sizeof(t_tree));
-        node->children[i]->bodies = &(node->bodies[offset]);
-        node->children[i]->count = 0;
-        node->children[i]->parent = node;
-        node->children[i]->children = NULL;
-        node->children[i]->bounds = bounds_from_code(node->bounds, i);
-        unsigned int j = 0;
-        while (j + offset < node->count)
-        {
-            unsigned int m = *(unsigned int *)&(node->bodies[offset + j].velocity.w);
-            m = m << (2 + 3 * depth);
-            m = m >> 29;
-            if (m != i)
-                break;
-            j++;
-        }
-        offset += j;
-        node->children[i]->count = j;
-    }
-}
-
-void split_tree(t_tree *root)
-{
-    if (root->count < LEAF_THRESHOLD || node_depth(root) == 9)
-        return;
-    //printf("splitting at level %d\n", node_depth(root));
-    split(root);
-    for (int i = 0; i < 8; i++)
-        split_tree(root->children[i]);
 }
 
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
@@ -413,19 +420,6 @@ static t_bounds bounds_from_bodies(t_body *bodies, int count)
     return ((t_bounds){min, max, min, max, min, max});
 }
 
-static void morton_coords(t_body *bodies, t_bounds bounds, int count)
-{
-    float distance =  1.0 / (bounds.xmax - bounds.xmin);
-    for (int i = 0; i < count; i++)
-    {
-        unsigned int m = morton_body((cl_float4){(bodies[i].position.x - bounds.xmin) * distance, \
-                                        (bodies[i].position.y - bounds.ymin) * distance, \
-                                        (bodies[i].position.z - bounds.zmin) * distance,
-                                        bodies[i].position.w});
-        bodies[i].velocity.w = *(float *)&m;
-    }
-}
-
 t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
 {
     t_dict *dict = create_dict(1000); //fiddle with this number later. it doesnt need to be big.
@@ -454,7 +448,6 @@ t_msg compress_msg(t_msg m)
 {
     t_msg c;
 
-    //something is wrong with this or its partner on worker side. ratio is good (~75%) so fixing this is worth 
     char *transposed = calloc(1, m.size);
     tpenc((unsigned char *)m.data, m.size, (unsigned char *)transposed, sizeof(int));
     int max_compressed_size = LZ4_compressBound(m.size);
@@ -516,20 +509,127 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
             offset += sizeof(cl_float4);
         }
     }
-    //printf("idcount is %d\n", b->keycount);
-    //printf("cellcount is %d\n", b->cellcount);
-    //printf("offset and m.size should match, %d %d\n", offset, m.size);
     m = compress_msg(m);
     return (m);
+}
+
+void scale_bodies(t_body *bodies, int count, t_bounds bounds)
+{
+    float distance =  1.0 / (bounds.xmax - bounds.xmin);
+    for (int i = 0; i < count; i++)
+    {
+        bodies[i].position =  (cl_float4){(bodies[i].position.x - bounds.xmin) * distance, \
+                                        (bodies[i].position.y - bounds.ymin) * distance, \
+                                        (bodies[i].position.z - bounds.zmin) * distance,
+                                        bodies[i].position.w};
+    }
+}
+
+void descale_bodies(t_body *bodies, int count, t_bounds bounds)
+{
+    float distance = bounds.xmax - bounds.xmin;
+    for (int i = 0; i < count; i++)
+    {
+        bodies[i].position =  (cl_float4){(bodies[i].position.x * distance) + bounds.xmin, \
+                                        (bodies[i].position.y * distance) + bounds.ymin, \
+                                        (bodies[i].position.z * distance) + bounds.zmin,
+                                        bodies[i].position.w};
+    }
+}
+
+typedef struct s_sortbod
+{
+    t_body bod;
+    uint64_t morton;
+}               t_sortbod;
+
+t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
+{
+    t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
+    float distance =  1.0 / (bounds.xmax - bounds.xmin);
+    for (int i = 0; i < count; i++)
+    {
+        sorts[i].morton = morton64((bodies[i].position.x - bounds.xmin) * distance, (bodies[i].position.y - bounds.ymin) * distance, (bodies[i].position.z - bounds.zmin) * distance);
+        sorts[i].bod = bodies[i];
+        // if (i == 0)
+        // {
+        //     printf("body 0 looks like:\n");
+        //     print_cl4(bodies[i].position);
+        //     print_cl4(bodies[i].velocity);
+        //     printf("%llu\n", sorts[i].morton);
+        //     morton64_debug((bodies[i].position.x - bounds.xmin) * distance, (bodies[i].position.y - bounds.ymin) * distance, (bodies[i].position.z - bounds.zmin) * distance);
+        // }
+    }
+    return (sorts);
+}
+
+int sbod_comp(const void *a, const void *b)
+{
+    uint64_t ma = ((t_sortbod *)a)->morton;
+    uint64_t mb = ((t_sortbod *)b)->morton;
+    if (ma < mb)
+        return -1;
+    if (ma == mb)
+        return 0;
+    else
+        return 1;
+}
+
+void split(t_tree *node)
+{
+    node->children = (t_tree **)calloc(8, sizeof(t_tree *));
+    int depth = node_depth(node);
+    unsigned int offset = 0;
+    for (unsigned int i = 0; i < 8; i++)
+    {
+        node->children[i] = (t_tree *)calloc(1, sizeof(t_tree));
+        node->children[i]->bodies = &(node->bodies[offset]);
+        node->children[i]->mortons = &(node->mortons[offset]);
+        node->children[i]->count = 0;
+        node->children[i]->parent = node;
+        node->children[i]->children = NULL;
+        node->children[i]->bounds = bounds_from_code(node->bounds, i);
+        unsigned int j = 0;
+        while (j + offset < node->count)
+        {
+            uint64_t m = node->mortons[j+offset];
+            m = m << (1 + 3 * depth);
+            m = m >> 61;
+            if (m != i)
+                break;
+            j++;
+        }
+        offset += j;
+        node->children[i]->count = j;
+        //getchar();
+    }
+}
+
+void split_tree(t_tree *root)
+{
+    if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
+        return;
+    //printf("splitting at level %d\n", node_depth(root));
+    split(root);
+    for (int i = 0; i < 8; i++)
+        split_tree(root->children[i]);
 }
 
 t_tree *make_tree(t_body *bodies, int count)
 {
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
-    morton_coords(bodies, root_bounds, count);
-    qsort(bodies, count, sizeof(t_body), cache_comp);
+    t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
+    qsort(sorts, count, sizeof(t_sortbod), sbod_comp);
+    uint64_t *mortons = calloc(count, sizeof(uint64_t));
+    for (int i = 0; i < count; i++)
+    {
+        bodies[i] = sorts[i].bod;
+        mortons[i] = sorts[i].morton;
+        //print_cl4(bodies[i].position);
+    }
     t_tree *root = new_tnode(bodies, count, NULL);
     root->bounds = root_bounds;
+    root->mortons = mortons;
     split_tree(root);
     return (root);
 }
@@ -564,13 +664,10 @@ void    divide_dataset(t_dispatcher *dispatcher)
     t_tree **leaves = enumerate_leaves(t);
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
     for (int i = 0; leaves[i]; i++)
-    {
-        //printf("leaf %d has %d locals\n", i, leaves[i]->count);
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
-    }
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
-    if (wcount < 4)
+    if (wcount < 2)
         wcount = 4;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
