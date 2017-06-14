@@ -45,6 +45,7 @@ void integrate_WU_results(t_dispatcher *disp, t_tree *old_cell, t_WU *new_WU)
 {
 	t_body *start_addr = (t_body *)(old_cell->bodies - disp->dataset->particles + disp->new_dataset->particles);
 	memcpy(start_addr, new_WU->local_bodies, old_cell->count * sizeof(t_body));
+	async_save(disp, old_cell->bodies - disp->dataset->particles, new_WU);
 }
 
 void free_bundle(t_bundle *b)

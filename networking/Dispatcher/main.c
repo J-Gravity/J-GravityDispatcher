@@ -47,6 +47,7 @@ int	main(int ac, char **av)
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
 	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);
+	pthread_mutex_init(&dispatcher->output_mutex, NULL);
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	clock_t start = clock(), diff;

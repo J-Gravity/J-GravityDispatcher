@@ -17,8 +17,11 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (DEBUG)
 		printf("all workunits done for this tick\n");
 	// Output tick to file
-	save_output(dispatcher, dispatcher->name);
+	//save_output(dispatcher, dispatcher->name);
 	dispatcher->ticks_done++;
+	fclose(dispatcher->fp);
+	if (dispatcher->ticks_done != dispatcher->ticks_cnt)
+		setup_async_file(dispatcher); //setup next file right away
 	double tick_time = (time(NULL) - G_tick_start);
 	G_total_time += tick_time;
 	if (METRICS)

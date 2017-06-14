@@ -251,6 +251,8 @@ typedef struct			s_dispatcher
 	t_socket			sin;
 	char				is_connect;
 	char				is_running;
+	FILE 				*fp;
+	pthread_mutex_t 	output_mutex;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -269,6 +271,10 @@ t_dict	*create_dict(unsigned int size);
 t_pair	*create_pair(size_t key);
 t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
+
+
+void async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
+void setup_async_file(t_dispatcher *dispatcher);
 
 /*
  * 	Creates a new node and returns it
