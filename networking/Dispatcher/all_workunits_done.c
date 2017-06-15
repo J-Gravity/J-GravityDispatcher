@@ -92,7 +92,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("2.x:%f\n", dispatcher->dataset->particles[2].position.x);
 		}
 		divide_dataset(dispatcher);
-		sem_post(dispatcher->start_sending);
+		//sem_post(dispatcher->start_sending);
 		// Inform all workers work units are ready
 		// pthread_mutex_lock(&dispatcher->worker_list_mutex);
 		// if (DEBUG && MUTEX_DEBUG)

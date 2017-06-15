@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/10 17:44:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/13 19:57:35 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 16:58:43 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,10 +25,12 @@ void	*sender_thread(void *input)
 	dispatcher = (t_dispatcher *)input;
 	while (dispatcher->is_running)
 	{
+		if (sem_wait(dispatcher->sender_limit) < 0)
+			printf("SEND- sem_wait failed with err:%d\n", errno);
 		if (sem_wait(dispatcher->start_sending) < 0)
 			printf("SEND- sem_wait failed with err:%d\n", errno);
 		//printf("cleared start sending semaphore\n");
-		while (queue_count(dispatcher->bundles) > 0)
+		if (queue_count(dispatcher->bundles) > 0)
 		{
 			//printf("bundle_count: %d\n", queue_count(dispatcher->bundles));
 			worker_link = queue_pop_link(&dispatcher->workers_queue);
@@ -48,15 +50,20 @@ void	*sender_thread(void *input)
 				else
 				{
 					printf("bundle to send is null!\n");
-					break ;
+					queue_enqueue(&dispatcher->workers_queue, worker_link);
+					sem_post(dispatcher->sender_limit);
+					continue ;
 				}
 			}
 			else
 			{
 				printf("NULL from poping the worker queue!\n");
-				break ;
+				sem_post(dispatcher->sender_limit);
+				sem_post(dispatcher->start_sending);
+				continue ;
 			}
 			queue_enqueue(&dispatcher->workers_queue, worker_link);
+			sem_post(dispatcher->sender_limit);
 		}
 	}
 	if (DEBUG)
