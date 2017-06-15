@@ -157,11 +157,11 @@ static cl_float4 center_add(cl_float4 total, cl_float4 add)
     return (cl_float4){total.x + add.x, total.y + add.y, total.z + add.z, total.w + add.w};
 }
 
-static cl_float4 COG_from_bodies(t_body *bodies, int count)
+static t_body COG_from_bodies(t_body *bodies, int count)
 {
     cl_float4 center = (cl_float4){0,0,0,0};
     if (count == 0)
-        return center;
+        return (t_body){center, center};
     float real_total = 0;
     for (int i = 0; i < count; i++)
     {
@@ -171,15 +171,19 @@ static cl_float4 COG_from_bodies(t_body *bodies, int count)
     center.x /= center.w;
     center.y /= center.w;
     center.z /= center.w;
-
+    cl_float4 vel = {0, 0, 0, center.w};
     center.w = real_total;
-    return (center);
+    return (t_body){center, vel};
 }
 
 static t_tree *make_as_single(t_tree *c)
 {
     t_body *b = calloc(1, sizeof(t_body));
-    b->position = COG_from_bodies(c->bodies, c->count);
+    *b = COG_from_bodies(c->bodies, c->count);
+    if (body_in_bounds(*b, c->bounds))
+        printf("good!\n");
+    else
+        printf("bounds problem\n");
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
     s->children = NULL;
