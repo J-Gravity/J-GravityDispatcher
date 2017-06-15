@@ -98,6 +98,8 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 		printf("handling request!\n");
 	if (msg.id == WORK_UNIT_REQUEST)	
 		handle_workunit_req(dispatcher, worker, msg);
+	else if (msg.id == METRICS_DONE)
+		handle_metrics_done_msg(msg);
 	else if (msg.id == WORK_UNIT_DONE)
 	{
 		if (METRICS && WORKER_TIME_METRIC)
