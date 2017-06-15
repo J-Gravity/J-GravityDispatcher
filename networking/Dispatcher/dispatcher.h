@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 00:42:50 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 02:08:29 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,7 +61,7 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 1
+# define DEBUG 0
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 0
 # define MSG_DETAILS_DEBUG 1
