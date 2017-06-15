@@ -4,6 +4,29 @@
 #include "lz4.h"
 #include "transpose.h"
 
+typedef struct s_sortbod
+{
+    t_body bod;
+    uint64_t morton;
+}               t_sortbod;
+
+int sbod_comp(const void *a, const void *b)
+{
+    uint64_t ma = ((t_sortbod *)a)->morton;
+    uint64_t mb = ((t_sortbod *)b)->morton;
+    if (ma < mb)
+        return -1;
+    if (ma == mb)
+        return 0;
+    else
+        return 1;
+}
+
+#define SORT_NAME mort
+#define SORT_TYPE t_sortbod
+#define SORT_CMP(x, y) (sbod_comp(&x, &y))
+#include "sort.h"
+
 #define THETA 1
 #define LEAF_THRESHOLD pow(2, 12)
 
@@ -32,7 +55,7 @@ uint64_t splitBy3(const unsigned int a)
 uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, const unsigned int z)
 {
     uint64_t answer = 0;
-    answer |= splitBy3(x) | splitBy3(y) << 1 | splitBy3(z) << 2;
+    answer |= splitBy3(z) | splitBy3(y) << 1 | splitBy3(x) << 2;
     return answer;
 }
 
@@ -134,11 +157,11 @@ static cl_float4 center_add(cl_float4 total, cl_float4 add)
     return (cl_float4){total.x + add.x, total.y + add.y, total.z + add.z, total.w + add.w};
 }
 
-static cl_float4 COG_from_bodies(t_body *bodies, int count)
+static t_body COG_from_bodies(t_body *bodies, int count)
 {
     cl_float4 center = (cl_float4){0,0,0,0};
     if (count == 0)
-        return center;
+        return (t_body){center, center};
     float real_total = 0;
     for (int i = 0; i < count; i++)
     {
@@ -148,15 +171,15 @@ static cl_float4 COG_from_bodies(t_body *bodies, int count)
     center.x /= center.w;
     center.y /= center.w;
     center.z /= center.w;
-
+    cl_float4 vel = {0, 0, 0, center.w};
     center.w = real_total;
-    return (center);
+    return (t_body){center, vel};
 }
 
 static t_tree *make_as_single(t_tree *c)
 {
     t_body *b = calloc(1, sizeof(t_body));
-    b->position = COG_from_bodies(c->bodies, c->count);
+    *b = COG_from_bodies(c->bodies, c->count);
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
     s->children = NULL;
@@ -470,12 +493,6 @@ void descale_bodies(t_body *bodies, int count, t_bounds bounds)
     }
 }
 
-typedef struct s_sortbod
-{
-    t_body bod;
-    uint64_t morton;
-}               t_sortbod;
-
 t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
 {
     t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
@@ -486,18 +503,6 @@ t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
         sorts[i].bod = bodies[i];
     }
     return (sorts);
-}
-
-int sbod_comp(const void *a, const void *b)
-{
-    uint64_t ma = ((t_sortbod *)a)->morton;
-    uint64_t mb = ((t_sortbod *)b)->morton;
-    if (ma < mb)
-        return -1;
-    if (ma == mb)
-        return 0;
-    else
-        return 1;
 }
 
 void split(t_tree *node)
@@ -544,7 +549,7 @@ t_tree *make_tree(t_body *bodies, int count)
 {
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
     t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
-    qsort(sorts, count, sizeof(t_sortbod), sbod_comp);
+    mort_tim_sort(sorts, count);
     uint64_t *mortons = calloc(count, sizeof(uint64_t));
     for (int i = 0; i < count; i++)
     {
@@ -592,8 +597,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     for (int i = 0; leaves[i]; i++)
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     int lcount = count_tree_array(leaves);
-    //int wcount = dispatcher->worker_cnt;
-    int wcount = 4;
+    int wcount = dispatcher->worker_cnt;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
 	static int bundle_id = 0;
     dispatcher->cells = leaves;
