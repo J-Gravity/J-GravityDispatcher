@@ -1,9 +1,8 @@
 static float4 pair_force(
     float4 pi,
     float4 pj,
-    const float softening)
+    __constant float softening)
 {
-    float4 r;
     r.x = pj.x - pi.x;
     r.y = pj.y - pi.y;
     r.z = pj.z - pi.z;
@@ -23,12 +22,12 @@ kernel void nbody(
     __global float4* v_start,
     __global float4* v_end,
     __local float4 *cached_stars,
-    const float softening,
-    const float timestep,
-    const float G,
-    const int N,
-    const int M,
-    const int threads_per_star)
+    __constant float softening,
+    __constant float timestep,
+    __constant float G,
+    __constant int N,
+    __constant int M,
+    __constant int threads_per_star)
 {
     int globalid = get_global_id(0);
     int chunksize = get_local_size(0);
@@ -64,6 +63,7 @@ kernel void nbody(
     {
         for (int i = 1; i < threads_per_star; i++)
             force += cached_stars[localid + i];
+
         vel.x += force.x * G * timestep;
         vel.y += force.y * G * timestep;
         vel.z += force.z * G * timestep;
@@ -71,7 +71,6 @@ kernel void nbody(
         pos.x += vel.x * timestep;
         pos.y += vel.y * timestep;
         pos.z += vel.z * timestep;
-
 
         n_end[globalid / threads_per_star] = pos;
         v_end[globalid / threads_per_star] = vel;

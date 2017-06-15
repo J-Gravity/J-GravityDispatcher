@@ -233,6 +233,8 @@ typedef struct s_bundle
 	int **matches;
 	int *matches_counts;
 	char id;
+	long difficulty;
+	long size;
 }				t_bundle;
 
 typedef struct			s_dispatcher

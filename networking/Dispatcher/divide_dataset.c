@@ -54,6 +54,7 @@ uint64_t splitBy3(const unsigned int a)
  
 uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, const unsigned int z)
 {
+	//interweave the rightmost 21 bits of 3 unsigned ints to generate a 63-bit morton code
     uint64_t answer = 0;
     answer |= splitBy3(z) | splitBy3(y) << 1 | splitBy3(x) << 2;
     return answer;
@@ -61,6 +62,7 @@ uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, cons
 
 uint64_t morton64(float x, float y, float z)
 {
+	//x, y, z are in [0, 1]. multiply by 2^21 to get 21 bits, confine to [0, 2^21 - 1]
     x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
     y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
     z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
@@ -90,8 +92,7 @@ t_tree *new_tnode(t_body *bodies, int count, t_tree *parent)
 
 int node_depth(t_tree *node)
 {
-    //should do this better (ie not use this function) but gets the job done for now
-    int depth = 0; //the root has depth 0.
+    int depth = 0;
     while (node->parent)
     {
         node = node->parent;
@@ -106,6 +107,7 @@ int node_depth(t_tree *node)
 
 t_bounds bounds_from_code(t_bounds parent, unsigned int code)
 {
+	//generate the appropriate subbounds of the parent cell for this 3-bit string
     t_bounds bounds;
     if(code >> 2)
     {
@@ -150,11 +152,35 @@ static cl_float4 vadd(cl_float4 a, cl_float4 b)
 
 static cl_float4 center_add(cl_float4 total, cl_float4 add)
 {
+	//method for tallying running total for center of gravity
     add.w = fabs(add.w);
     add.x *= add.w;
     add.y *= add.w;
     add.z *= add.w;
     return (cl_float4){total.x + add.x, total.y + add.y, total.z + add.z, total.w + add.w};
+}
+
+#define child_COG(i) (children[i]->as_single->bodies[0])
+
+static t_body COG_from_children(t_tree **children)
+{//needs tested
+	cl_float4 center = (cl_float4){0,0,0,0};
+    if (count == 0)
+        return (t_body){center, center};
+    float abs_total = 0;
+    for (int i = 0; i < 8; i++)
+    {
+		center.x = child_COG(i).position.x * child_COG(i).velocity.w;
+		center.y = child_COG(i).position.y * child_COG(i).velocity.w;
+		center.z = child_COG(i).position.z * child_COG(i).velocity.w;
+		abs_total += child_COG(i).velocity.w;
+		center.w += child_COG(i).position.w;
+    }
+    center.x /= abs_total;
+    center.y /= abs_total;
+    center.z /= abs_total;
+    cl_float4 vel = {0, 0, 0, abs_total};
+    return (t_body){center, vel};
 }
 
 static t_body COG_from_bodies(t_body *bodies, int count)
@@ -178,8 +204,13 @@ static t_body COG_from_bodies(t_body *bodies, int count)
 
 static t_tree *make_as_single(t_tree *c)
 {
+	//it's silly to build a whole cell for something
+	//that could easily just be a t_body in t_tree
     t_body *b = calloc(1, sizeof(t_body));
-    *b = COG_from_bodies(c->bodies, c->count);
+	if (!c->children)
+		*b = COG_from_bodies(c->bodies, c->count);
+	else
+		*b = COG_from_children(c->children);
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
     s->children = NULL;
@@ -189,13 +220,13 @@ static t_tree *make_as_single(t_tree *c)
     return (s);
 }
 
-static int count_tree_array(t_tree **arr)
+static int count_tree_array(const t_tree **arr)
 {
     int count;
     if (!arr)
         return 0;
-    for (count = 0; arr[count]; count++)
-        ;
+    while(arr[count++])
+		;
     return (count);
 }
 
@@ -383,6 +414,8 @@ t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
     //take up to Count leaves starting at offset and pour their neighborhoods
     //into the double-key hash. track which leaves we put in.
     t_pair *ids = NULL;
+	long difficulty = 0;
+	long size = 0;
     for (int i = 0; i < count && leaves[offset + i]; i++)
     {
         if (!ids)
@@ -393,10 +426,18 @@ t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
             p->next_key = ids;
             ids = p;
         }
+		size += leaves[i].count * sizeof(t_body);
         t_tree **adding = leaves[offset + i]->neighbors;
         for (int j = 0; adding[j]; j++)
+		{
             dict_insert(dict, adding[j], i);
+			difficulty += leaves[offset + i].count * adding[j].count;
+			size += adding[j].count * sizeof(cl_float4);
+		}
     }
+	t_bundle *b = bundle_dict(dict, ids);
+	b->difficulty = difficulty;
+	b->size = size;
     return (bundle_dict(dict, ids));
 }
 
@@ -469,30 +510,6 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
     return (m);
 }
 
-void scale_bodies(t_body *bodies, int count, t_bounds bounds)
-{
-    float distance =  1.0 / (bounds.xmax - bounds.xmin);
-    for (int i = 0; i < count; i++)
-    {
-        bodies[i].position =  (cl_float4){(bodies[i].position.x - bounds.xmin) * distance, \
-                                        (bodies[i].position.y - bounds.ymin) * distance, \
-                                        (bodies[i].position.z - bounds.zmin) * distance,
-                                        bodies[i].position.w};
-    }
-}
-
-void descale_bodies(t_body *bodies, int count, t_bounds bounds)
-{
-    float distance = bounds.xmax - bounds.xmin;
-    for (int i = 0; i < count; i++)
-    {
-        bodies[i].position =  (cl_float4){(bodies[i].position.x * distance) + bounds.xmin, \
-                                        (bodies[i].position.y * distance) + bounds.ymin, \
-                                        (bodies[i].position.z * distance) + bounds.zmin,
-                                        bodies[i].position.w};
-    }
-}
-
 t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
 {
     t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
@@ -507,6 +524,7 @@ t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
 
 void split(t_tree *node)
 {
+	//split this cell into 8 octants
     node->children = (t_tree **)calloc(8, sizeof(t_tree *));
     int depth = node_depth(node);
     unsigned int offset = 0;
@@ -519,27 +537,33 @@ void split(t_tree *node)
         node->children[i]->parent = node;
         node->children[i]->children = NULL;
         node->children[i]->bounds = bounds_from_code(node->bounds, i);
+		
+		//scan through array for borders between 3-bit substring values for this depth
+		//these are the dividing lines between octants
         unsigned int j = 0;
+		unsigned int max = node->count - offset;
+		unsigned int step = ceil(sqrt(max << 1));
         while (j + offset < node->count)
         {
+			//do the egg drop thing here!
             uint64_t m = node->mortons[j+offset];
             m = m << (1 + 3 * depth);
             m = m >> 61;
             if (m != i)
                 break;
-            j++;
+            j += step--;
         }
         offset += j;
         node->children[i]->count = j;
-        //getchar();
     }
 }
 
 void split_tree(t_tree *root)
 {
+	//we divide the tree until each leaf cell has < leaf threshold bodies.
+	//we also have to halt at depth 21, but it is unlikely to need to divide that far.
     if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
         return;
-    //printf("splitting at level %d\n", node_depth(root));
     split(root);
     for (int i = 0; i < 8; i++)
         split_tree(root->children[i]);
@@ -547,20 +571,30 @@ void split_tree(t_tree *root)
 
 t_tree *make_tree(t_body *bodies, int count)
 {
+	//determine bounding cube of particle set
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
+	
+	//generate and cache morton codes for each body
     t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
+	
+	//sort the bodies by their morton codes
+	//they are now arranged on a z-order curve.
     mort_tim_sort(sorts, count);
+	
+	//copy data back from cached sort structure
     uint64_t *mortons = calloc(count, sizeof(uint64_t));
     for (int i = 0; i < count; i++)
     {
         bodies[i] = sorts[i].bod;
         mortons[i] = sorts[i].morton;;
     }
+	free(sorts);
     t_tree *root = new_tnode(bodies, count, NULL);
     root->bounds = root_bounds;
     root->mortons = mortons;
-    split_tree(root);
-    free(sorts);
+	
+    //recursively divide the tree
+	split_tree(root);
     free(mortons);
     return (root);
 }
@@ -580,6 +614,23 @@ static void free_tree(t_tree *t)
         free(t->as_single);
     }
     free(t);
+}
+
+static long bundle_size(t_bundle *bundle)
+{
+    long size = sizeof(int) * 2;
+    for (int i = 0; i < b->keycount; i++)
+    {
+        size += sizeof(int) * 2;
+        size += leaves[b->keys[i]]->count * sizeof(t_body);
+    }
+    for (int i = 0; i < b->cellcount; i++)
+    {
+        size += sizeof(int) * 2;
+        size += b->cells[i]->count * sizeof(cl_float4);
+        size += b->matches_counts[i] * sizeof(int);
+    }
+	return (size);
 }
 
 void    divide_dataset(t_dispatcher *dispatcher)
