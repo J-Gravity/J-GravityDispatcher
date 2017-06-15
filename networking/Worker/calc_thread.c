@@ -25,7 +25,6 @@ static void *calc_thread(void *param)
 //		if (DEBUG)
 			printf("CALC- calculating work unit\n");
 		clock_t calc_time = time(NULL);
-		//printf("workunit count: %d\n", worker->todo_work->count);
 		workunit = queue_pop(&worker->todo_work);
 		printf("c1\n");
 		do_workunit(workunit);
@@ -35,6 +34,7 @@ static void *calc_thread(void *param)
 		printf("c3\n");
 			workunit->is_last = 1;
 			sem_post(worker->ready_for_bundle);
+			printf("calc queue emptied\n");
 		}
 		if (DEBUG)
 			printf("CALC- is last workunit of a bundle: %d\n", workunit->is_last);

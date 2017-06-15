@@ -151,12 +151,13 @@ typedef struct s_bundle
     int *cell_sizes;
     cl_float4 **cells;
     int cellcount;
+    int index;
 }               t_bundle;
 
 
 t_bundle *deserialize_bundle(t_msg m);
 void transpose_matches(t_bundle *wb);
-t_workunit **unbundle_workunits(t_bundle *b, int *count);
+t_workunit *kick_bundle(t_bundle *b);
 
 /*
  * 	Creates a new node and returns it
