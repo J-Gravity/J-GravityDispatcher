@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 00:22:41 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 16:59:15 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 # define _GNU_SOURCE
 # define PORT 4242
 # define HEADER_SIZE 5
+# define SENDER_THREADS 8
 
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
@@ -61,12 +62,12 @@ long G_total_workunit_cnt;
 /* *********** */
 
 # define DEBUG 0
-# define MSG_DEBUG 1
-# define WORKER_DEBUG 1
-# define MSG_DETAILS_DEBUG 1
-# define MUTEX_DEBUG 1
-# define DIVIDE_DATASET_DEBUG 1
-# define NETWORK_DEBUG 1
+# define MSG_DEBUG 0
+# define WORKER_DEBUG 0
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 0
+# define NETWORK_DEBUG 0
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -241,6 +242,7 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_done_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
+	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
 	//t_lst				*workers;

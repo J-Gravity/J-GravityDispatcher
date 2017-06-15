@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/13 20:17:58 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 17:00:31 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,7 @@ void		*handle_worker_connection(void *input)
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;
 	worker->active = 1;
-	send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
+	//send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
 	while (worker->active)
 	{
 		if (DEBUG && WORKER_DEBUG)
@@ -253,6 +253,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		printf("sem_unlink err %d\n", errno);
 	if (sem_unlink("/sender_thread") && DEBUG)
 		printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_limit") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
 	dispatcher->start_sending = sem_open("/sender_thread", O_CREAT, 0777, 0);
 	if (dispatcher->start_sending == SEM_FAILED)
 		printf("start_sending sem open failed with %d\n", errno);
@@ -268,16 +270,21 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		;
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
+	dispatcher->sender_limit = sem_open("/sender_limit", O_CREAT, 0777, dispatcher->worker_cnt);
+	if (dispatcher->sender_limit == SEM_FAILED)
+		printf("start_sending sem open failed with %d\n", errno);
+	start_sender_threads(dispatcher, SENDER_THREADS);
+	launch_worker_event_threads(dispatcher);
 	divide_dataset(dispatcher);
 	setup_async_file(dispatcher);
-	start_sender_threads(dispatcher, 1);
-	launch_worker_event_threads(dispatcher);
-	sem_post(dispatcher->start_sending);
+	//sem_post(dispatcher->start_sending);
 	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)
 		printf("sem_wait failed with err:%d\n", errno);
-	if (sem_unlink("/sender_thread") && DEBUG)
+	if (sem_unlink("/sender_limit") && DEBUG)
 	 	printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_thread") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
 	if (sem_unlink("/exit") && DEBUG)
 		printf("sem_unlink err %d\n", errno);
 	printf("dispatcher done, good bye\n");
