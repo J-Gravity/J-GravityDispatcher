@@ -25,6 +25,7 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+# define METRICS_DONE 9
 
 /* ************ */
 /* TEMP         */
@@ -35,6 +36,7 @@ int G_sent_wu;
 /* ************ */
 
 # define METRICS 1
+# define WU_METRICS 1
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
 # define MUTEX_METRIC 0
@@ -86,6 +88,16 @@ long G_total_workunit_cnt;
 # include <unistd.h>
 # include <signal.h>
 # include <semaphore.h>
+
+typedef struct			s_metrics
+{
+	int					id;
+	long				total_time;
+	long				time_waiting_for_wu;
+	long				total_event_time;
+	long				total_calc_time;
+	long				total_send_time;
+}						t_metrics;
 
 typedef struct			s_lst
 {
@@ -258,6 +270,8 @@ typedef struct			s_thread_handler
 	t_lst				*worker;
 }						t_thread_handler;
 
+t_metrics	deserialize_metrics(t_msg msg);
+void	handle_metrics_done_msg(t_msg msg);
 void print_cl4(cl_float4 v);
 t_body *sort_bodies(t_body *bodies, int count);
 void tree_test(t_body *bodies, int count);
