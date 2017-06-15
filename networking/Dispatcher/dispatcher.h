@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 16:59:15 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 00:42:50 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 # define DISPATCHER_H
 # define _GNU_SOURCE
 # define PORT 4242
-# define HEADER_SIZE 5
+# define HEADER_SIZE 9
 # define SENDER_THREADS 8
 
 # define BROADCAST_SUPER_PARTICLE 1
@@ -61,10 +61,10 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
-# define MSG_DEBUG 0
+# define DEBUG 1
+# define MSG_DEBUG 1
 # define WORKER_DEBUG 0
-# define MSG_DETAILS_DEBUG 0
+# define MSG_DETAILS_DEBUG 1
 # define MUTEX_DEBUG 0
 # define DIVIDE_DATASET_DEBUG 0
 # define NETWORK_DEBUG 0
@@ -106,7 +106,7 @@ typedef struct			s_queue
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t				size;
 	char				*data;
 	int					error;
 }						t_msg;

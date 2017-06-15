@@ -12,7 +12,7 @@
 #include <stdlib.h>
 
 # define PORT 4242
-# define HEADER_SIZE 5
+# define HEADER_SIZE 9
 
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
@@ -57,9 +57,9 @@ long G_total_calc_time;
 /* *********** */
 /* DEBUG FLAGS */
 /* *********** */
-# define DEBUG 0
-# define MSG_DEBUG 0
-# define MSG_DETAILS_DEBUG 0
+# define DEBUG 1
+# define MSG_DEBUG 1
+# define MSG_DETAILS_DEBUG 1
 # define MUTEX_DEBUG 0
 # define NETWORK_DEBUG 0
 
@@ -108,7 +108,7 @@ typedef struct			s_workunit
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t					size;
 	char				*data;
 	int					error;
 }						t_msg;

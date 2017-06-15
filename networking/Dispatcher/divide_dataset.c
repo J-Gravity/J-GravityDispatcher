@@ -409,7 +409,7 @@ t_msg compress_msg(t_msg m)
     int max_compressed_size = LZ4_compressBound(m.size);
     char *compressed = calloc(1, max_compressed_size);
     int result_compressed_size = LZ4_compress_default(transposed, compressed, m.size, max_compressed_size);
-    printf("compressed to %d from %d, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
+    printf("compressed to %d from %zu, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
     c.data = calloc(1, result_compressed_size + sizeof(int));
     memcpy(c.data, &m.size, sizeof(int));
     memcpy(c.data + sizeof(int), compressed, result_compressed_size);
@@ -436,7 +436,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
         m.size += b->matches_counts[i] * sizeof(int);
     }
     m.data = malloc(m.size);
-    int offset = 0;
+    size_t offset = 0;
     memcpy(m.data + offset, &(b->keycount), sizeof(int));
     offset += sizeof(int);
     
@@ -465,7 +465,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
             offset += sizeof(cl_float4);
         }
     }
-    m = compress_msg(m);
+    //m = compress_msg(m);
     return (m);
 }
 

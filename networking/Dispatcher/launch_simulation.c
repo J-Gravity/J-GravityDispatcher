@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 17:00:31 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 00:33:11 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,7 +167,7 @@ void		*handle_worker_connection(void *input)
 			printf("done receiving message\n");
 			printf("msg status: %d\n", msg.error);
 			printf("MSG RECIEVED: [id]=%d", msg.id);
-			printf(" size '%d'\n", msg.size);
+			printf(" size '%zu'\n", msg.size);
 			printf(" body '%s'\n", msg.data);
    		}
 		if (msg.error == -1)

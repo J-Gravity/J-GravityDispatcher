@@ -53,9 +53,9 @@ size_t nearest_mult_256(size_t n)
 
 t_bundle *deserialize_bundle(t_msg m)
 {
-    m = decompress_message(m);
+    //m = decompress_message(m);
     t_bundle *b = calloc(1, sizeof(t_bundle));
-    int offset = 0;
+    size_t offset = 0;
 
     memcpy(&(b->idcount), m.data + offset, sizeof(int));
     offset += sizeof(int);
@@ -91,7 +91,7 @@ t_bundle *deserialize_bundle(t_msg m)
         memcpy(b->cells[i], m.data + offset, b->cell_sizes[i] * sizeof(cl_float4));
         offset += b->cell_sizes[i] * sizeof(cl_float4);
     }
-    free(m.data);
+    //free(m.data);
     b->index = 0;
     transpose_matches(b);
     return (b);
