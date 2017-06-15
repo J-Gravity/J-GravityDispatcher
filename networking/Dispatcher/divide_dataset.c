@@ -55,7 +55,7 @@ uint64_t splitBy3(const unsigned int a)
 uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, const unsigned int z)
 {
     uint64_t answer = 0;
-    answer |= splitBy3(x) | splitBy3(y) << 1 | splitBy3(z) << 2;
+    answer |= splitBy3(z) | splitBy3(y) << 1 | splitBy3(x) << 2;
     return answer;
 }
 
@@ -180,10 +180,6 @@ static t_tree *make_as_single(t_tree *c)
 {
     t_body *b = calloc(1, sizeof(t_body));
     *b = COG_from_bodies(c->bodies, c->count);
-    if (body_in_bounds(*b, c->bounds))
-        printf("good!\n");
-    else
-        printf("bounds problem\n");
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
     s->children = NULL;
