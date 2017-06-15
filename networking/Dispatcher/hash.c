@@ -93,6 +93,7 @@ void	dict_insert(t_dict *dict, t_tree *cell, size_t subkey)
 	t_pair			*curr;
 	t_pair			*last;
 
+//	printf("starting dict_insert\n");
 	if (cell->count == 0)
 	{
 		// printf("cell was empty\n");
@@ -100,36 +101,38 @@ void	dict_insert(t_dict *dict, t_tree *cell, size_t subkey)
 	}
 	key = (size_t)(cell);
 	hash_val = hash(dict, key);
-	// printf("hash val was %u\n", hash_val);
+//	 printf("hash val was %u\n", hash_val);
 	curr = dict->table[hash_val];
 	last = curr;
 	//run through keys until matching or null
 	while (curr && key != curr->key)
 	{
-		//printf("moving forward\n");
+//		printf("moving forward\n");
 		last = curr;
 		curr = curr->next_key;
 	}
 	if (!last) //there was nothing at this hash (last never changed from curr and curr was null at start)
 	{
-		//printf("empty entry\n");
+//		printf("empty entry\n");
 		//setup new first key & subkey
 		dict->table[hash_val] = create_pair(key);
 		dict->table[hash_val]->subkeys = create_pair(subkey);
 	}
 	else if (!curr) //there was an entry at this hash but none for this actual cell. ordinary collision.
 	{
-		//printf("regular collision\n");
+//		printf("regular collision\n");
 		//add key with subkey at end of keylist
 		last->next_key = create_pair(key);
 		last->next_key->subkeys = create_pair(subkey);
 	}
 	else //we've accounted for this cell already. good collision.
 	{
-		//printf("overlap\n");
+//		printf("overlap\n");
 		//add a subkey (there guaranteed is one, just push to top of list)
 		last = curr->subkeys;
+//		printf("overlap1\n");
 		curr->subkeys = create_pair(subkey);
+//		printf("overlap2\n");
 		curr->subkeys->next_key = last;
 	}
 }

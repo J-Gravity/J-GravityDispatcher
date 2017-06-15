@@ -6,15 +6,16 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 00:22:41 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 16:59:15 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define _GNU_SOURCE
-# define PORT 4242
-# define HEADER_SIZE 5
+# define PORT 4243
+# define HEADER_SIZE 9
+# define SENDER_THREADS 8
 
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
@@ -60,11 +61,11 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
-# define MSG_DETAILS_DEBUG 1
-# define MUTEX_DEBUG 1
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
 # define DIVIDE_DATASET_DEBUG 1
 # define NETWORK_DEBUG 1
 
@@ -105,7 +106,7 @@ typedef struct			s_queue
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t				size;
 	char				*data;
 	int					error;
 }						t_msg;
@@ -220,6 +221,7 @@ typedef struct s_tree
 	struct s_tree **neighbors;
 	struct s_tree *as_single;
 	t_bounds bounds;
+	uint64_t *mortons;
 }				t_tree;
 
 typedef struct s_bundle
@@ -240,6 +242,7 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_done_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
+	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
 	//t_lst				*workers;
@@ -257,6 +260,8 @@ typedef struct			s_dispatcher
 	t_socket			sin;
 	char				is_connect;
 	char				is_running;
+	FILE 				*fp;
+	pthread_mutex_t 	output_mutex;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -278,6 +283,10 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
 void	start_sender_threads(t_dispatcher *disp, int count);
 void 		print_worker_fds(t_dispatcher *dispatcher);
 t_lst	*queue_pop_link(t_queue **queue);
+
+
+void async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
+void setup_async_file(t_dispatcher *dispatcher);
 
 /*
  * 	Creates a new node and returns it
@@ -488,7 +497,7 @@ void		clear_unit(t_lst **work_units);
 /*
 *	returns first workunit in queue without deletion from queue
 */
-void	*queue_peak(t_queue **queue);
+void	*queue_peek(t_queue **queue);
 
 /*
 *	returns the total count of items in queue
