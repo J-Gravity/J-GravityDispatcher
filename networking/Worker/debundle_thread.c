@@ -39,7 +39,7 @@ static void *debundle_thread(void *param)
 		int count;
 		t_bundle *bundle = queue_pop(&worker->bundle_queue);
 		t_workunit **WUs = unbundle_workunits(bundle, &count);
-		delete_bundle(bundle);
+	//	delete_bundle(bundle);
 		for (int i = 0; i < count; i++)
 		{
 			queue_enqueue(&worker->todo_work, queue_create_new(WUs[i]));

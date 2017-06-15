@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:20:42 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/05 00:08:22 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/15 01:30:54 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ void	*queue_pop(t_queue **queue)
 			(*queue)->count--;
 			workunit = node->data;
 			(*queue)->first = (*queue)->first->next;
-			free(node);
+//			free(node);
 		}
 		if ((*queue)->count == 0)
 			(*queue)->last = NULL;

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 14:56:24 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/14 23:46:54 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ static void	*event_thread(void *param)
 			printf("EVENT- done receiving message\n");
 			printf("EVENT- msg status: %d\n", msg.error);
 			printf("EVENT- MSG RECIEVED: [id]=%d", msg.id);
-			printf("EVENT- size '%d'\n", msg.size);
+			printf("EVENT- size '%zu'\n", msg.size);
 			printf("EVENT- body '%s'\n", msg.data);
 		}
 		if (msg.error == -1)

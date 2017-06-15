@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/17 17:21:10 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/04 19:28:17 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/14 23:53:18 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ t_msg serialize_workunit(t_workunit w)
 	localblob = compress_locals(w, &local_compressed_size);
 	msg.size = (sizeof(int) * 3 + local_compressed_size + sizeof(char));
 	msg.data = calloc(1, msg.size);
-	int offset = 0;
+	size_t offset = 0;
 	memcpy(msg.data, &(w.id), sizeof(int));
 	offset += sizeof(int);
 	memcpy(msg.data + offset, &(w.localcount), sizeof(int));

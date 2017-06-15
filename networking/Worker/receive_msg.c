@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:36:55 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 19:24:09 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 00:48:41 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ static void	check_for_errors(int bytes_read, int *error)
 char	read_header(int fd, t_msg *msg)
 {
 	char	*header;
-	int		bytes_read;
+	size_t	bytes_read;
 
 	header = (char *)calloc(1, HEADER_SIZE);
 	bytes_read = recv(fd, header, HEADER_SIZE, 0);
@@ -43,9 +43,9 @@ char	read_header(int fd, t_msg *msg)
 		msg->id = header[0];
  		if (DEBUG && MSG_DEBUG)
 			print_debug(fd, *msg);
-		memcpy(&msg->size, &header[1], sizeof(int));
-		if (msg->size >= 0)
-			msg->data = (char *)calloc(1, msg->size);
+		memcpy(&msg->size, &header[1], sizeof(size_t));
+		if (msg->size != 0)
+			msg->data = (char *)calloc(1, msg->size + 1);
 		else
 		{
 			printf("recieved a invalid size for the body size!!!\n");
@@ -66,8 +66,8 @@ char	read_header(int fd, t_msg *msg)
 
 char	read_body(int fd, t_msg *msg)
 {
-	int	bodybytes;
-	int	recv_bytes;
+	size_t	bodybytes;
+	size_t	recv_bytes;
 	
 	bodybytes = 0;
 	recv_bytes = 42;
@@ -82,7 +82,7 @@ char	read_body(int fd, t_msg *msg)
 	check_for_errors(recv_bytes, &msg->error);
 	if (bodybytes != msg->size)
 	{
-		printf("msg body should be %d bytes, but is only %d bytes!\n",
+		printf("msg body should be %zu bytes, but is only %zu bytes!\n",
 			msg->size, bodybytes);
 		return (1);
 	}
