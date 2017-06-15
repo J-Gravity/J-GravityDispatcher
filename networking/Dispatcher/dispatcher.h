@@ -13,8 +13,8 @@
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define _GNU_SOURCE
-# define PORT 4242
-# define HEADER_SIZE 5
+# define PORT 4243
+# define HEADER_SIZE 9
 # define SENDER_THREADS 8
 
 # define BROADCAST_SUPER_PARTICLE 1
@@ -61,13 +61,13 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
-# define MSG_DEBUG 0
-# define WORKER_DEBUG 0
+# define DEBUG 1
+# define MSG_DEBUG 1
+# define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
-# define DIVIDE_DATASET_DEBUG 0
-# define NETWORK_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 1
+# define NETWORK_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -106,7 +106,7 @@ typedef struct			s_queue
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t				size;
 	char				*data;
 	int					error;
 }						t_msg;

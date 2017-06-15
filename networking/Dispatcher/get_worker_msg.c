@@ -34,28 +34,29 @@ static void	check_for_errors(int bytes_read, int *error)
 char	read_header(int fd, t_msg *msg)
 {
 	char	*header;
-	int		bytes_read;
+	size_t	bytes_read;
 
 	header = (char *)calloc(1, HEADER_SIZE);
 	bytes_read = recv(fd, header, HEADER_SIZE, 0);
+	printf("bytes read: %zu\n", bytes_read);
 	if (bytes_read == HEADER_SIZE)
 	{
 		msg->id = header[0];
  		if (DEBUG && MSG_DEBUG)
 			print_debug(fd, *msg);
 		memcpy(&msg->size, &header[1], sizeof(int));
-		if (msg->size >= 0)
+		if (msg->size != 0)
 			msg->data = (char *)calloc(1, msg->size + 1);
 		else
 		{
-			printf("recieved a invalid size for the body size!!!\n");
+			printf("received a invalid size for the body size!!!\n");
 			msg->size = 0;
 			msg->data = (char *)calloc(1, msg->size + 1);
 		}
 	}
 	else
 	{
-		printf("recieved a bad msg header on fd %d!\n", fd);
+		printf("received a bad msg header on fd %d!\n", fd);
 		check_for_errors(bytes_read, &msg->error);
 		free(header);
 		return (1);
@@ -81,8 +82,7 @@ char	read_body(int fd, t_msg *msg)
 	check_for_errors(recv_bytes, &msg->error);
 	if (bodybytes != msg->size)
 	{
-		printf("msg body should be %d bytes, but is only %d bytes!\n",
-			msg->size, bodybytes);
+		printf("msg body should be %zu bytes, but is only %d bytes!\n", msg->size, bodybytes);
 		return (1);
 	}
 	return (0);

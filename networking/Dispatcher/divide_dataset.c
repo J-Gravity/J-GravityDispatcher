@@ -360,20 +360,28 @@ t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
     //take up to Count leaves starting at offset and pour their neighborhoods
     //into the double-key hash. track which leaves we put in.
     t_pair *ids = NULL;
+	printf("bl0\n");
     for (int i = 0; i < count && leaves[offset + i]; i++)
     {
         if (!ids)
-            ids = create_pair(i + offset);
-        else
+		{        ids = create_pair(i + offset);
+			printf("bl1\n");
+		}
+		else
         {
+	printf("bl2\n");
             t_pair *p = create_pair(i + offset);
             p->next_key = ids;
             ids = p;
         }
+	printf("bl3\n");
         t_tree **adding = leaves[offset + i]->neighbors;
+	printf("bl4\n");
         for (int j = 0; adding[j]; j++)
             dict_insert(dict, adding[j], i);
+	printf("bl5\n");
     }
+	printf("bl6\n");
     return (bundle_dict(dict, ids));
 }
 
@@ -386,7 +394,7 @@ t_msg compress_msg(t_msg m)
     int max_compressed_size = LZ4_compressBound(m.size);
     char *compressed = calloc(1, max_compressed_size);
     int result_compressed_size = LZ4_compress_default(transposed, compressed, m.size, max_compressed_size);
-    printf("compressed to %d from %d, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
+    printf("compressed to %d from %zu, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
     c.data = calloc(1, result_compressed_size + sizeof(int));
     memcpy(c.data, &m.size, sizeof(int));
     memcpy(c.data + sizeof(int), compressed, result_compressed_size);
@@ -413,7 +421,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
         m.size += b->matches_counts[i] * sizeof(int);
     }
     m.data = malloc(m.size);
-    int offset = 0;
+    size_t offset = 0;
     memcpy(m.data + offset, &(b->keycount), sizeof(int));
     offset += sizeof(int);
     
@@ -442,7 +450,8 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
             offset += sizeof(cl_float4);
         }
     }
-    m = compress_msg(m);
+	printf("sb0\n");
+// m = compress_msg(m);
     return (m);
 }
 
@@ -586,26 +595,38 @@ void    divide_dataset(t_dispatcher *dispatcher)
     if (DEBUG && DIVIDE_DATASET_DEBUG)
         printf("starting divide_dataset\n");
     printf("there are %ld stars\n", dispatcher->dataset->particle_cnt);
+	printf("f0\n");//////////////////////////////////////////////
     t = make_tree(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
+	printf("f1\n");//////////////////////////////////////////////
     t_tree **leaves = enumerate_leaves(t);
+	printf("f2\n");//////////////////////////////////////////////
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
     for (int i = 0; leaves[i]; i++)
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     int lcount = count_tree_array(leaves);
-    //int wcount = dispatcher->worker_cnt;
-    int wcount = 4;
+	printf("f3\n");//////////////////////////////////////////////
+    int wcount = dispatcher->worker_cnt;
+	printf("f4\n");//////////////////////////////////////////////
+    //int wcount = 4;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
+	printf("f5\n");//////////////////////////////////////////////
 	static int bundle_id = 0;
     dispatcher->cells = leaves;
+	printf("f6\n");//////////////////////////////////////////////
     dispatcher->total_workunits = count_tree_array(leaves);
+	printf("f7\n");//////////////////////////////////////////////
     dispatcher->cell_count = count_tree_array(leaves);
+	printf("f8\n");//////////////////////////////////////////////
 	printf("bundling started\n");
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
+		printf("f9\n");//////////////////////////////////////////////
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
 		printf("bundle created\n");
 		b->id = bundle_id++;
+		printf("f10\n");//////////////////////////////////////////////
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
+		printf("f11\n");//////////////////////////////////////////////
 		sem_post(dispatcher->start_sending);
     }
 	printf("bundling finished\n");
