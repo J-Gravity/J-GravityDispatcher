@@ -4,6 +4,29 @@
 #include "lz4.h"
 #include "transpose.h"
 
+typedef struct s_sortbod
+{
+    t_body bod;
+    uint64_t morton;
+}               t_sortbod;
+
+int sbod_comp(const void *a, const void *b)
+{
+    uint64_t ma = ((t_sortbod *)a)->morton;
+    uint64_t mb = ((t_sortbod *)b)->morton;
+    if (ma < mb)
+        return -1;
+    if (ma == mb)
+        return 0;
+    else
+        return 1;
+}
+
+#define SORT_NAME mort
+#define SORT_TYPE t_sortbod
+#define SORT_CMP(x, y) (sbod_comp(&x, &y))
+#include "sort.h"
+
 #define THETA 1
 #define LEAF_THRESHOLD pow(2, 12)
 
@@ -470,12 +493,6 @@ void descale_bodies(t_body *bodies, int count, t_bounds bounds)
     }
 }
 
-typedef struct s_sortbod
-{
-    t_body bod;
-    uint64_t morton;
-}               t_sortbod;
-
 t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
 {
     t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
@@ -486,18 +503,6 @@ t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
         sorts[i].bod = bodies[i];
     }
     return (sorts);
-}
-
-int sbod_comp(const void *a, const void *b)
-{
-    uint64_t ma = ((t_sortbod *)a)->morton;
-    uint64_t mb = ((t_sortbod *)b)->morton;
-    if (ma < mb)
-        return -1;
-    if (ma == mb)
-        return 0;
-    else
-        return 1;
 }
 
 void split(t_tree *node)
@@ -544,7 +549,7 @@ t_tree *make_tree(t_body *bodies, int count)
 {
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
     t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
-    qsort(sorts, count, sizeof(t_sortbod), sbod_comp);
+    mort_tim_sort(sorts, count);
     uint64_t *mortons = calloc(count, sizeof(uint64_t));
     for (int i = 0; i < count; i++)
     {
@@ -593,6 +598,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
+    wcount = 4;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
 	static int bundle_id = 0;
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
