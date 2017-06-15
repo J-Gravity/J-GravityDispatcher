@@ -277,7 +277,6 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	launch_worker_event_threads(dispatcher);
 	divide_dataset(dispatcher);
 	setup_async_file(dispatcher);
-	//sem_post(dispatcher->start_sending);
 	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)
 		printf("sem_wait failed with err:%d\n", errno);

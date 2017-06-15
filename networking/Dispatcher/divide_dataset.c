@@ -531,7 +531,6 @@ void split(t_tree *node)
         }
         offset += j;
         node->children[i]->count = j;
-        //getchar();
     }
 }
 
@@ -539,7 +538,6 @@ void split_tree(t_tree *root)
 {
     if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
         return;
-    //printf("splitting at level %d\n", node_depth(root));
     split(root);
     for (int i = 0; i < 8; i++)
         split_tree(root->children[i]);
