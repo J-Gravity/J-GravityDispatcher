@@ -541,17 +541,15 @@ void split(t_tree *node)
 		//scan through array for borders between 3-bit substring values for this depth
 		//these are the dividing lines between octants
         unsigned int j = 0;
-		unsigned int max = node->count - offset;
-		unsigned int step = ceil(sqrt(max << 1));
         while (j + offset < node->count)
         {
-			//do the egg drop thing here!
+			//this should be a binary search.
             uint64_t m = node->mortons[j+offset];
             m = m << (1 + 3 * depth);
             m = m >> 61;
             if (m != i)
                 break;
-            j += step--;
+            j++;
         }
         offset += j;
         node->children[i]->count = j;
