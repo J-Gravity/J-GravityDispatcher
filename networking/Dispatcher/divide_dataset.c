@@ -165,8 +165,6 @@ static cl_float4 center_add(cl_float4 total, cl_float4 add)
 static t_body COG_from_children(t_tree **children)
 {//needs tested
 	cl_float4 center = (cl_float4){0,0,0,0};
-    if (count == 0)
-        return (t_body){center, center};
     float abs_total = 0;
     for (int i = 0; i < 8; i++)
     {
@@ -220,15 +218,15 @@ static t_tree *make_as_single(t_tree *c)
     return (s);
 }
 
-static int count_tree_array(const t_tree **arr)
+static int count_tree_array(t_tree **arr)
 {
     int count;
-    if (!arr)
+     if (!arr)
         return 0;
-    while(arr[count++])
-		;
+    for (count = 0; arr[count]; count++)
+        ;
     return (count);
-}
+ }
 
 static t_tree **enumerate_leaves(t_tree *root)
 {
@@ -426,19 +424,19 @@ t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
             p->next_key = ids;
             ids = p;
         }
-		size += leaves[i].count * sizeof(t_body);
+		size += leaves[i]->count * sizeof(t_body);
         t_tree **adding = leaves[offset + i]->neighbors;
         for (int j = 0; adding[j]; j++)
 		{
             dict_insert(dict, adding[j], i);
-			difficulty += leaves[offset + i].count * adding[j].count;
-			size += adding[j].count * sizeof(cl_float4);
+			difficulty += leaves[offset + i]->count * adding[j]->count;
+			size += adding[j]->count * sizeof(cl_float4);
 		}
     }
 	t_bundle *b = bundle_dict(dict, ids);
 	b->difficulty = difficulty;
 	b->size = size;
-    return (bundle_dict(dict, ids));
+    return (b);
 }
 
 t_msg compress_msg(t_msg m)
@@ -586,13 +584,13 @@ t_tree *make_tree(t_body *bodies, int count)
         bodies[i] = sorts[i].bod;
         mortons[i] = sorts[i].morton;;
     }
-	free(sorts);
     t_tree *root = new_tnode(bodies, count, NULL);
     root->bounds = root_bounds;
     root->mortons = mortons;
 	
     //recursively divide the tree
 	split_tree(root);
+    free(sorts);
     free(mortons);
     return (root);
 }
@@ -612,23 +610,6 @@ static void free_tree(t_tree *t)
         free(t->as_single);
     }
     free(t);
-}
-
-static long bundle_size(t_bundle *bundle)
-{
-    long size = sizeof(int) * 2;
-    for (int i = 0; i < b->keycount; i++)
-    {
-        size += sizeof(int) * 2;
-        size += leaves[b->keys[i]]->count * sizeof(t_body);
-    }
-    for (int i = 0; i < b->cellcount; i++)
-    {
-        size += sizeof(int) * 2;
-        size += b->cells[i]->count * sizeof(cl_float4);
-        size += b->matches_counts[i] * sizeof(int);
-    }
-	return (size);
 }
 
 void    divide_dataset(t_dispatcher *dispatcher)
