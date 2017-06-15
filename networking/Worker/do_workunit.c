@@ -198,11 +198,19 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     static cl_kernel   k_nbody;
     int err;
 
+	printf("cnxm0\n");
     if (context == NULL)
+	{
+		printf("cnxm.0c\n");
         context = setup_context();
-    if (k_nbody == NULL)
-        k_nbody = make_kernel(context, "nxm2.cl", "nbody");
+	}
+	if (k_nbody == NULL)
+	{
+		printf("cnxm.0kn\n");
+		k_nbody = make_kernel(context, "nxm2.cl", "nbody");
+	}
 
+	printf("cnxm.01\n");
     cl_float4 *output_p = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
     cl_float4 *output_v = (cl_float4 *)calloc(ncount, sizeof(cl_float4));
 
@@ -215,21 +223,26 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     cl_mem      d_N_end;
     //inputs
     d_N_start = clCreateBuffer(context->context, CL_MEM_READ_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
+	printf("cnxm.1\n");
     d_M = clCreateBuffer(context->context, CL_MEM_READ_ONLY, sizeof(cl_float4) * mcount, NULL, NULL);
     d_V_start = clCreateBuffer(context->context, CL_MEM_READ_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
+	printf("cnxm.5\n");
     //outputs
     d_V_end = clCreateBuffer(context->context, CL_MEM_WRITE_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
     d_N_end = clCreateBuffer(context->context, CL_MEM_WRITE_ONLY, sizeof(cl_float4) * ncount, NULL, NULL);
 
     //all of that happens instantly and therefore we don't need events involved
 
+	printf("cnxm1\n");
     //copy over initial data to device locations
     cl_event eN, eM, eV;
     clEnqueueWriteBuffer(context->commands, d_N_start, CL_TRUE, 0, sizeof(cl_float4) * ncount, N, 0, NULL, &eN);
     clEnqueueWriteBuffer(context->commands, d_M, CL_TRUE, 0, sizeof(cl_float4) * mcount, M, 0, NULL, &eM);
     clEnqueueWriteBuffer(context->commands, d_V_start, CL_TRUE, 0, sizeof(cl_float4) * ncount, V, 0, NULL, &eV);
+	printf("cnxm2\n");
 
     cl_event loadevents[3] = {eN, eM, eV};
+	printf("cnxm3\n");
 
     size_t tps = 32;
     size_t global = ncount * tps;
@@ -263,6 +276,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clEnqueueReadBuffer(context->commands, d_N_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_p, 1, &compute, &offN);
     clEnqueueReadBuffer(context->commands, d_V_end, CL_TRUE, 0, sizeof(cl_float4) * count, output_v, 1, &compute, &offV);
     clFinish(context->commands);
+	printf("cnxm2\n");
 
     //these will have to happen elsewhere in final but here is good for now
     clReleaseMemObject(d_N_start);
@@ -292,8 +306,18 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
 void do_workunit(t_workunit *w)
 {
     //printf("N X M: %d x %d\n", w->localcount + w->npadding, w->neighborcount + w->mpadding);
-    w->local_bodies = crunch_NxM(w->N, w->V, w->M, w->localcount + w->npadding, w->neighborcount + w->mpadding);
+    printf("dw1\n");
+	printf("N %f\n", w->N->x);
+	printf("V %f\n", w->V->x);
+	printf("M %f\n", w->M->x);
+	printf("localcount %d\n", w->localcount);
+	printf("padding %d\n", w->npadding);
+	printf("neighborcount %d\n", w->neighborcount);
+	printf("mpadding %d\n", w->mpadding);
+	w->local_bodies = crunch_NxM(w->N, w->V, w->M, w->localcount + w->npadding, w->neighborcount + w->mpadding);
+    printf("dw2\n");
     w->neighborcount = 0;
+    printf("dw3\n");
     if (w->N) free(w->N);
     if (w->M) free(w->M);
     if (w->V) free(w->V);

@@ -11,8 +11,8 @@
 #include <time.h>
 #include <stdlib.h>
 
-# define PORT 4242
-# define HEADER_SIZE 5
+# define PORT 4243
+# define HEADER_SIZE 9
 
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
@@ -108,7 +108,7 @@ typedef struct			s_workunit
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t				size;
 	char				*data;
 	int					error;
 }						t_msg;

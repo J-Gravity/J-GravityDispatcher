@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 14:57:50 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/15 01:11:30 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,11 @@ void	send_msg(int fd, t_msg msg)
 	char	*buffer;
 	int		msg_size;
 
-	msg_size = 5 + msg.size;
+	msg_size = HEADER_SIZE +  msg.size;
 	buffer = (char *)calloc(1, msg_size);
 	buffer[0] = msg.id;
 	memcpy(&buffer[1], &msg.size, sizeof(int));
-	memcpy(&buffer[5], msg.data, msg.size);
+	memcpy(&buffer[HEADER_SIZE], msg.data, msg.size);
 	send(fd, buffer, msg_size, 0);
 	if (DEBUG & MSG_DEBUG)
 		print_debug(fd, msg);

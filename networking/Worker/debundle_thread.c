@@ -30,21 +30,23 @@ static void *debundle_thread(void *param)
 	{
 		if (sem_wait(worker->ready_for_bundle) < 0)
 			printf("BNDL- sem_wait failed with err:%d\n", errno);
+		printf("cleared RFB semaphore\n");
 		if (sem_wait(worker->debundle_sem) < 0)
 		    printf("BNDL- sem_wait failed with err:%d\n", errno);
+		printf("cleared debundle_sem\n");
 		if (DEBUG)
 			printf("BNDL- debundling\n");
+		int count;
 		t_bundle *bundle = queue_pop(&worker->bundle_queue);
-		printf("this bundle has %d workunits in it\n", bundle->idcount);
-		while(bundle->index < bundle->idcount)
+		t_workunit **WUs = unbundle_workunits(bundle, &count);
+	//	delete_bundle(bundle);
+		for (int i = 0; i < count; i++)
 		{
-			queue_enqueue(&worker->todo_work, queue_create_new(kick_bundle(bundle)));
+			queue_enqueue(&worker->todo_work, queue_create_new(WUs[i]));
 			sem_post(worker->calc_thread_sem);
 		}
-		printf("bundle is spent\n");
-		delete_bundle(bundle);
 		if (DEBUG)
-			printf("BNDL- finished debundling %d workunits\n", bundle->idcount);
+			printf("BNDL- finished debundling %d workunits\n", count);
 	}
 	return (0);
 }
