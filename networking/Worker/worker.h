@@ -21,6 +21,7 @@
 # define WORK_UNITS_READY 4
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
+# define METRICS_DONE 9
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -47,11 +48,11 @@
 /* ******* */
 /* METRICS */
 /* ******* */
-# define METRICS 0
+# define METRICS 1
 long G_time_waiting_for_wu;
 clock_t G_start_time;
-clock_t G_total_event_time;
-clock_t G_total_send_time;
+long G_total_event_time;
+long G_total_send_time;
 long G_total_calc_time;
 
 /* *********** */
@@ -152,10 +153,11 @@ typedef struct s_bundle
     int cellcount;
 }               t_bundle;
 
-
-t_bundle *deserialize_bundle(t_msg m);
-void transpose_matches(t_bundle *wb);
-t_workunit **unbundle_workunits(t_bundle *b, int *count);
+void		send_metrics(int fd, t_msg msg);
+t_msg		serialize_metrics(void);
+t_bundle	*deserialize_bundle(t_msg m);
+void		transpose_matches(t_bundle *wb);
+t_workunit	**unbundle_workunits(t_bundle *b, int *count);
 
 /*
  * 	Creates a new node and returns it

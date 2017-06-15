@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/10 14:52:48 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/14 16:00:14 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,13 @@ static void *sender_thread(void *param)
 		if (DEBUG)
         	printf("sending: %d\n", workunit->id);
 		send_msg(worker->socket.fd, msg);
+		printf("count: %d\n", worker->todo_work->count);
+		if (worker->todo_work->count == 0)
+		{
+			printf("sending metrics\n");
+			msg = serialize_metrics();
+			send_msg(worker->socket.fd, msg);
+		}
 		free(workunit->local_bodies);
 		free(workunit);
 	   	if (DEBUG)
