@@ -13,7 +13,7 @@
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define _GNU_SOURCE
-# define PORT 4242
+# define PORT 4342
 # define HEADER_SIZE 9
 # define SENDER_THREADS 8
 
@@ -271,6 +271,12 @@ typedef struct			s_thread_handler
 	t_dispatcher		*dispatcher;
 	t_lst				*worker;
 }						t_thread_handler;
+
+typedef struct	s_sortbod
+{
+	t_body bod;
+	uint64_t morton;
+}               t_sortbod;
 
 void print_cl4(cl_float4 v);
 t_body *sort_bodies(t_body *bodies, int count);
@@ -576,4 +582,17 @@ void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
 */
 void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg msg);
+/*
+*	A multithreaded quicksort
+*	takes an array and the number of elements in the array
+*/
+void		msort(t_sortbod *sorts, size_t count);
+
+/*
+* 	Comparison functionused for body sorting
+*/
+
+int sbod_comp(const void *a, const void *b);
+
+
 #endif

@@ -4,24 +4,6 @@
 #include "lz4.h"
 #include "transpose.h"
 
-typedef struct s_sortbod
-{
-    t_body bod;
-    uint64_t morton;
-}               t_sortbod;
-
-int sbod_comp(const void *a, const void *b)
-{
-    uint64_t ma = ((t_sortbod *)a)->morton;
-    uint64_t mb = ((t_sortbod *)b)->morton;
-    if (ma < mb)
-        return -1;
-    if (ma == mb)
-        return 0;
-    else
-        return 1;
-}
-
 #define SORT_NAME mort
 #define SORT_TYPE t_sortbod
 #define SORT_CMP(x, y) (sbod_comp(&x, &y))
@@ -607,7 +589,7 @@ t_tree *make_tree(t_body *bodies, int count)
 	
 	//sort the bodies by their morton codes
 	//they are now arranged on a z-order curve.
-    mort_tim_sort(sorts, count);
+    msort(sorts, count);
 	
 	//copy data back from cached sort structure
     uint64_t *mortons = calloc(count, sizeof(uint64_t));
