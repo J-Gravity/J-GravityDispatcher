@@ -489,7 +489,7 @@ t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
             offset += sizeof(cl_float4);
         }
     }
-    //m = compress_msg(m);
+    printf("bundle size final was %.1fMB\n", (float)m.size / 1048576.0f);
     return (m);
 }
 
@@ -571,7 +571,7 @@ void split_tree(t_tree *root)
     if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
     {
         root->as_single = make_as_single(root);
-        printf("leaf at depth %d with count %d\n", node_depth(root), root->count);
+        //printf("leaf at depth %d with count %d\n", node_depth(root), root->count);
         if (root->count >= LEAF_THRESHOLD)
         {
             for (int i = 0; i < root->count; i++)
@@ -668,7 +668,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
-	    printf("bundle created of size %ld\n", b->size);
+	    printf("bundle would have been %.0fMB\n", (float)b->size / 1048576.0f);
 		b->id = bundle_id++;
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
 		sem_post(dispatcher->start_sending);

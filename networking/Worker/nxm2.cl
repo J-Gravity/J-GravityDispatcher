@@ -69,6 +69,15 @@ kernel void nbody(
         vel.y += force.y * G * timestep;
         vel.z += force.z * G * timestep;
 
+        float velsqr = vel.x * vel.x + vel.y * vel.y + vel.z * vel.z;
+        if (velsqr > 90000000000000000)
+        {
+            velsqr = sqrt(velsqr);
+            vel.x = vel.x / velsqr;
+            vel.y = vel.y / velsqr;
+            vel.z = vel.z / velsqr;
+        }
+
         pos.x += vel.x * timestep;
         pos.y += vel.y * timestep;
         pos.z += vel.z * timestep;

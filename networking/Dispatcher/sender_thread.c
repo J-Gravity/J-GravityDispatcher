@@ -37,7 +37,7 @@ void	*sender_thread(void *input)
 				//printf("NULL from popping the worker queue!\n");
 				sem_post(dispatcher->start_sending);
 				pthread_mutex_unlock(&dispatcher->sender_thread_mutex);
-				continue;
+				continue ;
 			}
 			worker = worker_link->data;
 			bundle = queue_pop(&dispatcher->bundles);
@@ -51,7 +51,7 @@ void	*sender_thread(void *input)
 					{
 					printf("trying to send a bundle to an inactive worker\n");
 					}
-					send_bundle(worker, bundle, dispatcher->cells);
+				send_bundle(worker, bundle, dispatcher->cells);
 				if (DEBUG)
 					printf("done sending bundle %d to worker %d\n", bundle->id, worker->socket.fd);
 			}
