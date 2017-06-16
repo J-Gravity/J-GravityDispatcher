@@ -520,6 +520,39 @@ t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
     return (sorts);
 }
 
+int binary_border_search(uint64_t *mortons, int startind, int maxind, unsigned int code, int depth)
+{
+    // printf("starting binary search, startind is %d, maxind is %d, code is %d, depth is %d\n", startind, maxind, code, depth);
+    if (startind == maxind)
+        return 0;//empty cell at end of parent
+    uint64_t m = mortons[startind];
+    m = m << (1 + 3 * depth);
+    m = m >> 61;
+    if (m != code)
+        return 0; // empty cell.
+    int step = (maxind - startind) / 2;
+    int i = startind;
+    while (i < maxind - 1)
+    {
+        m = mortons[i];
+        m = m << (1 + 3 * depth);
+        m = m >> 61;
+        uint64_t mnext = mortons[i + 1];
+        mnext = mnext << (1 + 3 * depth);
+        mnext = mnext >> 61;
+        if (m == code && mnext != code)
+            return (i - startind + 1); //found border
+        else if (m == code)
+            i += step;//step forward
+        else
+            i -= step;//step backward
+        step /= 2;
+        if (step == 0)
+            step = 1;
+    }
+    return (maxind - startind);
+}
+
 void split(t_tree *node)
 {
 	//split this cell into 8 octants
@@ -538,17 +571,7 @@ void split(t_tree *node)
 		
 		//scan through array for borders between 3-bit substring values for this depth
 		//these are the dividing lines between octants
-        unsigned int j = 0;
-        while (j + offset < node->count)
-        {
-			//this should be a binary search.
-            uint64_t m = node->mortons[j+offset];
-            m = m << (1 + 3 * depth);
-            m = m >> 61;
-            if (m != i)
-                break;
-            j++;
-        }
+        unsigned int j = binary_border_search(node->mortons, offset, node->count, i, depth);
         offset += j;
         node->children[i]->count = j;
     }
