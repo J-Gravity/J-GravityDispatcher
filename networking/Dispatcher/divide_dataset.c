@@ -572,6 +572,11 @@ void split_tree(t_tree *root)
     {
         root->as_single = make_as_single(root);
         printf("leaf at depth %d with count %d\n", node_depth(root), root->count);
+        if (root->count >= LEAF_THRESHOLD)
+        {
+            for (int i = 0; i < root->count; i++)
+                print_cl4(root->bodies[i].position);
+        }
         return;
     }
     split(root);
