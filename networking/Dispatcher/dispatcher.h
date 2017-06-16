@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 02:08:29 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 19:42:20 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -240,6 +240,7 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_mutex;
 	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
+	pthread_mutex_t		sender_thread_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
 	sem_t				*sender_limit;
