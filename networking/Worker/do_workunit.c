@@ -71,14 +71,6 @@ char *const_source = "static float4 pair_force(\n" \
 "        vel.y += force.y * G * timestep;\n" \
 "        vel.z += force.z * G * timestep;\n" \
 "\n" \
-"float velsqr = vel.x * vel.x + vel.y * vel.y + vel.z * vel.z;\n" \
-"        if (velsqr > 90000000000000000)\n" \
-"        {\n" \
-"            velsqr = sqrt(velsqr);\n" \
-"            vel.x = 300000000 * vel.x / velsqr;\n" \
-"            vel.y = 300000000 * vel.y / velsqr;\n" \
-"            vel.z = 300000000 * vel.z / velsqr;\n" \
-"        }\n" \
 "        pos.x += vel.x * timestep;\n" \
 "        pos.y += vel.y * timestep;\n" \
 "        pos.z += vel.z * timestep;\n" \

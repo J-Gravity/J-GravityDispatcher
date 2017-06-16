@@ -40,7 +40,7 @@ int	main(int ac, char **av)
 	printf("dispatcher struct is %lu bytes!!/n", sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 600;
-	dispatcher->name = "33m-display";
+	dispatcher->name = "66jobfair";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
 	dispatcher->bundles = (t_queue *)calloc(1, sizeof(t_queue));

@@ -278,7 +278,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	if (dispatcher->sender_limit == SEM_FAILED)
 		printf("start_sending sem open failed with %d\n", errno);
 	setup_async_file(dispatcher);
-	start_sender_threads(dispatcher, SENDER_THREADS);
+	start_sender_threads(dispatcher, dispatcher->worker_cnt);
 	launch_worker_event_threads(dispatcher);
 	divide_dataset(dispatcher);
 	//sem_post(dispatcher->start_sending);
