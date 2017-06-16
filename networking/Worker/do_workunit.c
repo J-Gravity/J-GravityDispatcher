@@ -1,7 +1,7 @@
 #include "worker.h"
 #include "err_code.h"
 
-char *thesource = "static float4 pair_force(\n" \
+char *const_source = "static float4 pair_force(\n" \
 "    float4 pi,\n" \
 "    float4 pj,\n" \
 "    const float softening)\n" \
@@ -46,8 +46,8 @@ char *thesource = "static float4 pair_force(\n" \
 "    float4 pos = cached_stars[offset];\n" \
 "    float4 vel = cached_stars[offset + 1];\n" \
 "    float4 force = {0,0,0,0};\n" \
-"    barrier(CLK_LOCAL_MEM_FENCE);\n" \
 "    int chunk = 0;\n" \
+"    barrier(CLK_LOCAL_MEM_FENCE);\n" \
 "    for (int i = 0; i < M; i += chunksize, chunk++)\n" \
 "    {\n" \
 "        cached_stars[localid] = m[chunk * chunksize + localid];\n" \
@@ -165,7 +165,7 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
     //char *source;
 
     //source = load_cl_file(sourcefile);
-    p = clCreateProgramWithSource(c->context, 1, (const char **) & thesource, NULL, &err);
+    p = clCreateProgramWithSource(c->context, 1, (const char **) & const_source, NULL, &err);
     checkError(err, "Creating program");
 
     // Build the program

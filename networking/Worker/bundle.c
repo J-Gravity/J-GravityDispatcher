@@ -101,7 +101,6 @@ t_workunit *kick_bundle(t_bundle *b)
 {
     static int maxM;
     t_workunit *w = calloc(1, sizeof(t_workunit));
-    w = calloc(1, sizeof(t_workunit));
     int i = b->index;
     if (i == 0)
         maxM = 0;
