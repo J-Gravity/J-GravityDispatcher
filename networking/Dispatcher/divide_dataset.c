@@ -639,8 +639,14 @@ void    divide_dataset(t_dispatcher *dispatcher)
     t = make_tree(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
     t_tree **leaves = enumerate_leaves(t);
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
+    int largest_local = 0;
     for (int i = 0; leaves[i]; i++)
+    {
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
+        if (leaves[i]->count > largest_local)
+            largest_local = leaves[i]->count;
+    }
+    printf("the largest cell had %d locals\n", largest_local);
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
@@ -652,7 +658,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
-	//		printf("bundle created\n");
+	    printf("bundle created of size %ld\n", b->size);
 		b->id = bundle_id++;
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
 		sem_post(dispatcher->start_sending);

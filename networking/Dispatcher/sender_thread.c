@@ -27,14 +27,14 @@ void	*sender_thread(void *input)
 	{
 		if (sem_wait(dispatcher->start_sending) < 0)
 			printf("SEND- sem_wait failed with err:%d\n", errno);
-		printf("cleared start sending semaphore\n");
+		//printf("cleared start sending semaphore\n");
 		pthread_mutex_lock(&dispatcher->sender_thread_mutex);
 		if (queue_count(dispatcher->bundles) > 0)
 		{
 			worker_link = queue_pop_link(&dispatcher->workers_queue);
 			if (!worker_link || !worker_link->data)
 			{
-				printf("NULL from popping the worker queue!\n");
+				//printf("NULL from popping the worker queue!\n");
 				sem_post(dispatcher->start_sending);
 				pthread_mutex_unlock(&dispatcher->sender_thread_mutex);
 				continue;
