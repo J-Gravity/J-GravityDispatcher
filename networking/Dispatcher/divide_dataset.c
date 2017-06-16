@@ -160,25 +160,26 @@ static cl_float4 center_add(cl_float4 total, cl_float4 add)
     return (cl_float4){total.x + add.x, total.y + add.y, total.z + add.z, total.w + add.w};
 }
 
-#define child_COG(i) (children[i]->as_single->bodies[0])
-
 static t_body COG_from_children(t_tree **children)
-{//needs tested
+{
 	cl_float4 center = (cl_float4){0,0,0,0};
-    float abs_total = 0;
+    float real_total = 0;
     for (int i = 0; i < 8; i++)
     {
-		center.x = child_COG(i).position.x * child_COG(i).velocity.w;
-		center.y = child_COG(i).position.y * child_COG(i).velocity.w;
-		center.z = child_COG(i).position.z * child_COG(i).velocity.w;
-		abs_total += child_COG(i).velocity.w;
-		center.w += child_COG(i).position.w;
+        center.x += children[i]->as_single->bodies[0].position.x * children[i]->as_single->bodies[0].velocity.w;
+        center.y += children[i]->as_single->bodies[0].position.y * children[i]->as_single->bodies[0].velocity.w;
+        center.z += children[i]->as_single->bodies[0].position.z * children[i]->as_single->bodies[0].velocity.w;
+        center.w += children[i]->as_single->bodies[0].velocity.w;
+        real_total += children[i]->as_single->bodies[0].position.w;
     }
-    center.x /= abs_total;
-    center.y /= abs_total;
-    center.z /= abs_total;
-    cl_float4 vel = {0, 0, 0, abs_total};
-    return (t_body){center, vel};
+    t_body b;
+    b.velocity = (cl_float4){0, 0, 0, center.w};
+    center.x /= center.w;
+    center.y /= center.w;
+    center.z /= center.w;
+    center.w = real_total;
+    b.position = center;
+    return b;
 }
 
 static t_body COG_from_bodies(t_body *bodies, int count)
@@ -192,29 +193,32 @@ static t_body COG_from_bodies(t_body *bodies, int count)
         center = center_add(center, bodies[i].position);
         real_total += bodies[i].position.w;
     }
+    t_body b;
+    b.velocity = (cl_float4){0, 0, 0, center.w};
     center.x /= center.w;
     center.y /= center.w;
     center.z /= center.w;
-    cl_float4 vel = {0, 0, 0, center.w};
     center.w = real_total;
-    return (t_body){center, vel};
+    b.position = center;
+    return b;
 }
 
 static t_tree *make_as_single(t_tree *c)
 {
 	//it's silly to build a whole cell for something
 	//that could easily just be a t_body in t_tree
-    t_body *b = calloc(1, sizeof(t_body));
-	if (!c->children)
-		*b = COG_from_bodies(c->bodies, c->count);
-	else
-		*b = COG_from_children(c->children);
+    t_body b;
+    if (!c->children)
+	   b = COG_from_bodies(c->bodies, c->count);
+    else
+        b = COG_from_children(c->children);
     t_tree *s = calloc(1, sizeof(t_tree));
     s->parent = NULL;
     s->children = NULL;
     s->count = 1;
     s->as_single = NULL;
-    s->bodies = b;
+    s->bodies = calloc(1, sizeof(t_body));
+    s->bodies[0] = b;
     return (s);
 }
 
@@ -236,7 +240,7 @@ static t_tree **enumerate_leaves(t_tree *root)
 
     if (!root->children)
     {
-        root->as_single = make_as_single(root);
+        //root->as_single = make_as_single(root);
         ret = (t_tree **)calloc(2, sizeof(t_tree *));
         ret[0] = root->count ? root : NULL; //we do not bother enumerating empty leaves (empty cells cant have children so this covers all)
         ret[1] = NULL;
@@ -249,7 +253,7 @@ static t_tree **enumerate_leaves(t_tree *root)
         returned[i] = enumerate_leaves(root->children[i]);
         total += count_tree_array(returned[i]);
     }
-    root->as_single = make_as_single(root);
+    //root->as_single = make_as_single(root);
     ret = (t_tree **)calloc(total + 1, sizeof(t_tree *));
     for (int i = 0; i < total;)
     {
@@ -320,7 +324,6 @@ static t_tree **assemble_neighborhood(t_tree *cell, t_tree *root)
 
         in this way, we enumerate the "Neighborhood" of the cell, ie the bodies we'll need to compare with on the GPU.
     */
-
     if (root->parent && multipole_acceptance_criterion(cell, root) < THETA)
     {
         ret = (t_tree **)calloc(2, sizeof(t_tree *));
@@ -559,6 +562,7 @@ void split(t_tree *node)
     node->children = (t_tree **)calloc(8, sizeof(t_tree *));
     int depth = node_depth(node);
     unsigned int offset = 0;
+    //printf("this cell has %d bodies\n", node->count);
     for (unsigned int i = 0; i < 8; i++)
     {
         node->children[i] = (t_tree *)calloc(1, sizeof(t_tree));
@@ -574,6 +578,7 @@ void split(t_tree *node)
         unsigned int j = binary_border_search(node->mortons, offset, node->count, i, depth);
         offset += j;
         node->children[i]->count = j;
+        //printf("child %d has %d bodies\n", i, j);
     }
 }
 
@@ -582,10 +587,14 @@ void split_tree(t_tree *root)
 	//we divide the tree until each leaf cell has < leaf threshold bodies.
 	//we also have to halt at depth 21, but it is unlikely to need to divide that far.
     if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
+    {
+        root->as_single = make_as_single(root);
         return;
+    }
     split(root);
     for (int i = 0; i < 8; i++)
         split_tree(root->children[i]);
+    root->as_single = make_as_single(root);
 }
 
 t_tree *make_tree(t_body *bodies, int count)
@@ -637,6 +646,7 @@ static void free_tree(t_tree *t)
 
 void    divide_dataset(t_dispatcher *dispatcher)
 {
+    clock_t start = clock();
     static t_tree *t;
 
     if (t != NULL)
@@ -666,4 +676,5 @@ void    divide_dataset(t_dispatcher *dispatcher)
 		sem_post(dispatcher->start_sending);
     }
 	printf("bundling finished\n");
+    printf("divide_dataset took %lu cycles total\n", clock() - start);
 }
