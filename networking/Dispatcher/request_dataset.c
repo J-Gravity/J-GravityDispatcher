@@ -40,6 +40,8 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	read(fd, &(count), sizeof(count));
 	read(fd, &(scale), sizeof(scale));
 	t_body *particles = calloc(count, sizeof(t_body));
+	if (particles == NULL)
+		printf("couldnt calloc that much at once\n");
 	data->max_scale = scale;
 	data->particle_cnt = count;
 
@@ -49,10 +51,11 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
         int ret = read(fd, particles, sizeof(t_body) * count);
     }
     else
-        for (long offset = 0; offset < count; offset += pow(2, 22))
+        for (int offset = 0; offset < count; offset += pow(2, 22))
         {
             printf("reading in chunks\n");
-            write(fd, particles + offset, sizeof(t_body) * pow(2, 22));
+            int ret = read(fd, particles + offset, sizeof(t_body) * pow(2, 22));
+            printf("ret was %d\n", ret);
         }
 
 	read(fd, particles, sizeof(t_body) * count);
