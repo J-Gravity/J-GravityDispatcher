@@ -32,7 +32,7 @@ void	*sender_thread(void *input)
 		//printf("cleared start sending semaphore\n");
 		if (queue_count(dispatcher->bundles) > 0)
 		{
-			//printf("bundle_count: %d\n", queue_count(dispatcher->bundles));
+		  //printf("bundle_count: %d\n", queue_count(dispatcher->bundles));
 			worker_link = queue_pop_link(&dispatcher->workers_queue);
 			if (worker_link && worker_link->data)
 			{
@@ -43,7 +43,11 @@ void	*sender_thread(void *input)
 					queue_enqueue(&worker->workunit_queue, queue_create_new(bundle));
 					if (DEBUG)
 						printf("bundle %d sent to worker %d\n", bundle->id, worker->socket.fd);
-					send_bundle(worker, bundle, dispatcher->cells);
+					if (worker->active == 0)
+					  {
+					    printf("trying to send a bundle to an inactive worker\n");
+					  }
+					  send_bundle(worker, bundle, dispatcher->cells);
 					if (DEBUG)
 						printf("done sending bundle %d to worker %d\n", bundle->id, worker->socket.fd);
 				}

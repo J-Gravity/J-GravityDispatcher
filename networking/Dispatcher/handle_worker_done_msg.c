@@ -74,7 +74,7 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	free(msg.data);
 	local_cell = dispatcher->cells[complete_WU.id];
 	integrate_WU_results(dispatcher, local_cell, &complete_WU);
-	if (DEBUG)
+	if (DEBUG && complete_WU.is_last)
 		printf("is last workunit of a bundle: %d\n", complete_WU.is_last);
 	if (complete_WU.is_last)
 	{

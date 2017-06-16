@@ -61,13 +61,13 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
-# define WORKER_DEBUG 0
-# define MSG_DETAILS_DEBUG 1
+# define WORKER_DEBUG 1
+# define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
-# define DIVIDE_DATASET_DEBUG 0
-# define NETWORK_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 1
+# define NETWORK_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -376,7 +376,7 @@ t_msg	get_worker_msg(t_worker *worker);
 *		@param	data	The body of the message
 *		@return	the struct initialized with the parameters
 */
-t_msg	new_message(char id, int data_size, char *data);
+t_msg	new_message(char id, size_t data_size, char *data);
 
 /*
 *	Send a message to a specific worker

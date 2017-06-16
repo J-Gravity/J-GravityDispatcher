@@ -21,7 +21,7 @@ static void print_debug(t_worker *worker, t_msg msg)
 		line = "WORK_UNITS_READY";
 	else if (msg.id == WORK_UNIT)
 		line = "WORK_UNIT";
-	printf("SENT '%s' TO worker %d\n", line, worker->socket.fd);
+	printf("SENT %zu byte '%s' TO worker %d\n", msg.size, line, worker->socket.fd);
 }
 
 void	send_worker_msg(t_worker *worker, t_msg msg)

@@ -40,9 +40,9 @@ void	*connect_worker_thread(void *param)
 		}
 		printf("%d worker", dispatcher->worker_cnt + 1);
 		if (dispatcher->worker_cnt + 1 == 1)
-			printf(" is connected!\n");
+		  printf(" is connected! - fd: %d\n", fd);
 		else
-			printf("s are connected!\n");
+		  printf("s are connected! - fd: %d\n" ,fd);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
