@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 01:10:23 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 20:53:19 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNIT_REQUEST";
 	else if (msg.id == WORK_UNIT_DONE)
 		line = "WORK_UNIT_DONE";
-	printf("SENT '%s' TO dispatcher %d\n", line, fd);
+	printf("SENT %zu bytes '%s' TO dispatcher %d\n", msg.size, line, fd);
 }
 
 void	send_msg(int fd, t_msg msg)

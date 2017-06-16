@@ -12,7 +12,7 @@
 
 #include "dispatcher.h"
 
-t_msg	new_message(char id, int data_size, char *data)
+t_msg	new_message(char id, size_t data_size, char *data)
 {
 	t_msg	message;
 

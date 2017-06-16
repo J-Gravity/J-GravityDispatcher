@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 02:08:29 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 19:42:20 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,13 +61,13 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
-# define WORKER_DEBUG 0
-# define MSG_DETAILS_DEBUG 1
+# define WORKER_DEBUG 1
+# define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
-# define DIVIDE_DATASET_DEBUG 0
-# define NETWORK_DEBUG 0
+# define DIVIDE_DATASET_DEBUG 1
+# define NETWORK_DEBUG 1
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -242,6 +242,7 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_mutex;
 	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
+	pthread_mutex_t		sender_thread_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
 	sem_t				*sender_limit;
@@ -384,7 +385,7 @@ t_msg	get_worker_msg(t_worker *worker);
 *		@param	data	The body of the message
 *		@return	the struct initialized with the parameters
 */
-t_msg	new_message(char id, int data_size, char *data);
+t_msg	new_message(char id, size_t data_size, char *data);
 
 /*
 *	Send a message to a specific worker

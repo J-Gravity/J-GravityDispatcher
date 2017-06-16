@@ -648,15 +648,15 @@ void    divide_dataset(t_dispatcher *dispatcher)
     dispatcher->cells = leaves;
     dispatcher->total_workunits = count_tree_array(leaves);
     dispatcher->cell_count = count_tree_array(leaves);
-	printf("bundling started\n");
+    //printf("bundling started\n");
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
-		printf("bundle created\n");
+	//		printf("bundle created\n");
 		b->id = bundle_id++;
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
 		sem_post(dispatcher->start_sending);
     }
-	printf("bundling finished\n");
+    //printf("bundling finished\n");
     printf("divide_dataset took %lu cycles total\n", clock() - start);
 }

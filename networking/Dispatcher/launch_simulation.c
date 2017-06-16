@@ -132,14 +132,14 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 	// }
 	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
 	head = dispatcher->workers_queue->first;
-	// printf("-------------\n");
-  	// while (head)
- 	// {
-	// 	//printf("(%p)worker: %d -> (%p)\n", head,
-	// 	//	((t_worker*)(head->data))->socket.fd, head->next);
-  	// 	head = head->next;
- 	// }
-	//printf("-------------\n");
+	 printf("-------------\n");
+  	 while (head)
+ 	 {
+	 	printf("(%p)worker: %d -> (%p)\n", head,
+	 		((t_worker*)(head->data))->socket.fd, head->next);
+  	 	head = head->next;
+ 	 }
+	printf("-------------\n");
 	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
 }
 
@@ -153,8 +153,8 @@ void		*handle_worker_connection(void *input)
 	signal(SIGPIPE, SIG_IGN);
 	if (DEBUG && WORKER_DEBUG)
 		printf("Launched worker network handler thread!\n");
-	//  if (DEBUG && WORKER_DEBUG)
-	//  	print_worker_fds(params->dispatcher);
+	//if (DEBUG && WORKER_DEBUG)
+	  //  print_worker_fds(params->dispatcher);
 	params = (t_thread_handler *)input;
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;
@@ -162,8 +162,8 @@ void		*handle_worker_connection(void *input)
 	//send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
 	while (worker->active)
 	{
-		if (DEBUG && WORKER_DEBUG)
-			print_worker_fds(params->dispatcher);
+	  //if (DEBUG && WORKER_DEBUG)
+		  //print_worker_fds(params->dispatcher);
 		msg = get_worker_msg(worker);
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
@@ -264,7 +264,8 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	dispatcher->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
 	if (dispatcher->exit_sem == SEM_FAILED)
 		printf("sem3 open failed with %d\n", errno);
-	
+
+	setup_async_file(dispatcher);
 	if (DEBUG)
 		printf("begin launch_simulation\n");
 	if (timeout_progressbar(dispatcher) == -1)

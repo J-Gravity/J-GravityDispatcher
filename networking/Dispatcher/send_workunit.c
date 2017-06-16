@@ -18,6 +18,8 @@ int		send_bundle(t_worker *worker, t_bundle *bundle, t_tree **leaves)
 	msg = serialize_bundle(bundle, leaves);
 	msg.id = WORK_UNIT;
 	worker->w_calc_time = time(NULL);
+	if (worker->active == 0)
+	  printf("sending a bundle to an inactive worker\n");
 	send_worker_msg(worker, msg);
 	free(msg.data);
 	return (0);
