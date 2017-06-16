@@ -571,6 +571,7 @@ void split_tree(t_tree *root)
     if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
     {
         root->as_single = make_as_single(root);
+        printf("leaf at depth %d with count %d\n", node_depth(root), root->count);
         return;
     }
     split(root);
@@ -640,13 +641,17 @@ void    divide_dataset(t_dispatcher *dispatcher)
     t_tree **leaves = enumerate_leaves(t);
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
     int largest_local = 0;
+    int max_depth = 0;
     for (int i = 0; leaves[i]; i++)
     {
         leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
         if (leaves[i]->count > largest_local)
             largest_local = leaves[i]->count;
+        if (node_depth(leaves[i]) > max_depth)
+            max_depth = node_depth(leaves[i]);
     }
     printf("the largest cell had %d locals\n", largest_local);
+    printf("the deepest cell was at level %d\n", max_depth);
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
