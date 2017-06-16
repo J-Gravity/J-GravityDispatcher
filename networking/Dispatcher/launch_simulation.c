@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 17:00:31 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 15:17:17 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,10 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 		// 	G_movelist_locked += msec%1000;
 		// }
 		while (queue_count(worker->workunit_queue) > 0)
+		{
 			queue_enqueue(&dispatcher->bundles, queue_create_new(queue_pop(&worker->workunit_queue)));
+			sem_post(dispatcher->start_sending);
+		}
 	}
 	worker->workunit_queue = NULL;
 	if (DEBUG && WORKER_DEBUG)
@@ -167,7 +170,7 @@ void		*handle_worker_connection(void *input)
 			printf("done receiving message\n");
 			printf("msg status: %d\n", msg.error);
 			printf("MSG RECIEVED: [id]=%d", msg.id);
-			printf(" size '%d'\n", msg.size);
+			printf(" size '%zu'\n", msg.size);
 			printf(" body '%s'\n", msg.data);
    		}
 		if (msg.error == -1)
