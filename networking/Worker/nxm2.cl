@@ -64,6 +64,7 @@ kernel void nbody(
     {
         for (int i = 1; i < threads_per_star; i++)
             force += cached_stars[localid + i];
+
         vel.x += force.x * G * timestep;
         vel.y += force.y * G * timestep;
         vel.z += force.z * G * timestep;
@@ -71,7 +72,6 @@ kernel void nbody(
         pos.x += vel.x * timestep;
         pos.y += vel.y * timestep;
         pos.z += vel.z * timestep;
-
 
         n_end[globalid / threads_per_star] = pos;
         v_end[globalid / threads_per_star] = vel;
