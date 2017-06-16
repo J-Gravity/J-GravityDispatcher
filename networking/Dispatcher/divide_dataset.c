@@ -589,7 +589,7 @@ t_tree *make_tree(t_body *bodies, int count)
 	
 	//sort the bodies by their morton codes
 	//they are now arranged on a z-order curve.
-    msort(sorts, count);
+    mort_tim_sort(sorts, count);
 	
 	//copy data back from cached sort structure
     uint64_t *mortons = calloc(count, sizeof(uint64_t));

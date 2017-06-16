@@ -27,7 +27,7 @@ void	*sender_thread(void *input)
 	{
 		if (sem_wait(dispatcher->start_sending) < 0)
 			printf("SEND- sem_wait failed with err:%d\n", errno);
-		//printf("cleared start sending semaphore\n");
+		printf("cleared start sending semaphore\n");
 		pthread_mutex_lock(&dispatcher->sender_thread_mutex);
 		if (queue_count(dispatcher->bundles) > 0)
 		{
