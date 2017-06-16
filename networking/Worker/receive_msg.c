@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:36:55 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 21:16:50 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 22:07:00 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,9 +43,9 @@ char	read_header(int fd, t_msg *msg)
 	if (bytes_read == HEADER_SIZE)
 	{
 		msg->id = header[0];
+		memcpy(&msg->size, &header[1], sizeof(size_t));
  		if (DEBUG && MSG_DEBUG)
 			print_debug(fd, *msg);
-		memcpy(&msg->size, &header[1], sizeof(size_t));
 		msg->data = (char *)calloc(1, msg->size);
 	}
 	else
@@ -70,7 +70,7 @@ char	read_body(int fd, t_msg *msg)
 	{
 		recv_bytes = recv(fd, msg->data + bodybytes, msg->size - bodybytes, 0);
 		if (DEBUG && MSG_DEBUG)
-			printf ("body recv bytes: %zu\n", recv_bytes);
+			printf ("body recv bytes: %zd\n", recv_bytes);
 		if (recv_bytes > 0)
 			bodybytes += recv_bytes;
 		else
