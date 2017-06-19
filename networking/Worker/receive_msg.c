@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:36:55 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/08 19:24:09 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 21:16:50 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,10 +20,10 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNITS_READY";
 	else if (msg.id == WORK_UNIT)
 		line = "WORK_UNIT";
-	printf("RECIEVED '%s' FROM dispatcher %d\n", line, fd);
+	printf("RECIEVED %zu bytes '%s' FROM dispatcher %d\n", msg.size, line, fd);
 }
 
-static void	check_for_errors(int bytes_read, int *error)
+static void	check_for_errors(ssize_t bytes_read, int *error)
 {
 	if (bytes_read == -1)
 		*error = -1;
@@ -34,24 +34,19 @@ static void	check_for_errors(int bytes_read, int *error)
 char	read_header(int fd, t_msg *msg)
 {
 	char	*header;
-	int		bytes_read;
+	ssize_t		bytes_read;
 
 	header = (char *)calloc(1, HEADER_SIZE);
 	bytes_read = recv(fd, header, HEADER_SIZE, 0);
+	if (DEBUG && MSG_DEBUG)
+		printf ("header read bytes: %zd\n", bytes_read);
 	if (bytes_read == HEADER_SIZE)
 	{
 		msg->id = header[0];
  		if (DEBUG && MSG_DEBUG)
 			print_debug(fd, *msg);
-		memcpy(&msg->size, &header[1], sizeof(int));
-		if (msg->size >= 0)
-			msg->data = (char *)calloc(1, msg->size);
-		else
-		{
-			printf("recieved a invalid size for the body size!!!\n");
-			msg->size = 0;
-			msg->data = (char *)calloc(1, msg->size);
-		}
+		memcpy(&msg->size, &header[1], sizeof(size_t));
+		msg->data = (char *)calloc(1, msg->size);
 	}
 	else
 	{
@@ -66,23 +61,27 @@ char	read_header(int fd, t_msg *msg)
 
 char	read_body(int fd, t_msg *msg)
 {
-	int	bodybytes;
-	int	recv_bytes;
+	size_t	bodybytes;
+	ssize_t	recv_bytes;
 	
 	bodybytes = 0;
 	recv_bytes = 42;
 	while (bodybytes < msg->size)
 	{
 		recv_bytes = recv(fd, msg->data + bodybytes, msg->size - bodybytes, 0);
+		if (DEBUG && MSG_DEBUG)
+			printf ("body recv bytes: %zu\n", recv_bytes);
 		if (recv_bytes > 0)
 			bodybytes += recv_bytes;
 		else
 			break;
 	}
+	if (DEBUG && MSG_DEBUG)
+		printf ("body total read bytes: %zu\n", bodybytes);
 	check_for_errors(recv_bytes, &msg->error);
 	if (bodybytes != msg->size)
 	{
-		printf("msg body should be %d bytes, but is only %d bytes!\n",
+		printf("msg body should be %zu bytes, but is only %zd bytes!\n",
 			msg->size, bodybytes);
 		return (1);
 	}
@@ -92,7 +91,7 @@ char	read_body(int fd, t_msg *msg)
 t_msg	receive_msg(int fd)
 {
 
-	int 	recv_bytes;
+	size_t 	recv_bytes;
 	t_msg	msg;
 
 	msg.error = 42;

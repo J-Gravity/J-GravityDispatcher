@@ -11,8 +11,8 @@
 #include <time.h>
 #include <stdlib.h>
 
-# define PORT 4243
-# define HEADER_SIZE 5
+# define PORT 4342
+# define HEADER_SIZE 9
 
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
@@ -60,9 +60,9 @@ long G_total_calc_time;
 /* *********** */
 # define DEBUG 0
 # define MSG_DEBUG 1
-# define MSG_DETAILS_DEBUG 0
+# define MSG_DETAILS_DEBUG 1
 # define MUTEX_DEBUG 0
-# define NETWORK_DEBUG 0
+# define NETWORK_DEBUG 1
 
 typedef struct s_context
 {
@@ -103,12 +103,13 @@ typedef struct			s_workunit
 	cl_float4 			*M;
 	cl_float4 			*V;
 	t_body				*local_bodies;
+	char				is_last;
 }						t_workunit;
 
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t					size;
 	char				*data;
 	int					error;
 }						t_msg;
@@ -151,13 +152,14 @@ typedef struct s_bundle
     int *cell_sizes;
     cl_float4 **cells;
     int cellcount;
+    int index;
 }               t_bundle;
 
 void		send_metrics(int fd, t_msg msg);
 t_msg		serialize_metrics(void);
-t_bundle	*deserialize_bundle(t_msg m);
-void		transpose_matches(t_bundle *wb);
-t_workunit	**unbundle_workunits(t_bundle *b, int *count);
+t_bundle *deserialize_bundle(t_msg m);
+void transpose_matches(t_bundle *wb);
+t_workunit *kick_bundle(t_bundle *b);
 
 /*
  * 	Creates a new node and returns it

@@ -1,7 +1,6 @@
 static float4 pair_force(
     float4 pi,
     float4 pj,
-    float4 ai,
     const float softening)
 {
     float4 r;
@@ -14,10 +13,7 @@ static float4 pair_force(
     float invDist = native_rsqrt(distSquare);
     float invDistCube = invDist * invDist * invDist;
     float s = pj.w * invDistCube * r.w;
-    ai.x += r.x * s;
-    ai.y += r.y * s;
-    ai.z += r.z * s;
-    return ai;
+    return (float4){r.x * s, r.y * s, r.z * s, 0};
 }
 
 kernel void nbody(
@@ -35,23 +31,30 @@ kernel void nbody(
     const int threads_per_star)
 {
     int globalid = get_global_id(0);
-    int threadcount = get_global_size(0);
     int chunksize = get_local_size(0);
     int localid = get_local_id(0);
-    float4 pos = n_start[globalid / threads_per_star];
-    float4 vel = v_start[globalid / threads_per_star];
+    if (localid % threads_per_star == 0)
+    {
+        cached_stars[localid] = n_start[globalid / threads_per_star];
+        cached_stars[localid + 1] = v_start[globalid / threads_per_star];
+    }
+    barrier(CLK_LOCAL_MEM_FENCE);
+    int offset = localid - localid % threads_per_star;
+    float4 pos = cached_stars[offset];
+    float4 vel = cached_stars[offset + 1];
     float4 force = {0,0,0,0};
-
     int chunk = 0;
+    barrier(CLK_LOCAL_MEM_FENCE);
     for (int i = 0; i < M; i += chunksize, chunk++)
     {
-        int local_pos = chunk * chunksize + localid;
-        cached_stars[localid] = m[local_pos];
-
+        cached_stars[localid] = m[chunk * chunksize + localid];
         barrier(CLK_LOCAL_MEM_FENCE);
-        for (int j = localid % threads_per_star; j < chunksize; j += threads_per_star)
+        for (int j = 0; j < chunksize / threads_per_star;)
         {
-            force = pair_force(pos, cached_stars[j], force, softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
+            force += pair_force(pos, cached_stars[offset + j++], softening);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
     }
@@ -61,14 +64,23 @@ kernel void nbody(
     {
         for (int i = 1; i < threads_per_star; i++)
             force += cached_stars[localid + i];
+
         vel.x += force.x * G * timestep;
         vel.y += force.y * G * timestep;
         vel.z += force.z * G * timestep;
 
+        float velsqr = vel.x * vel.x + vel.y * vel.y + vel.z * vel.z;
+        if (velsqr > 90000000000000000)
+        {
+            velsqr = sqrt(velsqr);
+            vel.x = vel.x / velsqr;
+            vel.y = vel.y / velsqr;
+            vel.z = vel.z / velsqr;
+        }
+
         pos.x += vel.x * timestep;
         pos.y += vel.y * timestep;
         pos.z += vel.z * timestep;
-
 
         n_end[globalid / threads_per_star] = pos;
         v_end[globalid / threads_per_star] = vel;

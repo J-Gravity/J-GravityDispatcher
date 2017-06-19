@@ -6,13 +6,13 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 18:22:08 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/09 00:11:33 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/12 18:37:41 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 
-t_lst	*queue_create_new(t_bundle *bundle)
+t_lst	*queue_create_new(void *bundle)
 {
 	t_lst	*node;
 

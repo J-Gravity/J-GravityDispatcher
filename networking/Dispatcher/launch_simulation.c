@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 21:53:53 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 15:17:17 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,40 +47,43 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	{
 		if (DEBUG && WORKER_DEBUG)
 			printf("adding lost worker's work unit back to the pool!\n");
-		clock_t start, diff;
-		if (METRICS && MUTEX_METRIC)
-		{
-			start = clock();
-		}
+		// clock_t start, diff;
+		// if (METRICS && MUTEX_METRIC)
+		// {
+		// 	start = clock();
+		// }
 		pthread_mutex_lock(&dispatcher->workunits_mutex);
 		dispatcher->worker_cnt--;
-		if (METRICS && MUTEX_METRIC)
-		{
-			diff = clock() - start;
-			int msec = diff * 1000 / CLOCKS_PER_SEC;
-			G_movelist_locked += msec%1000;
-		}
-		while (worker->workunit_queue->count > 0)
-			queue_enqueue(&dispatcher->bundles, queue_create_new(queue_pop(&worker->workunit_queue)));
 		pthread_mutex_unlock(&dispatcher->workunits_mutex);
+		// if (METRICS && MUTEX_METRIC)
+		// {
+		// 	diff = clock() - start;
+		// 	int msec = diff * 1000 / CLOCKS_PER_SEC;
+		// 	G_movelist_locked += msec%1000;
+		// }
+		while (queue_count(worker->workunit_queue) > 0)
+		{
+			queue_enqueue(&dispatcher->bundles, queue_create_new(queue_pop(&worker->workunit_queue)));
+			sem_post(dispatcher->start_sending);
+		}
 	}
 	worker->workunit_queue = NULL;
 	if (DEBUG && WORKER_DEBUG)
 		printf("removing worker link!\n");
-	clock_t start, diff;
-	if (METRICS && MUTEX_METRIC)
-	{
-		start = clock();
-	}
-	pthread_mutex_lock(&dispatcher->worker_list_mutex);
-	if (METRICS && MUTEX_METRIC)
-	{
-		diff = clock() - start;
-		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_removeworker_locked += msec%1000;
-	}
-	remove_link(&dispatcher->workers, worker);
-	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+	// clock_t start, diff;
+	// if (METRICS && MUTEX_METRIC)
+	// {
+	// 	start = clock();
+	// }
+	// if (METRICS && MUTEX_METRIC)
+	// {
+	// 	diff = clock() - start;
+	// 	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	// 	G_removeworker_locked += msec%1000;
+	// }
+	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
+	remove_link(&dispatcher->workers_queue->first, worker);
+	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
 	free(worker_link);
 	if (worker->socket.fd)
 	{
@@ -115,30 +118,31 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 
 void 		print_worker_fds(t_dispatcher *dispatcher)
 {
-	t_lst	*head;
+	t_lst	*head = 0;
 
-	clock_t start, diff;
-	if (METRICS && MUTEX_METRIC)
-	{
-		start = clock();
-	}
-	pthread_mutex_lock(&dispatcher->worker_list_mutex);
-	if (METRICS && MUTEX_METRIC)
-	{
-		diff = clock() - start;
-		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_printfds_locked += msec%1000;
-	}
-	head = dispatcher->workers;
+	// clock_t start, diff;
+	// if (METRICS && MUTEX_METRIC)
+	// {
+	// 	start = clock();
+	// }
+	//pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	// if (METRICS && MUTEX_METRIC)
+	// {
+	// 	diff = clock() - start;
+	// 	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	// 	G_printfds_locked += msec%1000;
+	// }
+	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
+	head = dispatcher->workers_queue->first;
+	 printf("-------------\n");
+  	 while (head)
+ 	 {
+	 	printf("(%p)worker: %d -> (%p)\n", head,
+	 		((t_worker*)(head->data))->socket.fd, head->next);
+  	 	head = head->next;
+ 	 }
 	printf("-------------\n");
-  	while (head)
- 	{
-		printf("(%p)worker: %d -> (%p)\n", head,
-			((t_worker*)(head->data))->socket.fd, head->next);
-  		head = head->next;
- 	}
-	printf("-------------\n");
-	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
 }
 
 void		*handle_worker_connection(void *input)
@@ -151,24 +155,26 @@ void		*handle_worker_connection(void *input)
 	signal(SIGPIPE, SIG_IGN);
 	if (DEBUG && WORKER_DEBUG)
 		printf("Launched worker network handler thread!\n");
+	//if (DEBUG && WORKER_DEBUG)
+	  //  print_worker_fds(params->dispatcher);
 	params = (t_thread_handler *)input;
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;
 	worker->active = 1;
-	send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
+	//send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
 	while (worker->active)
 	{
-		if (DEBUG && WORKER_DEBUG)
-			print_worker_fds(params->dispatcher);
+	  //if (DEBUG && WORKER_DEBUG)
+		  //print_worker_fds(params->dispatcher);
 		msg = get_worker_msg(worker);
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
 			printf("msg status: %d\n", msg.error);
 			printf("MSG RECIEVED: [id]=%d", msg.id);
-			printf(" size '%d'\n", msg.size);
+			printf(" size '%zu'\n", msg.size);
 			printf(" body '%s'\n", msg.data);
-    }
+   		}
 		if (msg.error == -1)
 		{
 			printf("get worker message failed with err %d\n", errno);
@@ -195,19 +201,20 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
 
-	clock_t start, diff;
-	if (METRICS && MUTEX_METRIC)
-	{
-		start = clock();
-	}
-	pthread_mutex_lock(&dispatcher->worker_list_mutex);
-	if (METRICS && MUTEX_METRIC)
-	{
-		diff = clock() - start;
-		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_workerevent_locked += msec%1000;
-	}
-	head = dispatcher->workers;
+	// clock_t start, diff;
+	// if (METRICS && MUTEX_METRIC)
+	// {
+	// 	start = clock();
+	// }
+	//pthread_mutex_lock(&dispatcher->worker_list_mutex);
+	// if (METRICS && MUTEX_METRIC)
+	// {
+	// 	diff = clock() - start;
+	// 	int msec = diff * 1000 / CLOCKS_PER_SEC;
+	// 	G_workerevent_locked += msec%1000;
+	// }
+	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
+	head = dispatcher->workers_queue->first;
 	while (head)
 	{	
 		cur_worker = (t_worker *)head->data;
@@ -220,7 +227,7 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 		}
 		head = head->next;
 	}
-	pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
 }
 
 int		timeout_progressbar(t_dispatcher *dispatcher)
@@ -229,7 +236,7 @@ int		timeout_progressbar(t_dispatcher *dispatcher)
 	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
 	write(1, "[2K", 4);
 	write(1, "\rWaiting for workers to connect...\n", 35);
-	while (!dispatcher->workers)
+	while (queue_count(dispatcher->workers_queue) > 0)
 	{
 		sleep(5);
 		if (--timeout == 0)
@@ -247,12 +254,20 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	t_thread_handler	*param;
 	t_lst				*head;	
 
-	if (sem_unlink("/exit"))
+	if (sem_unlink("/exit") && DEBUG)
 		printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_thread") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_limit") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
+	dispatcher->start_sending = sem_open("/sender_thread", O_CREAT, 0777, 0);
+	if (dispatcher->start_sending == SEM_FAILED)
+		printf("start_sending sem open failed with %d\n", errno);
 	dispatcher->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
 	if (dispatcher->exit_sem == SEM_FAILED)
 		printf("sem3 open failed with %d\n", errno);
-	
+
+	setup_async_file(dispatcher);
 	if (DEBUG)
 		printf("begin launch_simulation\n");
 	if (timeout_progressbar(dispatcher) == -1)
@@ -261,12 +276,22 @@ void		launch_simulation(t_dispatcher *dispatcher)
 		;
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
-	divide_dataset(dispatcher);
+	dispatcher->sender_limit = sem_open("/sender_limit", O_CREAT, 0777, dispatcher->worker_cnt);
+	if (dispatcher->sender_limit == SEM_FAILED)
+		printf("start_sending sem open failed with %d\n", errno);
+	setup_async_file(dispatcher);
+	start_sender_threads(dispatcher, dispatcher->worker_cnt);
 	launch_worker_event_threads(dispatcher);
+	divide_dataset(dispatcher);
+	//sem_post(dispatcher->start_sending);
 	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)
 		printf("sem_wait failed with err:%d\n", errno);
-	if (sem_unlink("/exit"))
-	printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_limit") && DEBUG)
+	 	printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/sender_thread") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
+	if (sem_unlink("/exit") && DEBUG)
+		printf("sem_unlink err %d\n", errno);
 	printf("dispatcher done, good bye\n");
 }

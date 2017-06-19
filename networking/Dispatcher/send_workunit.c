@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/09 22:42:08 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/09 00:19:23 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/14 00:13:37 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ int		send_bundle(t_worker *worker, t_bundle *bundle, t_tree **leaves)
 	msg = serialize_bundle(bundle, leaves);
 	msg.id = WORK_UNIT;
 	worker->w_calc_time = time(NULL);
+	if (worker->active == 0)
+	  printf("sending a bundle to an inactive worker\n");
 	send_worker_msg(worker, msg);
 	free(msg.data);
 	return (0);

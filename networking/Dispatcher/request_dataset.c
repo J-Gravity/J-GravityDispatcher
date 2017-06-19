@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "dispatcher.h"
+#include <math.h>
+#include <limits.h>
 
 // typedef struct			s_dataset
 // {
@@ -38,8 +40,24 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	read(fd, &(count), sizeof(count));
 	read(fd, &(scale), sizeof(scale));
 	t_body *particles = calloc(count, sizeof(t_body));
+	if (particles == NULL)
+		printf("couldnt calloc that much at once\n");
 	data->max_scale = scale;
 	data->particle_cnt = count;
+
+	if (count * sizeof(t_body) < INT_MAX)
+    {
+        printf("reading in one\n");
+        int ret = read(fd, particles, sizeof(t_body) * count);
+    }
+    else
+        for (int offset = 0; offset < count; offset += pow(2, 22))
+        {
+            printf("reading in chunks\n");
+            int ret = read(fd, particles + offset, sizeof(t_body) * pow(2, 22));
+            printf("ret was %d\n", ret);
+        }
+
 	read(fd, particles, sizeof(t_body) * count);
 	data->particles = particles;
 	close(fd);

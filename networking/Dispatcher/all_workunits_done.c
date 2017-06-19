@@ -17,8 +17,11 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (DEBUG)
 		printf("all workunits done for this tick\n");
 	// Output tick to file
-	save_output(dispatcher, dispatcher->name);
+	//save_output(dispatcher, dispatcher->name);
 	dispatcher->ticks_done++;
+	fclose(dispatcher->fp);
+	if (dispatcher->ticks_done != dispatcher->ticks_cnt)
+		setup_async_file(dispatcher); //setup next file right away
 	double tick_time = (time(NULL) - G_tick_start);
 	G_total_time += tick_time;
 	if (METRICS)
@@ -89,12 +92,13 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("2.x:%f\n", dispatcher->dataset->particles[2].position.x);
 		}
 		divide_dataset(dispatcher);
+		//sem_post(dispatcher->start_sending);
 		// Inform all workers work units are ready
-		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-		if (DEBUG && MUTEX_DEBUG)
-			printf("worker list mutex locked!\n");
-		broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
-		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+		// pthread_mutex_lock(&dispatcher->worker_list_mutex);
+		// if (DEBUG && MUTEX_DEBUG)
+		// 	printf("worker list mutex locked!\n");
+		// broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
+		// pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
 

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/09 21:25:49 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/13 02:53:06 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,36 +40,38 @@ void	*connect_worker_thread(void *param)
 		}
 		printf("%d worker", dispatcher->worker_cnt + 1);
 		if (dispatcher->worker_cnt + 1 == 1)
-			printf(" is connected!\n");
+		  printf(" is connected! - fd: %d\n", fd);
 		else
-			printf("s are connected!\n");
+		  printf("s are connected! - fd: %d\n" ,fd);
 		new_link = calloc(1, sizeof(t_lst));
 		new_link->data = calloc(1, sizeof(t_worker));
 		new_link->next = NULL;
 
-		clock_t start = clock(), diff;
+		// clock_t start = clock(), diff;
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
 		dispatcher->worker_cnt++;
+		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex locked!\n");
-		diff = clock() - start;
-		int msec = diff * 1000 / CLOCKS_PER_SEC;
-		G_connect_locked += msec/1000 + msec%1000;
-		head = dispatcher->workers;
-		if (head)
-		{
-			while (head && head->next)
-				head = head->next;
-			head->next = new_link;
-		}
-		else
-			dispatcher->workers = new_link;
+		// diff = clock() - start;
+		// int msec = diff * 1000 / CLOCKS_PER_SEC;
+		// G_connect_locked += msec/1000 + msec%1000;
+		// head = dispatcher->workers;
+		// if (head)
+		// {
+		// 	while (head && head->next)
+		// 		head = head->next;
+		// 	head->next = new_link;
+		// }
+		// else
+		// 	dispatcher->workers = new_link;
 		new_worker = (t_worker *)new_link->data;
 		new_worker->socket.fd = fd;
 		new_worker->tid = 0;
 		new_worker->workunit_queue = (t_queue *)calloc(1, sizeof(t_queue));
 		pthread_mutex_init(&new_worker->workunit_queue->mutex, NULL);
-		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
+		queue_enqueue(&dispatcher->workers_queue, new_link);
+		//print_worker_fds(dispatcher);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
 		if (dispatcher->is_running)

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 17:02:51 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/15 20:53:19 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,19 +33,19 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNIT_REQUEST";
 	else if (msg.id == WORK_UNIT_DONE)
 		line = "WORK_UNIT_DONE";
-	printf("SENT '%s' TO dispatcher %d\n", line, fd);
+	printf("SENT %zu bytes '%s' TO dispatcher %d\n", msg.size, line, fd);
 }
 
 void	send_msg(int fd, t_msg msg)
 {
 	char	*buffer;
-	int		msg_size;
+	size_t		msg_size;
 
-	msg_size = 5 + msg.size;
+	msg_size = HEADER_SIZE + msg.size;
 	buffer = (char *)calloc(1, msg_size);
 	buffer[0] = msg.id;
-	memcpy(&buffer[1], &msg.size, sizeof(int));
-	memcpy(&buffer[5], msg.data, msg.size);
+	memcpy(&buffer[1], &msg.size, sizeof(size_t));
+	memcpy(&buffer[HEADER_SIZE], msg.data, msg.size);
 	send(fd, buffer, msg_size, 0);
 	if (DEBUG & MSG_DEBUG)
 		print_debug(fd, msg);

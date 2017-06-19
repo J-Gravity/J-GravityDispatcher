@@ -6,15 +6,16 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/09 21:48:05 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 19:42:20 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define _GNU_SOURCE
-# define PORT 4243
-# define HEADER_SIZE 5
+# define PORT 4342
+# define HEADER_SIZE 9
+# define SENDER_THREADS 32
 
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
@@ -65,8 +66,8 @@ long G_total_workunit_cnt;
 # define DEBUG 0
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
-# define MSG_DETAILS_DEBUG 1
-# define MUTEX_DEBUG 1
+# define MSG_DETAILS_DEBUG 0
+# define MUTEX_DEBUG 0
 # define DIVIDE_DATASET_DEBUG 1
 # define NETWORK_DEBUG 1
 
@@ -117,7 +118,7 @@ typedef struct			s_queue
 typedef struct			s_msg
 {
 	char				id;
-	int					size;
+	size_t				size;
 	char				*data;
 	int					error;
 }						t_msg;
@@ -173,6 +174,7 @@ typedef struct			s_WU
 	t_body				*local_bodies;
 	t_body				*neighborhood;
 	cl_float4			force_bias;
+	char				is_last;
 }						t_WU;
 
 typedef struct			s_workunit
@@ -187,6 +189,8 @@ typedef struct			s_workunit
 typedef struct			s_worker
 {
 	char				active;
+	int					sent_wu;
+	int					rec_wu;
 	t_queue				*workunit_queue;
 	char				compute_class;
 	pthread_t			*tid;
@@ -229,6 +233,7 @@ typedef struct s_tree
 	struct s_tree **neighbors;
 	struct s_tree *as_single;
 	t_bounds bounds;
+	uint64_t *mortons;
 }				t_tree;
 
 typedef struct s_bundle
@@ -239,6 +244,9 @@ typedef struct s_bundle
 	int cellcount;
 	int **matches;
 	int *matches_counts;
+	char id;
+	long difficulty;
+	long size;
 }				t_bundle;
 
 typedef struct			s_dispatcher
@@ -246,9 +254,14 @@ typedef struct			s_dispatcher
 	pthread_mutex_t		workunits_mutex;
 	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
+	pthread_mutex_t		sender_thread_mutex;
+	pthread_t			**sender_threads;
+	sem_t				*start_sending;
+	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
-	t_lst				*workers;
+	//t_lst				*workers;
+	t_queue				*workers_queue;
 	int					worker_cnt;
 	t_dataset			*dataset;
 	t_dataset			*new_dataset;
@@ -262,6 +275,8 @@ typedef struct			s_dispatcher
 	t_socket			sin;
 	char				is_connect;
 	char				is_running;
+	FILE 				*fp;
+	pthread_mutex_t 	output_mutex;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -269,6 +284,12 @@ typedef struct			s_thread_handler
 	t_dispatcher		*dispatcher;
 	t_lst				*worker;
 }						t_thread_handler;
+
+typedef struct	s_sortbod
+{
+	t_body bod;
+	uint64_t morton;
+}               t_sortbod;
 
 t_metrics	deserialize_metrics(t_msg msg);
 void	handle_metrics_done_msg(t_msg msg);
@@ -282,18 +303,25 @@ t_dict	*create_dict(unsigned int size);
 t_pair	*create_pair(size_t key);
 t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
 t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
+void	start_sender_threads(t_dispatcher *disp, int count);
+void 		print_worker_fds(t_dispatcher *dispatcher);
+t_lst	*queue_pop_link(t_queue **queue);
+
+
+void async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
+void setup_async_file(t_dispatcher *dispatcher);
 
 /*
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(t_bundle *bundle);
+t_lst		*queue_create_new(void *bundle);
 
 /*
  * 	Pops a node off the queue
  * 		@param **queue	A queue struct that holds first, last and size
  */
-t_bundle	*queue_pop(t_queue **queue);
+void	*queue_pop(t_queue **queue);
 
 /*
  * 	Adds a node to the end of the queue. Returns the last param.
@@ -371,7 +399,7 @@ t_msg	get_worker_msg(t_worker *worker);
 *		@param	data	The body of the message
 *		@return	the struct initialized with the parameters
 */
-t_msg	new_message(char id, int data_size, char *data);
+t_msg	new_message(char id, size_t data_size, char *data);
 
 /*
 *	Send a message to a specific worker
@@ -492,12 +520,12 @@ void		clear_unit(t_lst **work_units);
 /*
 *	returns first workunit in queue without deletion from queue
 */
-t_bundle	*queue_peak(t_queue **queue);
+void	*queue_peek(t_queue **queue);
 
 /*
 *	returns the total count of items in queue
 */
-int queue_count(t_queue **queue);
+int queue_count(t_queue *queue);
 
 /*******************************************************************************
 ********************************************************************************
@@ -569,4 +597,17 @@ void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
 */
 void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg msg);
+/*
+*	A multithreaded quicksort
+*	takes an array and the number of elements in the array
+*/
+void		msort(t_sortbod *sorts, size_t count);
+
+/*
+* 	Comparison functionused for body sorting
+*/
+
+int sbod_comp(const void *a, const void *b);
+
+
 #endif

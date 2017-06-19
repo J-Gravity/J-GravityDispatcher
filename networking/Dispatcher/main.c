@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/12 16:16:39 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/15 19:42:17 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,20 +37,25 @@ int	main(int ac, char **av)
 	if (METRICS)
 		initialize_metrics();
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
+	printf("dispatcher struct is %lu bytes!!/n", sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
-	dispatcher->ticks_cnt = 120;
-	dispatcher->name = "mvp_test";
+	dispatcher->ticks_cnt = 600;
+	dispatcher->name = "66jobfair";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
 	dispatcher->bundles = (t_queue *)calloc(1, sizeof(t_queue));
 	pthread_mutex_init(&dispatcher->bundles->mutex, NULL);
+	dispatcher->workers_queue = (t_queue *)calloc(1, sizeof(t_queue));
+	pthread_mutex_init(&dispatcher->workers_queue->mutex, NULL);
 	int ret = pthread_mutex_init(&dispatcher->workunits_mutex, NULL);
 	pthread_mutex_init(&dispatcher->workunits_done_mutex, NULL);
 	pthread_mutex_init(&dispatcher->worker_list_mutex, NULL);
+	pthread_mutex_init(&dispatcher->output_mutex, NULL);
+	pthread_mutex_init(&dispatcher->sender_thread_mutex, NULL);
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	clock_t start = clock(), diff;
-	connect_workers(dispatcher, &dispatcher->workers);
+	connect_workers(dispatcher, NULL);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)
