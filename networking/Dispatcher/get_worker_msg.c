@@ -20,6 +20,8 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
+	else if (msg.id == METRICS_DONE)
+		line = "METRICS DONE";
 	printf("RECIEVED '%s' FROM worker %d\n", line, fd);
 }
 
@@ -41,7 +43,7 @@ char	read_header(int fd, t_msg *msg)
 	if (bytes_read == HEADER_SIZE)
 	{
 		msg->id = header[0];
- 		if (DEBUG && MSG_DEBUG)
+		if (DEBUG && MSG_DEBUG)
 			print_debug(fd, *msg);
 		memcpy(&msg->size, &header[1], sizeof(size_t));
 		msg->data = (char *)calloc(1, msg->size + 1);
