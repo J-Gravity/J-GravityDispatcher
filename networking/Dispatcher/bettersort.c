@@ -32,8 +32,8 @@ typedef struct	msort_param_s
 
 volatile int	mphore;
 volatile int	mflag;
-pthread_t		threadpool[6];
-pthread_t		secondpool[6];
+pthread_t		threadpool[10];
+pthread_t		secondpool[10];
 
 void	mswap(t_sortbod *a, t_sortbod *b)
 {
@@ -41,6 +41,45 @@ void	mswap(t_sortbod *a, t_sortbod *b)
 	t = *a;
 	*a = *b;
 	*b = t;
+}
+
+void	bsort(void *params)
+{
+	size_t		pi;
+	size_t		i;
+	size_t		l;
+	t_sortbod	pivot;
+	t_sortbod	*sorts = ((msort_param_t*)params)->sorts;
+	size_t		end = ((msort_param_t*)params)->end;
+	size_t		start = ((msort_param_t*)params)->start;
+	
+	i = start;
+	pi = (start + (end - start) / 2);
+	pivot = sorts[pi];
+	l = end;
+	while (i <= l)
+	{
+		while (sbod_comp(&pivot, &sorts[i]) == 1)
+			i++;
+		while (sbod_comp(&pivot, &sorts[l]) == -1)
+			l--;
+		if (i >= l)
+			break ;
+		mswap(&sorts[i], &sorts[l]);
+	}
+	//thread 1
+	msort_param_t	param1;
+	param1.start = start;
+	param1.end = l;
+	param1.sorts = sorts;
+	bsort(&param1);
+	//thread2
+	msort_param_t	param2;
+	param2.start = (l + 1);
+	param2.end = end;
+	param2.sorts = sorts;
+	bsort(&param2);
+	return ;
 }
 
 void	*qmsort(void *params)
@@ -75,16 +114,16 @@ void	*qmsort(void *params)
 	while (1)
 	{
 		i++;
-		if (mphore < 4 && mflag != 1)
+		if (mphore < 8 && mflag != 1)
 		{
 			mflag = 1;
 			i = 0;
-			while (i < 4)
+			while (i < 8)
 			{
 				if (threadpool[i] == pthread_self() || secondpool[i] == pthread_self())
 				{
-					mswap(&threadpool[i], &threadpool[4]);
-					mswap(&secondpool[i], &secondpool[4]);
+					mswap(&threadpool[i], &threadpool[9]);
+					mswap(&secondpool[i], &secondpool[9]);
 					break ;
 				}
 				i++;
@@ -110,12 +149,12 @@ void	*qmsort(void *params)
 		{
 			mflag == 1;
 			i = 0;
-			while (i < 4)
+			while (i < 8)
 			{
 				if (threadpool[i] == pthread_self() || secondpool[i] == pthread_self())
 				{
-					mswap(&threadpool[i], &threadpool[5]);
-					mswap(&secondpool[i], &secondpool[5]);
+					mswap(&threadpool[i], &threadpool[10]);
+					mswap(&secondpool[i], &secondpool[10]);
 					break ;
 				}
 				i++;
@@ -126,13 +165,13 @@ void	*qmsort(void *params)
 			param1.start = start;
 			param1.end = l;
 			param1.sorts = sorts;
-			qmsort(&param1);
+			bsort(&param1);
 			//thread2
 			msort_param_t	param2;
 			param2.start = (l + 1);
 			param2.end = end;
 			param2.sorts = sorts;	
-			qmsort(&param2);
+			bsort(&param2);
 			return (mflag = 0);
 		}
 	}
@@ -144,7 +183,7 @@ void	init_pool();
 {
 	int	i;
 	i = 0;
-	while (i < 6)
+	while (i < 10)
 	{
 		threadpool[i] = 1;
 		secondpool[i] = 1;
@@ -165,7 +204,7 @@ void	msort(t_sortbod *sorts, size_t count)
 	mphore = 0;
 	mflag = 0;
 	i = 0;
-	pi = end / 2;
+	pi = (start + (end - start) / 2);
 	pivot = sorts[pi];
 	l = end;
 	while (i <= l)
