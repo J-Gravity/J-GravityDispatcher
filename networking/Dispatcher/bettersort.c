@@ -140,6 +140,18 @@ void	*qmsort(void *params)
 	return (sorts);
 }
 
+void	init_pool();
+{
+	int	i;
+	i = 0;
+	while (i < 6)
+	{
+		threadpool[i] = 1;
+		secondpool[i] = 1;
+		i++;
+	}
+}
+
 void	msort(t_sortbod *sorts, size_t count)
 {
 	size_t		pi;
@@ -148,6 +160,7 @@ void	msort(t_sortbod *sorts, size_t count)
 	t_sortbod	pivot;
 	size_t		end;
 
+	init_pool();
 	end = count - 1;
 	mphore = 0;
 	mflag = 0;
