@@ -68,7 +68,7 @@ void	bsort(void *params)
 	msort_param_t	param1;
 	param1.start = start;
 	param1.end = l;
-	param1.sorts = sorts;'
+	param1.sorts = sorts;
 	
 	msort_param_t	param2;
 	param2.start = (l + 1);
@@ -129,7 +129,7 @@ void	*qmsort(void *params)
 	msort_param_t	param1;
 	param1.start = start;
 	param1.end = l;
-	param1.sorts = sorts;'
+	param1.sorts = sorts;
 	
 	msort_param_t	param2;
 	param2.start = (l + 1);
@@ -188,7 +188,7 @@ void	msort(t_sortbod *sorts, size_t count)
 	msort_param_t	param1;
 	param1.start = start;
 	param1.end = l;
-	param1.sorts = sorts;'
+	param1.sorts = sorts;
 	
 	msort_param_t	param2;
 	param2.start = (l + 1);
