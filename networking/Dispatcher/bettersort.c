@@ -49,7 +49,9 @@ void	bsort(void *params)
 	t_sortbod	*sorts = ((msort_param_t*)params)->sorts;
 	size_t		end = ((msort_param_t*)params)->end;
 	size_t		start = ((msort_param_t*)params)->start;
-	
+
+	if (start >= end)
+		return (0);
 	i = start;
 	pi = (start + (end - start) / 2);
 	pivot = sorts[pi];
@@ -109,7 +111,7 @@ void	*qmsort(void *params)
 	size_t		end = ((msort_param_t*)params)->end;
 	size_t		start = ((msort_param_t*)params)->start;
 
-	if (start >-= end)
+	if (start >= end)
 		return (0);
 	i = start;
 	pi = (start + (end - start) / 2);
