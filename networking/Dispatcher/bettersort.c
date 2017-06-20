@@ -9,7 +9,7 @@
 #include "lz4.h"
 #include "transpose.h"
 
-#define ABORT_THREADWAIT 20000
+#define THREAD_THRESHOLD 10000
 
 int sbod_comp(const void *a, const void *b)
 {
@@ -31,9 +31,6 @@ typedef struct	msort_param_s
 }				msort_param_t;
 
 volatile int	mphore;
-volatile int	mflag;
-pthread_t		threadpool[10];
-pthread_t		secondpool[10];
 
 void	mswap(t_sortbod *a, t_sortbod *b)
 {
@@ -67,18 +64,37 @@ void	bsort(void *params)
 			break ;
 		mswap(&sorts[i], &sorts[l]);
 	}
-	//thread 1
+	
 	msort_param_t	param1;
 	param1.start = start;
 	param1.end = l;
-	param1.sorts = sorts;
-	bsort(&param1);
-	//thread2
+	param1.sorts = sorts;'
+	
 	msort_param_t	param2;
 	param2.start = (l + 1);
 	param2.end = end;
 	param2.sorts = sorts;
-	bsort(&param2);
+	
+	if (mphore < 8 && l - start > THREAD_THRESHOLD)
+	{
+		mphore++;
+		pthread_t tid1;;
+		pthread_create(&tid1, NULL, qmsort, &param1);
+	}
+	else
+	{
+		bsort(&param1);
+	}
+	if (mphore < 8 && end - l > THREAD_THRESHOLD)
+	{
+		mphore++;
+		pthread_t tid2;
+		pthread_create(&tid2, NULL, qmsort, &param2);
+	}
+	else
+	{
+		bsort(&param2);
+	}
 	return ;
 }
 
@@ -109,86 +125,39 @@ void	*qmsort(void *params)
 			break ;
 		mswap(&sorts[i], &sorts[l]);
 	}
-	//thread1
-	i = 0;
-	while (1)
+	
+	msort_param_t	param1;
+	param1.start = start;
+	param1.end = l;
+	param1.sorts = sorts;'
+	
+	msort_param_t	param2;
+	param2.start = (l + 1);
+	param2.end = end;
+	param2.sorts = sorts;
+	
+	if (mphore < 8 && l - start > THREAD_THRESHOLD)
 	{
-		i++;
-		if (mphore < 8 && mflag != 1)
-		{
-			mflag = 1;
-			i = 0;
-			while (i < 8)
-			{
-				if (threadpool[i] == pthread_self() || secondpool[i] == pthread_self())
-				{
-					mswap(&threadpool[i], &threadpool[9]);
-					mswap(&secondpool[i], &secondpool[9]);
-					break ;
-				}
-				i++;
-			}
-			tid1 = threadpool[i];
-			mphore++;
-			msort_param_t	param1;
-			param1.start = start;
-			param1.end = l;
-			param1.sorts = sorts;
-			pthread_create(&tid1, NULL, qmsort, &param1);
-			//thread2
-			tid2 = secondpool[i];
-			msort_param_t	param2;
-			param2.start = (l + 1);
-			param2.end = end;
-			param2.sorts = sorts;
-			pthread_create(&tid2, NULL, qmsort, &param2);
-			mphore--;
-			return (mflag = 0);
-		}
-		if (i == ABORT_THREADWAIT && mflag == 0)
-		{
-			mflag == 1;
-			i = 0;
-			while (i < 8)
-			{
-				if (threadpool[i] == pthread_self() || secondpool[i] == pthread_self())
-				{
-					mswap(&threadpool[i], &threadpool[10]);
-					mswap(&secondpool[i], &secondpool[10]);
-					break ;
-				}
-				i++;
-			}
-			mphore--;
-			mflag = 2;
-			msort_param_t	param1;
-			param1.start = start;
-			param1.end = l;
-			param1.sorts = sorts;
-			bsort(&param1);
-			//thread2
-			msort_param_t	param2;
-			param2.start = (l + 1);
-			param2.end = end;
-			param2.sorts = sorts;	
-			bsort(&param2);
-			return (mflag = 0);
-		}
+		mphore++;
+		pthread_t tid1;
+		pthread_create(&tid1, NULL, qmsort, &param1);
+	}
+	else
+	{
+		bsort(&param1);
+	}
+	if (mphore < 8 && end - l > THREAD_THRESHOLD)
+	{
+		mphore++;
+		pthread_t tid2;
+		pthread_create(&tid2, NULL, qmsort, &param2);
+	}
+	else
+	{
+		bsort(&param2);
 	}
 	mphore--;
 	return (sorts);
-}
-
-void	init_pool();
-{
-	int	i;
-	i = 0;
-	while (i < 10)
-	{
-		threadpool[i] = 1;
-		secondpool[i] = 1;
-		i++;
-	}
 }
 
 void	msort(t_sortbod *sorts, size_t count)
@@ -199,10 +168,8 @@ void	msort(t_sortbod *sorts, size_t count)
 	t_sortbod	pivot;
 	size_t		end;
 
-	init_pool();
 	end = count - 1;
 	mphore = 0;
-	mflag = 0;
 	i = 0;
 	pi = (start + (end - start) / 2);
 	pivot = sorts[pi];
@@ -217,17 +184,37 @@ void	msort(t_sortbod *sorts, size_t count)
 			break ;
 		mswap(&sorts[i], &sorts[l]);
 	}
-	//thread 1
+	
 	msort_param_t	param1;
-	param1.start = 0;
+	param1.start = start;
 	param1.end = l;
-	param1.sorts = sorts;
-	qmsort(&param1);
-	//thread2
+	param1.sorts = sorts;'
+	
 	msort_param_t	param2;
 	param2.start = (l + 1);
 	param2.end = end;
 	param2.sorts = sorts;
-	qmsort(&param2);
+	
+	if (mphore < 8 && l - start > THREAD_THRESHOLD)
+	{
+		mphore++;
+		pthread_t tid1;
+		pthread_create(&tid1, NULL, qmsort, &param1);
+	}
+	else
+	{
+		bsort(&param1);
+	}
+	if (mphore < 8 && end - l > THREAD_THRESHOLD)
+	{
+		mphore++;
+		pthread_t tid2;
+		pthread_create(&tid2, NULL, qmsort, &param2);
+	}
+	else
+	{
+		bsort(&param2);
+	}
+	
 	return ;
 }
