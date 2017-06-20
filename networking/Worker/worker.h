@@ -22,6 +22,7 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define METRICS_DONE 9
+# define WORKER_SETTINGS 10
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -122,10 +123,11 @@ typedef	struct			s_socket
 	pthread_mutex_t		mutex;
 }						t_socket;
 
-
 typedef struct			s_worker
 {
 	char				active;
+	double				theta;
+	float				softening_factor;
 	t_queue				*todo_work;
 	t_queue				*completed_work;
 	t_queue 			*bundle_queue;

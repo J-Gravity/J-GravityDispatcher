@@ -9,9 +9,6 @@
 #define SORT_CMP(x, y) (sbod_comp(&x, &y))
 #include "sort.h"
 
-#define THETA 1
-#define LEAF_THRESHOLD pow(2, 12)
-
 void print_bounds(t_bounds b)
 {
     printf("bounds: %f %f %f %f %f %f\n", b.xmin, b.xmax, b.ymin, b.ymax, b.zmin, b.zmax);

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 19:42:20 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/19 17:12:46 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,14 @@
 # define HEADER_SIZE 9
 # define SENDER_THREADS 32
 
+# define LEAF_THRESHOLD pow(2, 12)
+# define THETA 1
+# define TIME_STEP 30000
+# define SOFTENING 10000
+
+/* ************ */
+/*    MSG ID    */
+/* ************ */
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
 # define WORK_UNIT_REQUEST 3
@@ -27,9 +35,11 @@
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
 # define METRICS_DONE 9
+# define WORKER_SETTINGS 10
 
 /* ************ */
 /* TEMP         */
+/* ************ */
 int G_sent_wu;
 
 /* ************ */
@@ -57,7 +67,6 @@ long G_total_workunit_size;
 double G_worker_calcs;
 double G_total_time;
 long G_total_workunit_cnt;
-/* *********** */
 
 /* *********** */
 /* DEBUG FLAGS */
