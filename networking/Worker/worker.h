@@ -11,7 +11,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-# define PORT 4342
+# define PORT 4242
 # define HEADER_SIZE 9
 
 # define BROADCAST_SUPER_PARTICLE 1
