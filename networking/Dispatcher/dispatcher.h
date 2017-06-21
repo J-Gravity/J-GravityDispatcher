@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/20 21:22:46 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 22:15:39 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@
 
 # define LEAF_THRESHOLD pow(2, 12)
 # define THETA 1
-# define TIME_STEP 30077
-# define SOFTENING 10099
+# define TIME_STEP 30000
+# define SOFTENING 10000
 
 /* ************ */
 /*    MSG ID    */
