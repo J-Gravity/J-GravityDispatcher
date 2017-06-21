@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/19 17:21:31 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 17:00:27 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	else if (msg.id == WORKER_SETTINGS)
 	{
 		printf("config received\n");
-		configure_simulation(msg);
+		configure_simulation(worker, msg);
 		printf("configured worker\n");
 		free(msg.data);
 	}

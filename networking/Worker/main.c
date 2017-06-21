@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 20:53:19 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 16:45:25 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,9 +134,9 @@ int main(int argc, char **argsv)
 	if (DEBUG)
 		printf("semaphores initalized\n");
 	launch_event_thread(worker);
+	launch_debundle_thread(worker);
 	launch_calculation_thread(worker);
 	launch_sender_thread(worker);
-	launch_debundle_thread(worker);
 	if (DEBUG)
 		printf("threads launched\n");
 	int val = sem_wait(worker->exit_sem);

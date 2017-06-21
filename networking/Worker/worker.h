@@ -23,6 +23,7 @@
 # define WORK_UNIT_DONE 7
 # define METRICS_DONE 9
 # define WORKER_SETTINGS 10
+# define SETTINGS_APPLIED 11
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -126,8 +127,8 @@ typedef	struct			s_socket
 typedef struct			s_worker
 {
 	char				active;
-	double				theta;
-	float				softening_factor;
+	float				timestep;
+	float				softening;
 	t_queue				*todo_work;
 	t_queue				*completed_work;
 	t_queue 			*bundle_queue;
@@ -212,9 +213,10 @@ void		launch_calculation_thread(t_worker *worker);
  */
 void		launch_sender_thread(t_worker *worker);
 
-void do_workunit(t_workunit *w);
+void		do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
 t_msg		serialize_workunit(t_workunit w);
+void		configure_simulation(t_worker *worker, t_msg msg);
 
 void print_cl4(cl_float4 v);
 

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/19 17:12:46 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 19:25:45 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@
 # define NO_WORK_UNITS 8
 # define METRICS_DONE 9
 # define WORKER_SETTINGS 10
+# define SETTINGS_APPLIED 11
 
 /* ************ */
 /* TEMP         */
@@ -269,7 +270,8 @@ typedef struct			s_dispatcher
 	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
-	//t_lst				*workers;
+	float				timestep;
+	float				softening;
 	t_queue				*workers_queue;
 	int					worker_cnt;
 	t_dataset			*dataset;
@@ -300,6 +302,7 @@ typedef struct	s_sortbod
 	uint64_t morton;
 }               t_sortbod;
 
+t_msg	serialize_settings(t_dispatcher *dispatcher);
 t_metrics	deserialize_metrics(t_msg msg);
 void	handle_metrics_done_msg(t_msg msg);
 void print_cl4(cl_float4 v);

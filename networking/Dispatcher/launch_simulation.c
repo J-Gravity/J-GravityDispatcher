@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 15:17:17 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 17:19:47 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -161,7 +161,6 @@ void		*handle_worker_connection(void *input)
 	worker_link = params->worker;
 	worker = (t_worker *)worker_link->data;
 	worker->active = 1;
-	//send_worker_msg(worker, new_message(WORK_UNITS_READY, 1, " "));
 	while (worker->active)
 	{
 	  //if (DEBUG && WORKER_DEBUG)
