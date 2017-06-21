@@ -26,7 +26,7 @@ void	bsort(void *params)
 	size_t		start = ((msort_param_t*)params)->start;
 
 	if (start >= end)
-		return (0);
+		return ;
 	i = start;
 	pi = (start + (end - start) / 2);
 	pivot = sorts[pi];
