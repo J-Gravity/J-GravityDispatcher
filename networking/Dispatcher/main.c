@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 19:42:17 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 16:30:00 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,8 @@ int	main(int ac, char **av)
 	dispatcher->name = "66jobfair";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
+	dispatcher->timestep = TIME_STEP;
+	dispatcher->softening = SOFTENING;
 	dispatcher->bundles = (t_queue *)calloc(1, sizeof(t_queue));
 	pthread_mutex_init(&dispatcher->bundles->mutex, NULL);
 	dispatcher->workers_queue = (t_queue *)calloc(1, sizeof(t_queue));

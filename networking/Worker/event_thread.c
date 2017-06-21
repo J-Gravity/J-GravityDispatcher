@@ -20,6 +20,13 @@ static void	handle_event(t_worker *worker, t_msg msg)
 		send_msg(worker->socket.fd, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
 		free(msg.data);
 	}
+	else if (msg.id == WORKER_SETTINGS)
+	{
+		printf("config received\n");
+		configure_simulation(worker, msg);
+		printf("configured worker\n");
+		free(msg.data);
+	}
 	else if (msg.id == WORK_UNIT)
 	{
 		int count;
