@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 00:37:24 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/20 20:24:17 by ssmith           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,13 @@ static void	handle_event(t_worker *worker, t_msg msg)
 	{
 		//may need to mutex the socket to avoid conflict with sender_thread
 		send_msg(worker->socket.fd, (t_msg){WORK_UNIT_REQUEST, 1, strdup(" ")});
+		free(msg.data);
+	}
+	else if (msg.id == WORKER_SETTINGS)
+	{
+		printf("config received\n");
+		configure_simulation(worker, msg);
+		printf("configured worker\n");
 		free(msg.data);
 	}
 	else if (msg.id == WORK_UNIT)
