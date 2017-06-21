@@ -235,8 +235,8 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     size_t global = ncount * tps;
     size_t mscale = mcount;
     size_t local = GROUPSIZE < global ? GROUPSIZE : global;
-    float soften = SOFTENING;
-    float timestep = TIME_STEP;
+    float soften = softening;
+    float timestep = time_step;
     float grav = G;
     size_t count = ncount;
 

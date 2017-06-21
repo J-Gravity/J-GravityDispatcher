@@ -42,6 +42,8 @@
 #define SOFTENING 10000
 #define TIME_STEP 30000
 #define GROUPSIZE 256
+float	softening;
+float	time_step;
 
 # ifndef DEVICE
 # define DEVICE CL_DEVICE_TYPE_DEFAULT
@@ -127,8 +129,6 @@ typedef	struct			s_socket
 typedef struct			s_worker
 {
 	char				active;
-	float				timestep;
-	float				softening;
 	t_queue				*todo_work;
 	t_queue				*completed_work;
 	t_queue 			*bundle_queue;
