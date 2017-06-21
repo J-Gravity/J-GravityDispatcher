@@ -13,7 +13,7 @@
 #ifndef DISPATCHER_H
 # define DISPATCHER_H
 # define _GNU_SOURCE
-# define PORT 4342
+# define PORT 4242
 # define HEADER_SIZE 9
 # define SENDER_THREADS 32
 
@@ -41,7 +41,7 @@ int G_sent_wu;
 # define STARTUP_METRICS 1
 # define TPM_METRIC 1
 # define MUTEX_METRIC 0
-# define WORKER_TIME_METRIC 0
+# define WORKER_TIME_METRIC 1
 
 
 int G_total_locked;
