@@ -67,6 +67,7 @@ long G_total_calc_time;
 # define MSG_DETAILS_DEBUG 1
 # define MUTEX_DEBUG 0
 # define NETWORK_DEBUG 1
+# define METRICS_DEBUG 0
 
 typedef struct s_context
 {

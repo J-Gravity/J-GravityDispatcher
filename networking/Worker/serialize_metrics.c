@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serialize_metrics.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ssmith <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/14 15:35:20 by ssmith            #+#    #+#             */
-/*   Updated: 2017/06/20 20:23:30 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/20 22:38:20 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,11 @@ t_msg	serialize_metrics(void)
 	int offset = 0;
 	memcpy(msg.data, &(id), sizeof(int));
 	offset += sizeof(int);
-	memcpy(&(id2), msg.data, sizeof(int));
-	printf("id2=%d\n", id2);
+	if (DEBUG && METRICS_DEBUG)
+	{
+		memcpy(&(id2), msg.data, sizeof(int));
+		printf("id2=%d\n", id2);
+	}
 	memcpy(msg.data, &(total_time), sizeof(long));
 	offset += sizeof(long);
 	memcpy(msg.data + offset, &(G_time_waiting_for_wu), sizeof(long));

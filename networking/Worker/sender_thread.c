@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/14 16:00:14 by ssmith           ###   ########.fr       */
+/*   Updated: 2017/06/20 22:36:19 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,15 @@ static void *sender_thread(void *param)
         //send complete work unit
         msg = serialize_workunit(*workunit);
 		if (DEBUG)
+		{
         	printf("sending: %d\n", workunit->id);
+			printf("count: %d\n", worker->todo_work->count);
+		}
 		send_msg(worker->socket.fd, msg);
-		printf("count: %d\n", worker->todo_work->count);
 		if (worker->todo_work->count == 0)
 		{
-			printf("sending metrics\n");
+			if (DEBUG)
+				printf("sending metrics\n");
 			msg = serialize_metrics();
 			send_msg(worker->socket.fd, msg);
 		}
