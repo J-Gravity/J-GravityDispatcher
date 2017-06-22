@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/20 17:19:47 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/21 20:48:47 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,7 +235,7 @@ int		timeout_progressbar(t_dispatcher *dispatcher)
 	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
 	write(1, "[2K", 4);
 	write(1, "\rWaiting for workers to connect...\n", 35);
-	while (queue_count(dispatcher->workers_queue) > 0)
+	while (queue_count(dispatcher->workers_queue) > 0) /* base on the specified number of workers for the simluation*/
 	{
 		sleep(5);
 		if (--timeout == 0)

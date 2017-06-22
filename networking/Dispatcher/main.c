@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/20 16:30:00 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/21 20:48:52 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,12 +39,9 @@ int	main(int ac, char **av)
 	dispatcher = (t_dispatcher	*)calloc(1, sizeof(t_dispatcher));
 	printf("dispatcher struct is %lu bytes!!/n", sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
-	dispatcher->ticks_cnt = 600;
-	dispatcher->name = "66jobfair";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
-	dispatcher->timestep = TIME_STEP;
-	dispatcher->softening = SOFTENING;
+	/////////////// INIT STUFF
 	dispatcher->bundles = (t_queue *)calloc(1, sizeof(t_queue));
 	pthread_mutex_init(&dispatcher->bundles->mutex, NULL);
 	dispatcher->workers_queue = (t_queue *)calloc(1, sizeof(t_queue));
@@ -56,12 +53,22 @@ int	main(int ac, char **av)
 	pthread_mutex_init(&dispatcher->sender_thread_mutex, NULL);
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
+	/////////////// INIT STUFF
+	////////// Configure sim
+	dispatcher->ticks_cnt = 600;
+	dispatcher->name = "66jobfair";
+	dispatcher->timestep = TIME_STEP;
+	dispatcher->softening = SOFTENING;
+	//receive_simulation_job(disapatcher);
+	////////// Configure sim
+	//generate_dataset(dispatcher);
 	clock_t start = clock(), diff;
 	connect_workers(dispatcher, NULL);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
 	if (METRICS && STARTUP_METRICS)
 		printf("connect_workers took %d seconds %d milliseconds\n", msec/1000, msec%1000);
+	//start_workers(dispatcher);
 	start = clock();
 	request_dataset(dispatcher, av[1]);
 	diff = clock() - start;
