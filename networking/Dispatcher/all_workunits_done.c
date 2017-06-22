@@ -53,11 +53,17 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 		G_total_locked += G_removeworker_locked + G_workerevent_locked + G_handle_locked + G_printfds_locked;
 		if (dispatcher->ticks_done % dispatcher->ticks_cnt == 0 && dispatcher->ticks_done != 0)
 		{
-			printf("------------------------------------------------------------------\n");
+			printf("-----------------------------Summary-----------------------------\n");
 			if (MUTEX_METRIC)
 				printf("workers were waiting on locks for %d seconds\n", G_total_locked / 1000);
 			printf("\n\x1b[32mAverage ticks/min %.2f\n",  dispatcher->ticks_cnt / (G_total_time / 60));
 			printf("Average workunits/min %.2f\n\n", 60 * (G_total_workunit_cnt / G_total_time));
+			printf("\n---------------------Worker Metrics (seconds)------------------\n");
+//			printf("Total time: %f\n", M_total_time);
+			printf("Waiting for work: %f\n", M_time_waiting_for_wu);
+			printf("Event threads took: %f\n", M_total_event_time);
+			printf("Calc threads took: %f\n", M_total_calc_time);
+			printf("Send threads took: %f\n", M_total_send_time);
 			//printf("Processed %ld MB/sec/tick\n", ((G_total_workunit_size / (1024 * 1024)) / 60) / dispatcher->ticks_cnt);
 			printf("\x1b[0m");
 		}

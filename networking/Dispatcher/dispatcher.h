@@ -54,20 +54,24 @@ int G_sent_wu;
 # define MUTEX_METRIC 0
 # define WORKER_TIME_METRIC 0
 
-
-int G_total_locked;
-int G_connect_locked;
-int G_movelist_locked;
-int G_removeworker_locked;
-int G_printfds_locked;
-int G_workerevent_locked;
-int G_handle_locked;
-double G_tick_start;
-long G_workunit_size;
-long G_total_workunit_size;
-double G_worker_calcs;
-double G_total_time;
-long G_total_workunit_cnt;
+float	M_total_time;
+float	M_time_waiting_for_wu;
+float	M_total_event_time;
+float	M_total_calc_time;
+float	M_total_send_time;
+int		G_total_locked;
+int		G_connect_locked;
+int		G_movelist_locked;
+int		G_removeworker_locked;
+int		G_printfds_locked;
+int		G_workerevent_locked;
+int		G_handle_locked;
+double	G_tick_start;
+long	G_workunit_size;
+long	G_total_workunit_size;
+double	G_worker_calcs;
+double	G_total_time;
+long	G_total_workunit_cnt;
 
 /* *********** */
 /* DEBUG FLAGS */
@@ -156,24 +160,24 @@ typedef struct s_bounds
 	float zmax;
 }				t_bounds;
 
-typedef struct s_cell
+typedef struct		s_cell
 {
-	t_body **bodies;
-	int bodycount;
-	struct s_cell *parent;
-	struct s_cell **children;
-	struct s_cell *scb;
-	cl_float4 center;
-	cl_float4 force_bias;
-	t_bounds bounds;
-}				t_cell;
+	t_body			**bodies;
+	int				bodycount;
+	struct s_cell	*parent;
+	struct s_cell	**children;
+	struct s_cell	*scb;
+	cl_float4		center;
+	cl_float4		force_bias;
+	t_bounds		bounds;
+}					t_cell;
 
 typedef struct s_octree
 {
-	t_cell *root;
-	t_body **bodies;
-	size_t n_bodies;
-	t_bounds bounds;
+	t_cell		*root;
+	t_body		**bodies;
+	size_t		n_bodies;
+	t_bounds	bounds;
 }				t_octree;
 
 typedef struct			s_WU
