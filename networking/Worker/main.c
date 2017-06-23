@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 20:53:19 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/23 14:39:35 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,8 @@ int main(int argc, char **argsv)
 	struct		sockaddr_in serv_addr;
 	t_worker	*worker;
 
+	G_softening = SOFTENING;
+	G_time_step = TIME_STEP;
 	worker = (t_worker *)calloc(1, sizeof(t_worker));
 	if (argc == 1)
 	{

@@ -6,13 +6,29 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/13 02:53:06 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/23 14:56:45 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 #include <unistd.h>
 #include <pthread.h>
+
+void	configure_worker_settings(t_dispatcher *dispatcher, t_worker *worker)
+{
+	t_msg	settings_msg;
+	t_msg	response;
+
+	settings_msg = serialize_settings(dispatcher);
+	send_worker_msg(worker, settings_msg);
+	free(settings_msg.data);
+
+	response = get_worker_msg(worker);
+	if (response.id != SETTINGS_APPLIED)
+		printf("ERROR: Worker Failed to respond to SETTINGS MSG\n");
+	else
+		printf("Worker settings applied successfully!!\n");
+}
 
 void	*connect_worker_thread(void *param)
 {
@@ -71,7 +87,7 @@ void	*connect_worker_thread(void *param)
 		new_worker->workunit_queue = (t_queue *)calloc(1, sizeof(t_queue));
 		pthread_mutex_init(&new_worker->workunit_queue->mutex, NULL);
 		queue_enqueue(&dispatcher->workers_queue, new_link);
-		//print_worker_fds(dispatcher);
+		configure_worker_settings(dispatcher, new_worker);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
 		if (dispatcher->is_running)
