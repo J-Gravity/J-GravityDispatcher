@@ -58,7 +58,7 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
             printf("ret was %d\n", ret);
         }
 
-	read(fd, particles, sizeof(t_body) * count);
+	//read(fd, particles, sizeof(t_body) * count);
 	data->particles = particles;
 	close(fd);
 	dispatcher->dataset = data;
