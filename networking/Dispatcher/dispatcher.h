@@ -68,7 +68,7 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 1
+# define DEBUG 0
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 0
