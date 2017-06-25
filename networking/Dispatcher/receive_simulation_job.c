@@ -54,7 +54,7 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 		else
 		{
 			msg = get_msg(fd);
-			if (msg.id == ACKNOWLEDGED)
+			if (msg.error == 42 && msg.id == ACKNOWLEDGED)
 			{
 				printf("message id: %c\n", msg.id);
 				printf("message size: %zu\n", msg.size);
@@ -74,7 +74,8 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 			{
 				printf("bad command message!\n");
 				close(fd);
-				free(msg.data);
+				if (msg.error == 42)
+					free(msg.data);
 			}
 		}
 	}

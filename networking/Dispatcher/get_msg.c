@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_worker_msg.c                                   :+:      :+:    :+:   */
+/*   get_msg.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 00:39:15 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/25 16:19:26 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ t_msg	get_msg(int fd)
 	msg.error = 42;
 	msg.id = 0;
 	msg.size = 0;
+	msg.data = 0;
 	read_header(fd, &msg);
 	read_body(fd, &msg);
 	return (msg);
