@@ -63,5 +63,4 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 		dispatcher->set_data = set_data;
 	}
 	printf("received complete\n");
-	sleep(20);
 }
