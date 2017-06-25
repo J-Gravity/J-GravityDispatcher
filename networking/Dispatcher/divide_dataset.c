@@ -24,6 +24,7 @@ void print_cl4(cl_float4 v)
 }
 
 // method to seperate bits from a given integer 3 positions apart
+//from http://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
 uint64_t splitBy3(const unsigned int a)
 {
     uint64_t x = a & 0x1fffff; // we only look at the first 21 bits
@@ -188,6 +189,7 @@ static t_body COG_from_bodies(t_body *bodies, int count)
 
 static t_tree *make_as_single(t_tree *c)
 {
+    //this can be improved,
 	//it's silly to build a whole cell for something
 	//that could easily just be a t_body in t_tree
     t_body b;
@@ -687,8 +689,8 @@ t_tree *make_tree(t_body *bodies, int count)
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
 	
 	//generate and cache morton codes for each body
-    t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
-	//t_sortbod *sorts = mt_make_sortbods(bodies, root_bounds, count);
+    //t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
+	t_sortbod *sorts = mt_make_sortbods(bodies, root_bounds, count);
 
 	//sort the bodies by their morton codes
 	//they are now arranged on a z-order curve.
