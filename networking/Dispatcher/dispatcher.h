@@ -68,13 +68,13 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 0
+# define DEBUG 1
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 0
 # define MUTEX_DEBUG 0
-# define DIVIDE_DATASET_DEBUG 1
-# define NETWORK_DEBUG 1
+# define DIVIDE_DATASET_DEBUG 0
+# define NETWORK_DEBUG 0
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -244,6 +244,18 @@ typedef struct s_bundle
 	long size;
 }				t_bundle;
 
+typedef struct		s_set_data
+{
+	char			*set_name;
+	unsigned int	star_count;
+	unsigned int	solar_mass;
+	unsigned int	big_radius;
+	unsigned int	anchor_mass;
+	unsigned int	time_step;
+	unsigned int	frame_count;
+	char			approved;
+}					t_set_data;
+
 typedef struct			s_dispatcher
 {
 	pthread_mutex_t		workunits_mutex;
@@ -274,6 +286,7 @@ typedef struct			s_dispatcher
 	char				is_running;
 	FILE 				*fp;
 	pthread_mutex_t 	output_mutex;
+	t_set_data			*set_data;
 }						t_dispatcher;
 
 typedef struct			s_thread_handler
@@ -289,23 +302,23 @@ typedef struct	s_sortbod
 }               t_sortbod;
 
 t_msg	serialize_settings(t_dispatcher *dispatcher);
-void print_cl4(cl_float4 v);
-t_body *sort_bodies(t_body *bodies, int count);
-void tree_test(t_body *bodies, int count);
-void			heap_sort(t_body *data, int n);
-int		dict_search(t_dict *dict, t_tree *cell, size_t subkey);
-void	dict_insert(t_dict *dict, t_tree *cell, size_t subkey);
-t_dict	*create_dict(unsigned int size);
-t_pair	*create_pair(size_t key);
-t_bundle *bundle_dict(t_dict *dict, t_pair *ids);
-t_msg serialize_bundle(t_bundle *b, t_tree **leaves);
-void	start_sender_threads(t_dispatcher *disp, int count);
+t_set_data	*deserialize_set_data(t_msg msg);
+void		receive_simulation_job(t_dispatcher *dispatcher);
+void 		print_cl4(cl_float4 v);
+t_body		*sort_bodies(t_body *bodies, int count);
+void		tree_test(t_body *bodies, int count);
+void		heap_sort(t_body *data, int n);
+int			dict_search(t_dict *dict, t_tree *cell, size_t subkey);
+void		dict_insert(t_dict *dict, t_tree *cell, size_t subkey);
+t_dict		*create_dict(unsigned int size);
+t_pair		*create_pair(size_t key);
+t_bundle 	*bundle_dict(t_dict *dict, t_pair *ids);
+t_msg 		serialize_bundle(t_bundle *b, t_tree **leaves);
+void		start_sender_threads(t_dispatcher *disp, int count);
 void 		print_worker_fds(t_dispatcher *dispatcher);
-t_lst	*queue_pop_link(t_queue **queue);
-
-
-void async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
-void setup_async_file(t_dispatcher *dispatcher);
+t_lst		*queue_pop_link(t_queue **queue);
+void 		async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
+void 		setup_async_file(t_dispatcher *dispatcher);
 
 /*
  * 	Creates a new node and returns it
@@ -386,7 +399,7 @@ t_socket	setup_server_socket(int port);
 *	Listen for messages from a specific worker
 *		@param worker	The worker you want to listen for a message from
 */
-t_msg	get_worker_msg(t_worker *worker);
+t_msg	get_msg(int fd);
 
 /*
 *	fill in and return the t_msg(message) struct

@@ -81,7 +81,7 @@ char	read_body(int fd, t_msg *msg)
 	return (0);
 }
 
-t_msg	get_worker_msg(t_worker *worker)
+t_msg	get_msg(int fd)
 {
 
 	int 	recv_bytes;
@@ -90,7 +90,7 @@ t_msg	get_worker_msg(t_worker *worker)
 	msg.error = 42;
 	msg.id = 0;
 	msg.size = 0;
-	read_header(worker->socket.fd, &msg);
-	read_body(worker->socket.fd, &msg);
+	read_header(fd, &msg);
+	read_body(fd, &msg);
 	return (msg);
 }
