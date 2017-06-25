@@ -89,11 +89,4 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 	pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
 	if (dispatcher->workunits_done == dispatcher->total_workunits)
 		all_workunits_done(dispatcher);
-	// else if (dispatcher->bundles->count > 0)
-	// {
-		// t_msg m = new_message(WORK_UNITS_READY, 0, "");
-		// send_worker_msg(worker, m);
-		// free(m.data);
-	// }
-	
 }

@@ -36,7 +36,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 
 		if (TPM_METRIC)
 		{
-			printf("this tick took: %.0f seconds\n", tick_time);
+			printf("this tick took: %.2f seconds\n", tick_time);
 			printf("This tick ran at %.2f tick/min\n", 60.0 / tick_time);
 			printf("These workunits ran at %.2f workunits/min\n\n", 60 * ((double)dispatcher->workunits_done / tick_time));
 		}

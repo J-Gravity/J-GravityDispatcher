@@ -164,7 +164,7 @@ void		*handle_worker_connection(void *input)
 	{
 	  //if (DEBUG && WORKER_DEBUG)
 		  //print_worker_fds(params->dispatcher);
-		msg = get_worker_msg(worker);
+		msg = get_msg(worker->socket.fd);
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
