@@ -21,6 +21,8 @@
 # define WORK_UNITS_READY 4
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
+# define WORKER_SETTINGS 10
+# define SETTINGS_APPLIED 11
 
 # include <stdio.h>
 # include <sys/socket.h>
@@ -39,6 +41,8 @@
 #define SOFTENING 10000
 #define TIME_STEP 30000
 #define GROUPSIZE 256
+float	G_softening;
+float	G_time_step;
 
 # ifndef DEVICE
 # define DEVICE CL_DEVICE_TYPE_DEFAULT
@@ -211,6 +215,7 @@ void		launch_sender_thread(t_worker *worker);
 void do_workunit(t_workunit *w);
 t_workunit	deserialize_workunit(t_msg msg);
 t_msg		serialize_workunit(t_workunit w);
+void		configure_simulation(t_worker *worker, t_msg msg);
 
 void print_cl4(cl_float4 v);
 

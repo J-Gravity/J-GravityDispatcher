@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 19:42:20 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/23 14:56:28 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,11 @@
 # define HEADER_SIZE 9
 # define SENDER_THREADS 32
 
+# define LEAF_THRESHOLD pow(2, 12)
+# define THETA 1
+# define TIME_STEP 30000
+# define SOFTENING 10000
+
 # define BROADCAST_SUPER_PARTICLE 1
 # define CACHE_REACHED_THREASHOLD 2
 # define WORK_UNIT_REQUEST 3
@@ -26,6 +31,8 @@
 # define WORK_UNIT 6
 # define WORK_UNIT_DONE 7
 # define NO_WORK_UNITS 8
+# define WORKER_SETTINGS 10
+# define SETTINGS_APPLIED 11
 
 /* ************ */
 /* TEMP         */
@@ -260,6 +267,8 @@ typedef struct			s_dispatcher
 	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
+	float				timestep;
+	float				softening;
 	//t_lst				*workers;
 	t_queue				*workers_queue;
 	int					worker_cnt;
@@ -292,7 +301,7 @@ typedef struct	s_sortbod
 	uint64_t morton;
 }               t_sortbod;
 
-
+t_msg	serialize_settings(t_dispatcher *dispatcher);
 t_set_data	*deserialize_set_data(t_msg msg);
 void		receive_simulation_job(t_dispatcher *dispatcher);
 void 		print_cl4(cl_float4 v);
