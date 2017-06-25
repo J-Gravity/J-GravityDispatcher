@@ -11,6 +11,7 @@
 
 #define THETA 1
 #define LEAF_THRESHOLD pow(2, 12)
+#define THREADCOUNT 8
 
 void print_bounds(t_bounds b)
 {
@@ -349,6 +350,38 @@ static t_tree **assemble_neighborhood(t_tree *cell, t_tree *root)
     }
 }
 
+typedef struct s_assemble_set
+{
+    t_tree **leaves;
+    t_tree *root;
+}               t_assemble;
+
+void *assemble_thread(void *param)
+{
+    t_assemble *set = (t_assemble *)param;
+    for (int i = 0; set->leaves[i]; i++)
+        set->leaves[i]->neighbors = assemble_neighborhood(set->leaves[i], set->root);
+    free(set);
+    return (0);
+}
+
+void mt_assemble_neighborhoods(t_tree **leaves, t_tree *root)
+{
+    int count = count_tree_array(leaves);
+    int lpt = ceil((float)count / THREADCOUNT);
+    printf("lpt is %d\n", lpt);
+    pthread_t *assemblers = calloc(THREADCOUNT, sizeof(pthread_t));
+    for (int i = 0; i < THREADCOUNT; i++)
+    {
+        t_assemble *set = calloc(1, sizeof(t_assemble));
+        set->leaves = &leaves[i * lpt];
+        set->root = root;
+        pthread_create(&assemblers[i], NULL, assemble_thread, set);
+    }
+    for (int i = 0; i < THREADCOUNT; i++)
+        pthread_join(assemblers[i], NULL);
+}
+
 static t_bounds bounds_from_bodies(t_body *bodies, int count)
 {
     //at the start of making the tree, we need a box that bounds all the bodies.
@@ -505,6 +538,46 @@ t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
     return (sorts);
 }
 
+typedef struct s_mortkit
+{
+    t_body *bodies;
+    t_sortbod *sorts;
+    t_bounds bounds;
+    int count;
+}               t_mortkit;
+
+void *mort_thread(void *param)
+{
+    t_mortkit *kit = (t_mortkit *)param;
+    float distance =  1.0 / (kit->bounds.xmax - kit->bounds.xmin);
+    for (int i = 0; i < kit->count; i++)
+    {
+        kit->sorts[i].morton = morton64((kit->bodies[i].position.x - kit->bounds.xmin) * distance, (kit->bodies[i].position.y - kit->bounds.ymin) * distance, (kit->bodies[i].position.z - kit->bounds.zmin) * distance);
+        kit->sorts[i].bod = kit->bodies[i];
+    }
+    return (0);
+}
+
+t_sortbod *mt_make_sortbods(t_body *bodies, t_bounds bounds, int count)
+{
+    int bpt = ceil((float)count / THREADCOUNT);
+    pthread_t *mortoners = calloc(THREADCOUNT, sizeof(pthread_t));
+    t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
+    for (int i = 0; i < THREADCOUNT; i++)
+    {
+        t_mortkit *kit = calloc(1, sizeof(t_mortkit));
+        kit->bounds = bounds;
+        kit->count = bpt < count ? bpt : count;
+        kit->bodies = &bodies[i * bpt];
+        kit->sorts = &sorts[i * bpt];
+        count -= bpt;
+        pthread_create(&mortoners[i], NULL, mort_thread, kit);
+    }
+    for (int i = 0; i < THREADCOUNT; i++)
+        pthread_join(mortoners[i], NULL);
+    return (sorts);
+}
+
 int binary_border_search(uint64_t *mortons, int startind, int maxind, unsigned int code, int depth)
 {
     // printf("starting binary search, startind is %d, maxind is %d, code is %d, depth is %d\n", startind, maxind, code, depth);
@@ -571,18 +644,37 @@ void split_tree(t_tree *root)
     if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
     {
         root->as_single = make_as_single(root);
-        //printf("leaf at depth %d with count %d\n", node_depth(root), root->count);
-        if (root->count >= LEAF_THRESHOLD)
-        {
-            for (int i = 0; i < root->count; i++)
-                print_cl4(root->bodies[i].position);
-        }
         return;
     }
     split(root);
     for (int i = 0; i < 8; i++)
         split_tree(root->children[i]);
     root->as_single = make_as_single(root);
+}
+
+void *split_thread(void *param)
+{
+    t_tree *root = (t_tree *)param;
+    if (root->count < LEAF_THRESHOLD || node_depth(root) == 21)
+    {
+        root->as_single = make_as_single(root);
+        return (0);
+    }
+    split(root);
+    for (int i = 0; i < 8; i++)
+        split_tree(root->children[i]);
+    root->as_single = make_as_single(root);
+    return(0);
+}
+
+void mt_split_tree(t_tree *root)
+{
+    pthread_t *split_threads = calloc(THREADCOUNT, sizeof(pthread_t));
+    split(root);
+    for (int i = 0; i < THREADCOUNT; i++)
+        pthread_create(&split_threads[i], NULL, split_thread, root->children[i]);
+    for (int i = 0; i < THREADCOUNT; i++)
+        pthread_join(split_threads[i], NULL);
 }
 
 t_tree *make_tree(t_body *bodies, int count)
@@ -592,7 +684,8 @@ t_tree *make_tree(t_body *bodies, int count)
 	
 	//generate and cache morton codes for each body
     t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
-	
+	//t_sortbod *sorts = mt_make_sortbods(bodies, root_bounds, count);
+
 	//sort the bodies by their morton codes
 	//they are now arranged on a z-order curve.
     mort_tim_sort(sorts, count);
@@ -609,7 +702,8 @@ t_tree *make_tree(t_body *bodies, int count)
     root->mortons = mortons;
 	
     //recursively divide the tree
-	split_tree(root);
+    mt_split_tree(root);
+	//split_tree(root);
     free(sorts);
     free(mortons);
     return (root);
@@ -632,6 +726,29 @@ static void free_tree(t_tree *t)
     free(t);
 }
 
+// typedef struct s_bundlekit
+// {
+//     t_tree **leaves;
+//     int leaves_per_bundle;
+//     int bundle_id;
+// }
+
+// void mt_bundle(t_tree **leaves, t_dispatcher *dispatcher)
+// {
+//     int lcount = count_tree_array(leaves);
+//     int wcount = dispatcher->worker_cnt;
+//     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
+//     static int bundle_id = 0;
+//     for (int i = 0; i * leaves_per_bundle < lcount; i++)
+//     {
+//         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
+//         printf("bundle would have been %.0fMB\n", (float)b->size / 1048576.0f);
+//         b->id = bundle_id++;
+//         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
+//         sem_post(dispatcher->start_sending);
+//     }
+// }
+
 void    divide_dataset(t_dispatcher *dispatcher)
 {
     clock_t start = clock();
@@ -645,26 +762,17 @@ void    divide_dataset(t_dispatcher *dispatcher)
     t = make_tree(dispatcher->dataset->particles, dispatcher->dataset->particle_cnt);
     t_tree **leaves = enumerate_leaves(t);
     printf("leaves enumerated there were %d, assembling neighborhoods\n", count_tree_array(leaves));
-    int largest_local = 0;
-    int max_depth = 0;
-    for (int i = 0; leaves[i]; i++)
-    {
-        leaves[i]->neighbors = assemble_neighborhood(leaves[i], t);
-        if (leaves[i]->count > largest_local)
-            largest_local = leaves[i]->count;
-        if (node_depth(leaves[i]) > max_depth)
-            max_depth = node_depth(leaves[i]);
-    }
-    printf("the largest cell had %d locals\n", largest_local);
-    printf("the deepest cell was at level %d\n", max_depth);
+    mt_assemble_neighborhoods(leaves, t);
+    printf("left mt_assemble_neighborhoods\n");
+    dispatcher->cells = leaves;
+    dispatcher->total_workunits = count_tree_array(leaves);
+    dispatcher->cell_count = count_tree_array(leaves);
+
     int lcount = count_tree_array(leaves);
     int wcount = dispatcher->worker_cnt;
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
 	static int bundle_id = 0;
-    dispatcher->cells = leaves;
-    dispatcher->total_workunits = count_tree_array(leaves);
-    dispatcher->cell_count = count_tree_array(leaves);
-    //printf("bundling started\n");
+    printf("bundling started\n");
     for (int i = 0; i * leaves_per_bundle < lcount; i++)
     {
         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
@@ -673,6 +781,6 @@ void    divide_dataset(t_dispatcher *dispatcher)
         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
 		sem_post(dispatcher->start_sending);
     }
-    //printf("bundling finished\n");
+    printf("bundling finished\n");
     printf("divide_dataset took %lu cycles total\n", clock() - start);
 }
