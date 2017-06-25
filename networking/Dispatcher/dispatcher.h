@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dispatcher.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/23 14:56:28 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/25 15:32:03 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -282,6 +282,7 @@ typedef struct			s_dispatcher
 	t_tree				**cells;
 	int					cell_count;
 	t_socket			sin;
+	t_socket			cmd_sin;
 	char				is_connect;
 	char				is_running;
 	FILE 				*fp;

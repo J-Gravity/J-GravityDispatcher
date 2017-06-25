@@ -38,29 +38,45 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 	int			fd;
 	t_msg		msg;
 	t_set_data	*set_data;
+	char		waiting = 1;
 
-	printf("%s\n", "Waiting on the signal from jgrav-host");
-	fd = accept(dispatcher->sin.fd, (struct sockaddr *)&(dispatcher->sin.addr.sin_addr), &(dispatcher->sin.addrlen));
-	printf("received jgrav-host message\n");
-	if (fd == 0)
-		printf("jgrav-host accept returned 0");
-	else if (fd == -1)
-		printf("jgrav-host accept failed with %d\n", errno);
-	else
+	dispatcher->cmd_sin = setup_server_socket(4222);
+
+	while (waiting)
 	{
-		msg = get_msg(fd);
-		printf("message id: %c\n", msg.id);
-		printf("message size: %zu\n", msg.size);
-		printf("message data: %s\n", msg.data);
-		set_data = deserialize_set_data(msg);
-		printf("set_data->set_name: %s\n", set_data->set_name);
-		printf("set_data->star_count: %d\n", set_data->star_count);
-		printf("set_data->big_radius: %d\n", set_data->big_radius);
-		printf("set_data->anchor_mass: %d\n", set_data->anchor_mass);
-		printf("set_data->time_step: %d\n", set_data->time_step);
-		printf("set_data->frame_count: %d\n", set_data->frame_count);
-		printf("set_data->approved: %d\n", set_data->approved);
-		dispatcher->set_data = set_data;
+		printf("%s\n", "Waiting on the signal from jgrav-host");
+		fd = accept(dispatcher->cmd_sin.fd, (struct sockaddr *)&(dispatcher->cmd_sin.addr.sin_addr), &(dispatcher->cmd_sin.addrlen));
+		printf("received jgrav-host message\n");
+		if (fd == 0)
+			printf("jgrav-host accept returned 0");
+		else if (fd == -1)
+			printf("jgrav-host accept failed with %d\n", errno);
+		else
+		{
+			msg = get_msg(fd);
+			if (msg.id == ACKNOWLEDGED)
+			{
+				printf("message id: %c\n", msg.id);
+				printf("message size: %zu\n", msg.size);
+				printf("message data: %s\n", msg.data);
+				set_data = deserialize_set_data(msg);
+				printf("set_data->set_name: %s\n", set_data->set_name);
+				printf("set_data->star_count: %d\n", set_data->star_count);
+				printf("set_data->big_radius: %d\n", set_data->big_radius);
+				printf("set_data->anchor_mass: %d\n", set_data->anchor_mass);
+				printf("set_data->time_step: %d\n", set_data->time_step);
+				printf("set_data->frame_count: %d\n", set_data->frame_count);
+				printf("set_data->approved: %d\n", set_data->approved);
+				dispatcher->set_data = set_data;
+				waiting = 0;
+			}
+			else
+			{
+				printf("bad command message!\n");
+				close(fd);
+				free(msg.data);
+			}
+		}
 	}
 	printf("received complete\n");
 }
