@@ -1,11 +1,17 @@
 #include "dispatcher.h"
-#define SOLAR_MASS 1
+#include <math.h>
 
-enum shape{
-    sphere,
-    cube,
-    hollow_sphere
-};
+// typedef struct      s_set_data
+// {
+//     char            *set_name;
+//     unsigned int    star_count;
+//     unsigned int    solar_mass;
+//     unsigned int    big_radius;
+//     unsigned int    anchor_mass;
+//     unsigned int    time_step;
+//     unsigned int    frame_count;
+//     char            approved;
+// }                   t_set_data;
 
 void print_float4(cl_float4 v)
 {
@@ -45,7 +51,7 @@ cl_float4 rand_sphere(int mag)
     cl_float4 out = (cl_float4){radius * cos(elevation) * cos(azimuth), \
                                 radius * cos(elevation) * sin(azimuth), \
                                 radius * sin(elevation), \
-                                SOLAR_MASS};
+                                1};
     out.w = out.w * __exp10(mag) / magnitude_3(out);
     // printf("mass %f\n", out.w);
     out.w = out.w * pow(-1, rand() % 2);
@@ -60,34 +66,6 @@ cl_float4 rand_vel(int mag)
                         pow(-1, rand() % 2) * rand_float(__exp10(mag)),
                         0};
 }
-
-cl_float4 *rotational_vels(cl_float4 *positions, int count)
-{
-    cl_float4 *vels = (cl_float4 *) calloc(count, sizeof(cl_float4));
-    for (int i = 0; i < count; i++)
-    {
-        cl_float4 p = positions[i];
-        float orbvel = 0.3 * sqrt(G * ANCHOR_MASS / magnitude_3(p));
-
-        if (orbvel > 3000000)
-        {
-            //printf("enforced speed of light\n");
-            orbvel = 3000000;
-        }
-        vels[i] = (cl_float4){-1 * p.y, p.x, 0, 0};
-        float scale = magnitude_3(vels[i]);
-        vels[i].x = orbvel * vels[i].x/scale;
-        vels[i].y = orbvel * vels[i].y/scale;
-        //optional noise
-        cl_float4 noise = rand_vel(1);
-        vels[i].x += noise.x;
-        vels[i].y += noise.y;
-        vels[i].z += noise.z;
-    }
-    return (vels);
-}
-
-
 
 cl_float4 *make_rand_vels(int n, int mag)
 {
@@ -128,42 +106,32 @@ cl_float4 center_of_mass(cl_float4 *stars, int n)
     return (sum);
 }
 
-void    init_to_file(t_body *bodies, long n, char *title)
-{
-    int fd;
-    int buffsize;
+// typedef struct      s_set_data
+// {
+//     char            *set_name;
+//     unsigned int    star_count;
+//     unsigned int    solar_mass;
+//     unsigned int    big_radius;
+//     unsigned int    anchor_mass;
+//     unsigned int    time_step;
+//     unsigned int    frame_count;
+//     char            approved;
+// }                   t_set_data;
 
-    fd = open(title, O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IROTH | S_IWOTH | S_IRGRP | S_IWGRP);
-    printf("migrated vectors to bodies\n");
-    long scale = (long)(2 * __exp10(BIG_RADIUS));
-    write(fd, &(n), sizeof(long));
-    write(fd, &(scale), sizeof(long));
-    if (n * sizeof(t_body) < INT_MAX)
-    {
-        printf("writing in one\n");
-        int ret = write(fd, bodies, sizeof(t_body) * n);
-        printf("ret was %d\n", ret);
-    }
-    else
-        for (int offset = 0; offset < n; offset += pow(2, 22))
-        {
-            printf("writing in chunks\n");
-            write(fd, bodies + offset, sizeof(t_body) * pow(2, 22));
-            fsync(fd);
-        }
-    close(fd);
-}
-
-t_body *generate_dataset(int starcount, int big_radius, float flattening, enum shape s)
+t_body *generate_dataset(t_set_data *sd)
 {
     srand ( time(NULL) ); //before we do anything, seed rand() with the current time
 
-    t_body *bodies = calloc(STARCOUNT, sizeof(t_body));
-    for (int i = 0; i < STARCOUNT; i++)
+    t_body *bodies = calloc(sd->star_count, sizeof(t_body));
+    for (int i = 0; i < sd->star_count; i++)
     {
-        bodies[i].position = rand_sphere(BIG_RADIUS);
-        bodies[i].velocity = rand_vel(BIG_RADIUS);
+        bodies[i].position = rand_sphere(sd->big_radius);
+        bodies[i].velocity = rand_vel(sd->big_radius / 2);
     }
-    printf("stars made, writing to disk\n");
+    if (sd->anchor_mass && sd->star_count)
+    {
+        bodies[0].position = (cl_float4){0,0,0,__exp10(sd->anchor_mass)};
+        bodies[0].velocity = (cl_float4){0, 0, 0, 0};
+    }
     return (bodies);
 }
