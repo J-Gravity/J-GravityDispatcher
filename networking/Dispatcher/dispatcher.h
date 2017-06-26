@@ -319,6 +319,7 @@ void 		print_worker_fds(t_dispatcher *dispatcher);
 t_lst		*queue_pop_link(t_queue **queue);
 void 		async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
 void 		setup_async_file(t_dispatcher *dispatcher);
+t_body *generate_dataset(t_set_data *sd);
 
 /*
  * 	Creates a new node and returns it

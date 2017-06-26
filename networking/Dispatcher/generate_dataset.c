@@ -47,12 +47,12 @@ cl_float4 rand_sphere(int mag)
     //mass is increased the closer to the center it is.
     double elevation = asin(rand_float(2) - 1);
     double azimuth = 2 * CL_M_PI * rand_float(1);
-    double radius = cbrt(rand_float(1)) * __exp10(mag);
+    double radius = cbrt(rand_float(1)) * pow(10, mag);
     cl_float4 out = (cl_float4){radius * cos(elevation) * cos(azimuth), \
                                 radius * cos(elevation) * sin(azimuth), \
                                 radius * sin(elevation), \
                                 1};
-    out.w = out.w * __exp10(mag) / magnitude_3(out);
+    out.w = out.w * pow(10, mag) / magnitude_3(out);
     // printf("mass %f\n", out.w);
     out.w = out.w * pow(-1, rand() % 2);
     // printf("mass %f\n", out.w);
@@ -61,9 +61,9 @@ cl_float4 rand_sphere(int mag)
 
 cl_float4 rand_vel(int mag)
 {
-    return (cl_float4){pow(-1, rand() % 2) * rand_float(__exp10(mag)), \
-                        pow(-1, rand() % 2) * rand_float(__exp10(mag)), \
-                        pow(-1, rand() % 2) * rand_float(__exp10(mag)),
+    return (cl_float4){pow(-1, rand() % 2) * rand_float(pow(10, mag)), \
+                        pow(-1, rand() % 2) * rand_float(pow(10, mag)), \
+                        pow(-1, rand() % 2) * rand_float(pow(10, mag)),
                         0};
 }
 
@@ -130,7 +130,7 @@ t_body *generate_dataset(t_set_data *sd)
     }
     if (sd->anchor_mass && sd->star_count)
     {
-        bodies[0].position = (cl_float4){0,0,0,__exp10(sd->anchor_mass)};
+        bodies[0].position = (cl_float4){0,0,0,pow(10, sd->anchor_mass)};
         bodies[0].velocity = (cl_float4){0, 0, 0, 0};
     }
     return (bodies);
