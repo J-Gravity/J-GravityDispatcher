@@ -57,7 +57,7 @@ int	main(int ac, char **av)
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	clock_t start = clock(), diff;
-	//receive_simulation_job(dispatcher);
+	receive_simulation_job(dispatcher);
 	connect_workers(dispatcher, NULL);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;

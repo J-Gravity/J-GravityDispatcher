@@ -32,6 +32,7 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 
 	if (dispatcher->set_data)
 	{
+		dispatcher->dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
 		dispatcher->dataset->particles = generate_dataset(dispatcher->set_data);
 		dispatcher->dataset->particle_cnt = dispatcher->set_data->star_count;
 		return ;
