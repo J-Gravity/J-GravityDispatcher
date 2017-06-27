@@ -3,7 +3,7 @@
 #include <limits.h>
 #include "lz4.h"
 #include "transpose.h"
-#include <msort.h>
+#include "msort.h"
 
 #define SORT_NAME mort
 #define SORT_TYPE t_sortbod

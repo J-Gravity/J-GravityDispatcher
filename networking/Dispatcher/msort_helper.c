@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
-#include <msort.h>
+#include "msort.h"
 #include <stdio.h>
 
 void	bsort(msort_param_t params)

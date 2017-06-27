@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include <semaphore.h>
-#include <dispatcher.h>
+#include "dispatcher.h"
 
 extern sem_t *mphore;
 extern int (*g_cmp) (void *, void *);
