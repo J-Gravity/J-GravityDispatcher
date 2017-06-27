@@ -42,11 +42,10 @@ void	*qmsort(void *params)
 	size_t		pi;
 	size_t		i;
 	size_t		l;
-	size_t		sortsize = ((msort_param_t*)params)->sortsize;
-	char		*sorts = (char*)(((msort_param_t*)params)->sorts);
+	t_sortbod	*sorts = (char*)(((msort_param_t*)params)->sorts);
 	size_t		end = ((msort_param_t*)params)->end;
 	size_t		start = ((msort_param_t*)params)->start;
-	int (*cmp) (void *, void *) = g_cmp;
+	t_sortbod	temp;
 
 	if (start >= end)
 		return (0);
@@ -55,9 +54,9 @@ void	*qmsort(void *params)
 	l = end;
 	while (i <= l)
 	{
-		while (cmp(&sorts[I], &sorts[PI]) == -1)
+		while (sbod_comp(&sorts[i], &sorts[pi]) == -1)
 			i++;
-		while (cmp(&sorts[L], &sorts[PI]) == 1)
+		while (sbod_comp(&sorts[l], &sorts[pi]) == 1)
 			l--;
 		if (i >= l)
 			break ;
@@ -65,22 +64,22 @@ void	*qmsort(void *params)
 			pi = l;
 		else if (l == pi)
 			pi = i;
-		msort_swap(sortsize, sorts, I, L);
+		temp = sorts[i];
+		sorts[i] = sorts[l];
+		sorts[l] = temp;
 	}
 	
 	msort_param_t	param1;
 	param1.start = start;
-	param1.end = L;
+	param1.end = l;
 	param1.sorts = sorts;
-	param1.sortsize = sortsize;
 	
 	msort_param_t	param2;
-	param2.start = (L + sortsize);
+	param2.start = (l + 1);
 	param2.end = end;
 	param2.sorts = sorts;
-	param2.sortsize = sortsize;
 	
-	if (semval(mphore) > 0 && L - start > THREAD_THRESHOLD)
+	if (semval(mphore) > 0 && l - start > THREAD_THRESHOLD)
 	{
 		sem_wait(mphore);
 		pthread_t tid1;
@@ -90,7 +89,7 @@ void	*qmsort(void *params)
 	{
 		bsort(param1);
 	}
-	if (semval(mphore) > 0 && end - L > THREAD_THRESHOLD)
+	if (semval(mphore) > 0 && end - l > THREAD_THRESHOLD)
 	{
 		sem_wait(mphore);
 		pthread_t tid2;
@@ -104,13 +103,13 @@ void	*qmsort(void *params)
 	return (sorts);
 }
 
-void	*msort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void *))
+void	*msort(t_sortbod *sorts, size_t count)
 {
 	size_t		pi;
 	size_t		i;
 	size_t		l;
 	size_t		end;
-	char		*sorts = (char*)sort;
+	t_sortbod	temp;
 
 	//do sample of data
 	//if looks partially sorted dp timsort
@@ -122,17 +121,15 @@ void	*msort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void 
 	*/
 	end = count - 1;
 	sem_init(mphore, 0, MSORT_ALLOWEDTHREADS);
-	g_size = datasize;
-	g_cmp = cmp;
 	i = 0;
 	end = count - 1;
 	pi = end / 2;
 	l = end;
 	while (i <= l)
 	{
-		while (cmp(&sorts[I], &sorts[PI]) == -1)
+		while (sbod_comp(&sorts[i], &sorts[pi]) == -1)
 			i++;
-		while (cmp(&sorts[L], &sorts[PI]) == 1)
+		while (sbod_comp(&sorts[l], &sorts[pi]) == 1)
 			l--;
 		if (i >= l)
 			break ;
@@ -140,22 +137,22 @@ void	*msort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void 
 			pi = l;
 		else if (l == pi)
 			pi = i;
-		msort_swap(datasize, sorts, I, L);
+		temp = sorts[i];
+		sorts[i] = sorts[l];
+		sorts[l] = temp;
 	}
 	
 	msort_param_t	param1;
 	param1.start = 0;
-	param1.end = L;
+	param1.end = l;
 	param1.sorts = sorts;
-	param1.sortsize = datasize;
 	
 	msort_param_t	param2;
-	param2.start = (L + datasize);
+	param2.start = (l + 1);
 	param2.end = end;
 	param2.sorts = sorts;
-	param2.sortsize = datasize;
 
-	if (semval(mphore) > 0 && L > THREAD_THRESHOLD)
+	if (semval(mphore) > 0 && l > THREAD_THRESHOLD)
 	{
 		sem_wait(mphore);
 		pthread_t tid1;
@@ -165,7 +162,7 @@ void	*msort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void 
 	{
 		bsort(param1);
 	}
-	if (semval(mphore) > 0 && end - L > THREAD_THRESHOLD)
+	if (semval(mphore) > 0 && end - l > THREAD_THRESHOLD)
 	{
 		sem_wait(mphore);
 		pthread_t tid2;
@@ -175,5 +172,5 @@ void	*msort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void 
 	{
 		bsort(param2);
 	}	
-	return (sort);
+	return (sorts);
 }
