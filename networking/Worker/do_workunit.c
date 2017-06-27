@@ -246,7 +246,7 @@ static t_body *crunch_NxM(cl_float4 *N, cl_float4 *V, cl_float4 *M, size_t ncoun
     clSetKernelArg(k_nbody, 3, sizeof(cl_mem), &d_V_start);
     clSetKernelArg(k_nbody, 4, sizeof(cl_mem), &d_V_end);
     clSetKernelArg(k_nbody, 5, sizeof(cl_float4) * GROUPSIZE, NULL);
-	printf("using timestep: %f soften: %f\n", timestep, soften);
+	//printf("using timestep: %f soften: %f\n", timestep, soften);
     clSetKernelArg(k_nbody, 6, sizeof(float), &soften);
     clSetKernelArg(k_nbody, 7, sizeof(float), &timestep);
     clSetKernelArg(k_nbody, 8, sizeof(float), &grav);
