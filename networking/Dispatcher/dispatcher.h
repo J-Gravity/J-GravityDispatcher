@@ -254,6 +254,8 @@ typedef struct		s_set_data
 	unsigned int	time_step;
 	unsigned int	frame_count;
 	char			approved;
+	char			rotating;
+	unsigned int	velocity_mag;
 }					t_set_data;
 
 typedef struct			s_dispatcher
