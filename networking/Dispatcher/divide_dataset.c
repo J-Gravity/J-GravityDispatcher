@@ -788,7 +788,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     mt_assemble_neighborhoods(leaves, t);
     printf("left mt_assemble_neighborhoods\n");
     dispatcher->cells = leaves;
-    dispatcher->total_workunits = dispatchers->worker_cnt;
+    dispatcher->total_workunits = dispatcher->worker_cnt;
     dispatcher->cell_count = count_tree_array(leaves);
     printf("bundling started\n");
     mt_bundle(dispatcher, leaves);
