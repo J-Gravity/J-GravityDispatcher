@@ -57,7 +57,27 @@ int	main(int ac, char **av)
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	clock_t start = clock(), diff;
-	receive_simulation_job(dispatcher);
+	//receive_simulation_job(dispatcher);
+// 	typedef struct		s_set_data
+// {
+// 	char			*set_name;
+// 	unsigned int	star_count;
+// 	unsigned int	solar_mass;
+// 	unsigned int	big_radius;
+// 	unsigned int	anchor_mass;
+// 	unsigned int	time_step;
+// 	unsigned int	frame_count;
+// 	char			approved;
+// }					t_set_data;
+	dispatcher->set_data = calloc(1, sizeof(t_set_data));
+	dispatcher->set_data->star_count = 4194304;
+	dispatcher->set_data->set_name = "default_set";
+	dispatcher->set_data->big_radius = 12;
+	dispatcher->set_data->solar_mass = 1;
+	dispatcher->set_data->anchor_mass = 85000000;
+	dispatcher->set_data->time_step = 20000;
+	dispatcher->set_data->frame_count = 240;
+	dispatcher->set_data->approved = 1;
 	connect_workers(dispatcher, NULL);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;
