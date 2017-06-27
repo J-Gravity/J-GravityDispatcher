@@ -94,7 +94,7 @@ cl_float4 center_of_mass(cl_float4 *stars, int n)
     return (sum);
 }
 
-#define G 1.327 * __exp10(13)
+#define G 1.327 * pow(10, 13)
 
 cl_float4 rotational_vel(t_body b, t_set_data *sd)
 {
