@@ -28,7 +28,21 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
 	long scale;
 	/*
 	 *   TODO : Figure out what the hell the file will be called;
-	*/	
+	*/
+
+	if (dispatcher->set_data)
+	{
+		dispatcher->dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
+		dispatcher->dataset->particles = generate_dataset(dispatcher->set_data);
+		dispatcher->dataset->particle_cnt = dispatcher->set_data->star_count;
+
+		dispatcher->new_dataset = (t_dataset *)calloc(1, sizeof(t_dataset));
+		dispatcher->new_dataset->particles = calloc(dispatcher->set_data->star_count, sizeof(t_body));
+		dispatcher->new_dataset->particle_cnt = dispatcher->dataset->particle_cnt;
+
+		return ;
+	}
+
 	if (DEBUG)
 		printf("starting request_dataset\n");
 	if ((fd = open(file, O_RDONLY)) < 1)
@@ -57,8 +71,6 @@ void  request_dataset(t_dispatcher *dispatcher, char *file)
             int ret = read(fd, particles + offset, sizeof(t_body) * pow(2, 22));
             printf("ret was %d\n", ret);
         }
-
-	//read(fd, particles, sizeof(t_body) * count);
 	data->particles = particles;
 	close(fd);
 	dispatcher->dataset = data;

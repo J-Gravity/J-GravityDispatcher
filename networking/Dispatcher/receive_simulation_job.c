@@ -29,7 +29,11 @@ t_set_data *deserialize_set_data(t_msg msg)
 	memcpy(&(set_data->frame_count), msg.data + offset, sizeof(unsigned int));
 	offset += sizeof(unsigned int); //offset to approved
 	memcpy(&(set_data->approved), msg.data + offset, sizeof(char));
-	offset += sizeof(char); //offset to approved
+	offset += sizeof(char); //offset to rotating
+	memcpy(&(set_data->rotating), msg.data + offset, sizeof(char));
+	offset += sizeof(char); //offset to velocity_mag
+	memcpy(&(set_data->velocity_mag), msg.data + offset, sizeof(unsigned int));
+	offset += sizeof(unsigned int); //offset
 	return (set_data);
 }
 
@@ -67,6 +71,8 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 				printf("set_data->time_step: %d\n", set_data->time_step);
 				printf("set_data->frame_count: %d\n", set_data->frame_count);
 				printf("set_data->approved: %d\n", set_data->approved);
+				printf("set_data->rotating: %d\n", set_data->rotating);
+				printf("set_data->velocity_mag: %d\n", set_data->velocity_mag);
 				dispatcher->set_data = set_data;
 				waiting = 0;
 			}

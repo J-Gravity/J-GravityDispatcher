@@ -68,7 +68,7 @@ long G_total_workunit_cnt;
 /* DEBUG FLAGS */
 /* *********** */
 
-# define DEBUG 1
+# define DEBUG 0
 # define MSG_DEBUG 1
 # define WORKER_DEBUG 1
 # define MSG_DETAILS_DEBUG 0
@@ -254,6 +254,8 @@ typedef struct		s_set_data
 	unsigned int	time_step;
 	unsigned int	frame_count;
 	char			approved;
+	char			rotating;
+	unsigned int	velocity_mag;
 }					t_set_data;
 
 typedef struct			s_dispatcher
@@ -320,6 +322,7 @@ void 		print_worker_fds(t_dispatcher *dispatcher);
 t_lst		*queue_pop_link(t_queue **queue);
 void 		async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
 void 		setup_async_file(t_dispatcher *dispatcher);
+t_body *generate_dataset(t_set_data *sd);
 
 /*
  * 	Creates a new node and returns it

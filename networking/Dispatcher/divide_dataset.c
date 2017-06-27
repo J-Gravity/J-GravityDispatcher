@@ -24,6 +24,7 @@ void print_cl4(cl_float4 v)
 }
 
 // method to seperate bits from a given integer 3 positions apart
+//from http://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
 uint64_t splitBy3(const unsigned int a)
 {
     uint64_t x = a & 0x1fffff; // we only look at the first 21 bits
@@ -188,6 +189,7 @@ static t_body COG_from_bodies(t_body *bodies, int count)
 
 static t_tree *make_as_single(t_tree *c)
 {
+    //this can be improved,
 	//it's silly to build a whole cell for something
 	//that could easily just be a t_body in t_tree
     t_body b;
@@ -380,6 +382,7 @@ void mt_assemble_neighborhoods(t_tree **leaves, t_tree *root)
     }
     for (int i = 0; i < THREADCOUNT; i++)
         pthread_join(assemblers[i], NULL);
+    free(assemblers);
 }
 
 static t_bounds bounds_from_bodies(t_body *bodies, int count)
@@ -555,6 +558,7 @@ void *mort_thread(void *param)
         kit->sorts[i].morton = morton64((kit->bodies[i].position.x - kit->bounds.xmin) * distance, (kit->bodies[i].position.y - kit->bounds.ymin) * distance, (kit->bodies[i].position.z - kit->bounds.zmin) * distance);
         kit->sorts[i].bod = kit->bodies[i];
     }
+    free(kit);
     return (0);
 }
 
@@ -575,6 +579,7 @@ t_sortbod *mt_make_sortbods(t_body *bodies, t_bounds bounds, int count)
     }
     for (int i = 0; i < THREADCOUNT; i++)
         pthread_join(mortoners[i], NULL);
+    free(mortoners);
     return (sorts);
 }
 
@@ -675,6 +680,7 @@ void mt_split_tree(t_tree *root)
         pthread_create(&split_threads[i], NULL, split_thread, root->children[i]);
     for (int i = 0; i < THREADCOUNT; i++)
         pthread_join(split_threads[i], NULL);
+    free(split_threads);
 }
 
 t_tree *make_tree(t_body *bodies, int count)
@@ -683,8 +689,8 @@ t_tree *make_tree(t_body *bodies, int count)
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
 	
 	//generate and cache morton codes for each body
-    t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
-	//t_sortbod *sorts = mt_make_sortbods(bodies, root_bounds, count);
+    //t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
+	t_sortbod *sorts = mt_make_sortbods(bodies, root_bounds, count);
 
 	//sort the bodies by their morton codes
 	//they are now arranged on a z-order curve.
@@ -726,28 +732,45 @@ static void free_tree(t_tree *t)
     free(t);
 }
 
-// typedef struct s_bundlekit
-// {
-//     t_tree **leaves;
-//     int leaves_per_bundle;
-//     int bundle_id;
-// }
+typedef struct s_bundlekit
+{
+    int lpb;
+    int startind;
+    t_dispatcher *dispatcher;
+}               t_bundlekit;
 
-// void mt_bundle(t_tree **leaves, t_dispatcher *dispatcher)
-// {
-//     int lcount = count_tree_array(leaves);
-//     int wcount = dispatcher->worker_cnt;
-//     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
-//     static int bundle_id = 0;
-//     for (int i = 0; i * leaves_per_bundle < lcount; i++)
-//     {
-//         t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
-//         printf("bundle would have been %.0fMB\n", (float)b->size / 1048576.0f);
-//         b->id = bundle_id++;
-//         queue_enqueue(&dispatcher->bundles, queue_create_new(b));
-//         sem_post(dispatcher->start_sending);
-//     }
-// }
+void *bundle_thread(void *param)
+{
+    t_bundlekit *bk = (t_bundlekit *)param;
+    for (int i = bk->startind; i < bk->dispatcher->cell_count; i += bk->lpb * THREADCOUNT)
+    {
+        printf("bundle_thread rolling with i == %d, cell_count %d\n", i, bk->dispatcher->cell_count);
+        t_bundle *b = bundle_leaves(bk->dispatcher->cells, i, bk->lpb);
+        queue_enqueue(&bk->dispatcher->bundles, queue_create_new(b));
+        sem_post(bk->dispatcher->start_sending);
+    }
+    free(bk);
+    return (0);
+}
+
+void mt_bundle(t_dispatcher *disp, t_tree **leaves)
+{
+    pthread_t *bundlers = calloc(THREADCOUNT, sizeof(pthread_t));
+    int lcount = disp->cell_count;
+    int wcount = disp->worker_cnt;
+    int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
+    for (int i = 0; i < THREADCOUNT; i++)
+    {
+        t_bundlekit *bk = calloc(1, sizeof(t_bundlekit));
+        bk->lpb = leaves_per_bundle;
+        bk->startind = i * leaves_per_bundle;
+        bk->dispatcher = disp;
+        pthread_create(&bundlers[i], NULL, bundle_thread, bk);
+    }
+    for (int i = 0; i < THREADCOUNT; i++)
+        pthread_join(bundlers[i], NULL);
+    free(bundlers);
+}
 
 void    divide_dataset(t_dispatcher *dispatcher)
 {
@@ -765,22 +788,10 @@ void    divide_dataset(t_dispatcher *dispatcher)
     mt_assemble_neighborhoods(leaves, t);
     printf("left mt_assemble_neighborhoods\n");
     dispatcher->cells = leaves;
-    dispatcher->total_workunits = count_tree_array(leaves);
+    dispatcher->total_workunits = dispatcher->worker_cnt;
     dispatcher->cell_count = count_tree_array(leaves);
-
-    int lcount = count_tree_array(leaves);
-    int wcount = dispatcher->worker_cnt;
-    int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
-	static int bundle_id = 0;
     printf("bundling started\n");
-    for (int i = 0; i * leaves_per_bundle < lcount; i++)
-    {
-        t_bundle *b = bundle_leaves(leaves, i * leaves_per_bundle, leaves_per_bundle);
-	    printf("bundle would have been %.0fMB\n", (float)b->size / 1048576.0f);
-		b->id = bundle_id++;
-        queue_enqueue(&dispatcher->bundles, queue_create_new(b));
-		sem_post(dispatcher->start_sending);
-    }
+    mt_bundle(dispatcher, leaves);
     printf("bundling finished\n");
     printf("divide_dataset took %lu cycles total\n", clock() - start);
 }
