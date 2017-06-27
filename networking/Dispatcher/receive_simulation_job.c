@@ -73,9 +73,9 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 				printf("set_data->rotating: %d\n", set_data->rotating);
 				printf("set_data->velocity_mag: %d\n", set_data->velocity_mag);
 				dispatcher->set_data = set_data;
-        dispatcher->name = set_data->set_name;
-		    dispatcher->timestep = set_data->time_step;
-		    dispatcher->ticks_cnt = set_data->frame_count;
+        		dispatcher->name = set_data->set_name;
+		    	dispatcher->timestep = set_data->time_step;
+		    	dispatcher->ticks_cnt = set_data->frame_count;
 				waiting = 0;
 			}
 			else
