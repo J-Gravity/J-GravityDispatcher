@@ -127,11 +127,14 @@ t_body *generate_dataset(t_set_data *sd)
         for (int i = 0; i < sd->star_count; i++)
         {
             bodies[i].velocity = rotational_vel(bodies[i], sd);
-            bodies[i].velocity.w = fabs(bodies[i].velocity.w); //the rotating set does not work for janus.
+            bodies[i].velocity.w = fabs(bodies[i].velocity.w); //the rotating set needs all positive masses.
         }
     else
         for (int i = 0; i < sd->star_count; i++)
+        {
             bodies[i].velocity = rand_vel(sd->velocity_mag);
+            bodies[i].position.w = fabs(bodies[i].position.w) / bodies[i].position.w; // janus wants all 1 or -1 masses.
+        }
     if (sd->anchor_mass && sd->star_count && sd->rotating)
     {
         bodies[0].position = (cl_float4){0,0,0,sd->anchor_mass};
