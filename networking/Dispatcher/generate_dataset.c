@@ -1,18 +1,6 @@
 #include "dispatcher.h"
 #include <math.h>
 
-// typedef struct      s_set_data
-// {
-//     char            *set_name;
-//     unsigned int    star_count;
-//     unsigned int    solar_mass;
-//     unsigned int    big_radius;
-//     unsigned int    anchor_mass;
-//     unsigned int    time_step;
-//     unsigned int    frame_count;
-//     char            approved;
-// }                   t_set_data;
-
 void print_float4(cl_float4 v)
 {
     printf("x: %f y: %f z: %f w: %f\n", v.x, v.y, v.z, v.w);
@@ -106,17 +94,25 @@ cl_float4 center_of_mass(cl_float4 *stars, int n)
     return (sum);
 }
 
-// typedef struct      s_set_data
-// {
-//     char            *set_name;
-//     unsigned int    star_count;
-//     unsigned int    solar_mass;
-//     unsigned int    big_radius;
-//     unsigned int    anchor_mass;
-//     unsigned int    time_step;
-//     unsigned int    frame_count;
-//     char            approved;
-// }                   t_set_data;
+#define G 1.327 * __exp10(13)
+
+cl_float4 rotational_vel(t_body b, t_set_data *sd)
+{
+    cl_float4 p = b.position;
+    float orbvel = 0.8 * sqrt(G * sd->anchor_mass / magnitude_3(p));
+    if (orbvel > 3000000)
+        orbvel = 3000000;
+    cl_float4 vel = (cl_float4){-1 * p.y, p.x, 0, 0};
+    float scale = magnitude_3(vel);
+    vel.x = orbvel * vel.x/scale;
+    vel.y = orbvel * vel.y/scale;
+    //optional noise
+    cl_float4 noise = rand_vel(1);
+    vel.x += noise.x;
+    vel.y += noise.y;
+    vel.z += noise.z;
+    return vel;
+}
 
 t_body *generate_dataset(t_set_data *sd)
 {
@@ -126,9 +122,17 @@ t_body *generate_dataset(t_set_data *sd)
     for (int i = 0; i < sd->star_count; i++)
     {
         bodies[i].position = rand_sphere(sd->big_radius);
-        bodies[i].velocity = rand_vel(sd->big_radius / 2);
     }
-    if (sd->anchor_mass && sd->star_count)
+    if (sd->rotating)
+        for (int i = 0; i < sd->star_count; i++)
+        {
+            bodies[i].velocity = rotational_vel(bodies[i], sd);
+            bodies[i].velocity.w = fabs(bodies[i].velocity.w); //the rotating set does not work for janus.
+        }
+    else
+        for (int i = 0; i < sd->star_count; i++)
+            bodies[i].velocity = rand_vel(sd->velocity_mag);
+    if (sd->anchor_mass && sd->star_count && sd->rotating)
     {
         bodies[0].position = (cl_float4){0,0,0,sd->anchor_mass};
         bodies[0].velocity = (cl_float4){0, 0, 0, 0};
