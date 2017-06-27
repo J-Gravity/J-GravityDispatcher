@@ -130,7 +130,7 @@ t_body *generate_dataset(t_set_data *sd)
     }
     if (sd->anchor_mass && sd->star_count)
     {
-        bodies[0].position = (cl_float4){0,0,0,pow(10, sd->anchor_mass)};
+        bodies[0].position = (cl_float4){0,0,0,sd->anchor_mass};
         bodies[0].velocity = (cl_float4){0, 0, 0, 0};
     }
     return (bodies);
