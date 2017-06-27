@@ -791,8 +791,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     dispatcher->total_workunits = count_tree_array(leaves);
     dispatcher->cell_count = count_tree_array(leaves);
     printf("bundling started\n");
-    // printf("entering mt_bundle\n");
-    // mt_bundle(dispatcher, leaves);
+    mt_bundle(dispatcher, leaves);
     printf("bundling finished\n");
     printf("divide_dataset took %lu cycles total\n", clock() - start);
 }
