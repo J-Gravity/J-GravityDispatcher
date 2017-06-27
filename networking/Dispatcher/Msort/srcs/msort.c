@@ -2,6 +2,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <msort.h>
+#include <stdio.h>
 
 int g_size;
 int (*g_cmp) (void *, void *);
