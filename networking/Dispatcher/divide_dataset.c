@@ -13,6 +13,10 @@
 #define LEAF_THRESHOLD pow(2, 12)
 #define THREADCOUNT 8
 
+
+/*
+    utility and debug functions
+*/
 void print_bounds(t_bounds b)
 {
     printf("bounds: %f %f %f %f %f %f\n", b.xmin, b.xmax, b.ymin, b.ymax, b.zmin, b.zmax);
@@ -21,36 +25,6 @@ void print_bounds(t_bounds b)
 void print_cl4(cl_float4 v)
 {
     printf("cl4: %f %f %f %f\n", v.x, v.y, v.z, v.w);
-}
-
-// method to seperate bits from a given integer 3 positions apart
-//from http://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
-uint64_t splitBy3(const unsigned int a)
-{
-    uint64_t x = a & 0x1fffff; // we only look at the first 21 bits
-    x = (x | x << 32) & 0x1f00000000ffff;  // shift left 32 bits, OR with self, and 00011111000000000000000000000000000000001111111111111111
-    x = (x | x << 16) & 0x1f0000ff0000ff;  // shift left 32 bits, OR with self, and 00011111000000000000000011111111000000000000000011111111
-    x = (x | x << 8) & 0x100f00f00f00f00f; // shift left 32 bits, OR with self, and 0001000000001111000000001111000000001111000000001111000000000000
-    x = (x | x << 4) & 0x10c30c30c30c30c3; // shift left 32 bits, OR with self, and 0001000011000011000011000011000011000011000011000011000100000000
-    x = (x | x << 2) & 0x1249249249249249;
-    return x;
-}
- 
-uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, const unsigned int z)
-{
-	//interweave the rightmost 21 bits of 3 unsigned ints to generate a 63-bit morton code
-    uint64_t answer = 0;
-    answer |= splitBy3(z) | splitBy3(y) << 1 | splitBy3(x) << 2;
-    return answer;
-}
-
-uint64_t morton64(float x, float y, float z)
-{
-	//x, y, z are in [0, 1]. multiply by 2^21 to get 21 bits, confine to [0, 2^21 - 1]
-    x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
-    y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
-    z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
-    return (mortonEncode_magicbits((unsigned int)x, (unsigned int)y, (unsigned int)z));
 }
 
 int body_in_bounds(t_body body, t_bounds bounds)
@@ -85,47 +59,96 @@ int node_depth(t_tree *node)
     return depth;
 }
 
-#define xmid parent.xmax - (parent.xmax - parent.xmin) / 2
-#define ymid parent.ymax - (parent.ymax - parent.ymin) / 2
-#define zmid parent.zmax - (parent.zmax - parent.zmin) / 2
+/*
+    generation of morton codes
+*/
 
-t_bounds bounds_from_code(t_bounds parent, unsigned int code)
+// method to seperate bits from a given integer 3 positions apart
+//from http://www.forceflow.be/2013/10/07/morton-encodingdecoding-through-bit-interleaving-implementations/
+uint64_t splitBy3(const unsigned int a)
 {
-	//generate the appropriate subbounds of the parent cell for this 3-bit string
+    uint64_t x = a & 0x1fffff; // we only look at the first 21 bits
+    x = (x | x << 32) & 0x1f00000000ffff;  // shift left 32 bits, OR with self, and 00011111000000000000000000000000000000001111111111111111
+    x = (x | x << 16) & 0x1f0000ff0000ff;  // shift left 32 bits, OR with self, and 00011111000000000000000011111111000000000000000011111111
+    x = (x | x << 8) & 0x100f00f00f00f00f; // shift left 32 bits, OR with self, and 0001000000001111000000001111000000001111000000001111000000000000
+    x = (x | x << 4) & 0x10c30c30c30c30c3; // shift left 32 bits, OR with self, and 0001000011000011000011000011000011000011000011000011000100000000
+    x = (x | x << 2) & 0x1249249249249249;
+    return x;
+}
+ 
+uint64_t mortonEncode_magicbits(const unsigned int x, const unsigned int y, const unsigned int z)
+{
+	//interweave the rightmost 21 bits of 3 unsigned ints to generate a 63-bit morton code
+    uint64_t answer = 0;
+    answer |= splitBy3(z) | splitBy3(y) << 1 | splitBy3(x) << 2;
+    return answer;
+}
+
+uint64_t morton64(float x, float y, float z)
+{
+	//x, y, z are in [0, 1]. multiply by 2^21 to get 21 bits, confine to [0, 2^21 - 1]
+    x = fmin(fmax(x * 2097152.0f, 0.0f), 2097151.0f);
+    y = fmin(fmax(y * 2097152.0f, 0.0f), 2097151.0f);
+    z = fmin(fmax(z * 2097152.0f, 0.0f), 2097151.0f);
+    return (mortonEncode_magicbits((unsigned int)x, (unsigned int)y, (unsigned int)z));
+}
+
+/*
+    Prep bodies for sorting by caching morton codes. Wish this didn't involve so much copying.
+*/
+
+t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
+{
+    t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
+    float distance =  1.0 / (bounds.xmax - bounds.xmin);
+    for (int i = 0; i < count; i++)
+    {
+        sorts[i].morton = morton64((bodies[i].position.x - bounds.xmin) * distance, (bodies[i].position.y - bounds.ymin) * distance, (bodies[i].position.z - bounds.zmin) * distance);
+        sorts[i].bod = bodies[i];
+    }
+    return (sorts);
+}
+
+typedef struct s_mortkit
+{
+    t_body *bodies;
+    t_sortbod *sorts;
     t_bounds bounds;
-    if(code >> 2)
+    int count;
+}               t_mortkit;
+
+void *mort_thread(void *param)
+{
+    t_mortkit *kit = (t_mortkit *)param;
+    float distance =  1.0 / (kit->bounds.xmax - kit->bounds.xmin);
+    for (int i = 0; i < kit->count; i++)
     {
-        bounds.xmin = xmid;
-        bounds.xmax = parent.xmax;
+        kit->sorts[i].morton = morton64((kit->bodies[i].position.x - kit->bounds.xmin) * distance, (kit->bodies[i].position.y - kit->bounds.ymin) * distance, (kit->bodies[i].position.z - kit->bounds.zmin) * distance);
+        kit->sorts[i].bod = kit->bodies[i];
     }
-    else
+    free(kit);
+    return (0);
+}
+
+t_sortbod *mt_make_sortbods(t_body *bodies, t_bounds bounds, int count)
+{
+    int bpt = ceil((float)count / THREADCOUNT);
+    pthread_t *mortoners = calloc(THREADCOUNT, sizeof(pthread_t));
+    t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
+    for (int i = 0; i < THREADCOUNT; i++)
     {
-        bounds.xmin = parent.xmin;
-        bounds.xmax = xmid;
+        t_mortkit *kit = calloc(1, sizeof(t_mortkit));
+        kit->bounds = bounds;
+        kit->count = bpt < count ? bpt : count;
+        kit->bodies = &bodies[i * bpt];
+        kit->sorts = &sorts[i * bpt];
+        count -= bpt;
+        pthread_create(&mortoners[i], NULL, mort_thread, kit);
     }
-    code %= 4;
-    if (code >> 1)
-    {
-        bounds.ymin = ymid;
-        bounds.ymax = parent.ymax;
-    }
-    else
-    {
-        bounds.ymin = parent.ymin;
-        bounds.ymax = ymid;
-    }
-    code %= 2;
-    if (code)
-    {
-        bounds.zmin = zmid;
-        bounds.zmax = parent.zmax;
-    }
-    else
-    {
-        bounds.zmin = parent.zmin;
-        bounds.zmax = zmid;
-    }
-    return (bounds);
+    for (int i = 0; i < THREADCOUNT; i++)
+        pthread_join(mortoners[i], NULL);
+    free(mortoners);
+    return (sorts);
 }
 
 static cl_float4 vadd(cl_float4 a, cl_float4 b)
@@ -146,6 +169,10 @@ static cl_float4 center_add(cl_float4 total, cl_float4 add)
 
 static t_body COG_from_children(t_tree **children)
 {
+    // we calculate centers of gravity starting at leaf cells.
+    // therefore if a cell has children, all their COGs have been calculated.
+    // it is much faster to just use 8 values than potentially millions.
+    // this reduces COG calculate from O(nlog(n)) to very nearly O(n).
 	cl_float4 center = (cl_float4){0,0,0,0};
     float real_total = 0;
     for (int i = 0; i < 8; i++)
@@ -255,6 +282,10 @@ static t_tree **enumerate_leaves(t_tree *root)
     ret[total] = NULL;
     return (ret);
 }
+
+/*
+    assemble neighborhood and related functions. This is where workunits are built.
+*/
 
 static cl_float4 midpoint_from_bounds(t_bounds b)
 {
@@ -426,166 +457,60 @@ static t_bounds bounds_from_bodies(t_body *bodies, int count)
     return ((t_bounds){min, max, min, max, min, max});
 }
 
-t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
-{
-    t_dict *dict = create_dict(1000); //fiddle with this number later. it doesnt need to be big.
-    
-    //take up to Count leaves starting at offset and pour their neighborhoods
-    //into the double-key hash. track which leaves we put in.
-    t_pair *ids = NULL;
-	long difficulty = 0;
-	long size = 0;
-    for (int i = 0; i < count && leaves[offset + i]; i++)
-    {
-        if (!ids)
-            ids = create_pair(i + offset);
-        else
-        {
-            t_pair *p = create_pair(i + offset);
-            p->next_key = ids;
-            ids = p;
-        }
-		size += leaves[i]->count * sizeof(t_body);
-        t_tree **adding = leaves[offset + i]->neighbors;
-        for (int j = 0; adding[j]; j++)
-		{
-            dict_insert(dict, adding[j], i);
-			difficulty += leaves[offset + i]->count * adding[j]->count;
-			size += adding[j]->count * sizeof(cl_float4);
-		}
-    }
-	t_bundle *b = bundle_dict(dict, ids);
-	b->difficulty = difficulty;
-	b->size = size;
-    return (b);
-}
+/*
+    Creation/division of octree
+*/
 
-t_msg compress_msg(t_msg m)
-{
-    t_msg c;
+#define xmid parent.xmax - (parent.xmax - parent.xmin) / 2
+#define ymid parent.ymax - (parent.ymax - parent.ymin) / 2
+#define zmid parent.zmax - (parent.zmax - parent.zmin) / 2
 
-    char *transposed = calloc(1, m.size);
-    tpenc((unsigned char *)m.data, m.size, (unsigned char *)transposed, sizeof(int));
-    int max_compressed_size = LZ4_compressBound(m.size);
-    char *compressed = calloc(1, max_compressed_size);
-    int result_compressed_size = LZ4_compress_default(transposed, compressed, m.size, max_compressed_size);
-    printf("compressed to %d from %zu, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
-    c.data = calloc(1, result_compressed_size + sizeof(int));
-    memcpy(c.data, &m.size, sizeof(int));
-    memcpy(c.data + sizeof(int), compressed, result_compressed_size);
-    c.size = result_compressed_size + sizeof(int);
-    free(transposed);
-    free(compressed);
-    free(m.data);
-    return c;
-}
-
-t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
+t_bounds bounds_from_code(t_bounds parent, unsigned int code)
 {
-    t_msg m;
-    m.size = sizeof(int) * 2;
-    for (int i = 0; i < b->keycount; i++)
-    {
-        m.size += sizeof(int) * 2;
-        m.size += leaves[b->keys[i]]->count * sizeof(t_body);
-    }
-    for (int i = 0; i < b->cellcount; i++)
-    {
-        m.size += sizeof(int) * 2;
-        m.size += b->cells[i]->count * sizeof(cl_float4);
-        m.size += b->matches_counts[i] * sizeof(int);
-    }
-    m.data = malloc(m.size);
-    size_t offset = 0;
-    memcpy(m.data + offset, &(b->keycount), sizeof(int));
-    offset += sizeof(int);
-    
-    memcpy(m.data + offset, &(b->cellcount), sizeof(int));
-    offset += sizeof(int);
-    for (int i = 0; i < b->keycount; i++)
-    {
-        memcpy(m.data + offset, &(b->keys[i]), sizeof(int));
-        offset += sizeof(int);
-        memcpy(m.data + offset, &(leaves[b->keys[i]]->count), sizeof(int));
-        offset += sizeof(int);
-        memcpy(m.data + offset, leaves[b->keys[i]]->bodies, leaves[b->keys[i]]->count * sizeof(t_body));
-        offset += leaves[b->keys[i]]->count * sizeof(t_body);
-    }
-    for (int i = 0; i < b->cellcount; i++)
-    {
-        memcpy(m.data + offset, &(b->matches_counts[i]), sizeof(int));
-        offset += sizeof(int);
-        memcpy(m.data + offset, b->matches[i], b->matches_counts[i] * sizeof(int));
-        offset += b->matches_counts[i] * sizeof(int);
-        memcpy(m.data + offset, &(b->cells[i]->count), sizeof(int));
-        offset += sizeof(int);
-        for (int j = 0; j < b->cells[i]->count; j++)
-        {
-            memcpy(m.data + offset, &(b->cells[i]->bodies[j].position), sizeof(cl_float4));
-            offset += sizeof(cl_float4);
-        }
-    }
-    printf("bundle size final was %.1fMB\n", (float)m.size / 1048576.0f);
-    return (m);
-}
-
-t_sortbod *make_sortbods(t_body *bodies, t_bounds bounds, int count)
-{
-    t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
-    float distance =  1.0 / (bounds.xmax - bounds.xmin);
-    for (int i = 0; i < count; i++)
-    {
-        sorts[i].morton = morton64((bodies[i].position.x - bounds.xmin) * distance, (bodies[i].position.y - bounds.ymin) * distance, (bodies[i].position.z - bounds.zmin) * distance);
-        sorts[i].bod = bodies[i];
-    }
-    return (sorts);
-}
-
-typedef struct s_mortkit
-{
-    t_body *bodies;
-    t_sortbod *sorts;
+    //generate the appropriate subbounds of the parent cell for this 3-bit string
     t_bounds bounds;
-    int count;
-}               t_mortkit;
-
-void *mort_thread(void *param)
-{
-    t_mortkit *kit = (t_mortkit *)param;
-    float distance =  1.0 / (kit->bounds.xmax - kit->bounds.xmin);
-    for (int i = 0; i < kit->count; i++)
+    if(code >> 2)
     {
-        kit->sorts[i].morton = morton64((kit->bodies[i].position.x - kit->bounds.xmin) * distance, (kit->bodies[i].position.y - kit->bounds.ymin) * distance, (kit->bodies[i].position.z - kit->bounds.zmin) * distance);
-        kit->sorts[i].bod = kit->bodies[i];
+        bounds.xmin = xmid;
+        bounds.xmax = parent.xmax;
     }
-    free(kit);
-    return (0);
-}
-
-t_sortbod *mt_make_sortbods(t_body *bodies, t_bounds bounds, int count)
-{
-    int bpt = ceil((float)count / THREADCOUNT);
-    pthread_t *mortoners = calloc(THREADCOUNT, sizeof(pthread_t));
-    t_sortbod *sorts = calloc(count, sizeof(t_sortbod));
-    for (int i = 0; i < THREADCOUNT; i++)
+    else
     {
-        t_mortkit *kit = calloc(1, sizeof(t_mortkit));
-        kit->bounds = bounds;
-        kit->count = bpt < count ? bpt : count;
-        kit->bodies = &bodies[i * bpt];
-        kit->sorts = &sorts[i * bpt];
-        count -= bpt;
-        pthread_create(&mortoners[i], NULL, mort_thread, kit);
+        bounds.xmin = parent.xmin;
+        bounds.xmax = xmid;
     }
-    for (int i = 0; i < THREADCOUNT; i++)
-        pthread_join(mortoners[i], NULL);
-    free(mortoners);
-    return (sorts);
+    code %= 4;
+    if (code >> 1)
+    {
+        bounds.ymin = ymid;
+        bounds.ymax = parent.ymax;
+    }
+    else
+    {
+        bounds.ymin = parent.ymin;
+        bounds.ymax = ymid;
+    }
+    code %= 2;
+    if (code)
+    {
+        bounds.zmin = zmid;
+        bounds.zmax = parent.zmax;
+    }
+    else
+    {
+        bounds.zmin = parent.zmin;
+        bounds.zmax = zmid;
+    }
+    return (bounds);
 }
 
 int binary_border_search(uint64_t *mortons, int startind, int maxind, unsigned int code, int depth)
 {
-    // printf("starting binary search, startind is %d, maxind is %d, code is %d, depth is %d\n", startind, maxind, code, depth);
+    /*
+        since the bodies are already sorted by their morton codes, when we look for the border
+        between different bit-strings we can use a binary search. this reduces making the tree
+        after sorting from O(nlog(n)) to O(log(n) * log(n))
+    */
     if (startind == maxind)
         return 0;//empty cell at end of parent
     uint64_t m = mortons[startind];
@@ -689,7 +614,6 @@ t_tree *make_tree(t_body *bodies, int count)
     t_bounds root_bounds = bounds_from_bodies(bodies, count);
 	
 	//generate and cache morton codes for each body
-    //t_sortbod *sorts = make_sortbods(bodies, root_bounds, count);
 	t_sortbod *sorts = mt_make_sortbods(bodies, root_bounds, count);
 
 	//sort the bodies by their morton codes
@@ -709,7 +633,6 @@ t_tree *make_tree(t_body *bodies, int count)
 	
     //recursively divide the tree
     mt_split_tree(root);
-	//split_tree(root);
     free(sorts);
     free(mortons);
     return (root);
@@ -732,12 +655,119 @@ static void free_tree(t_tree *t)
     free(t);
 }
 
+/*
+    Bundling and related functions
+*/
+
 typedef struct s_bundlekit
 {
     int lpb;
     int startind;
     t_dispatcher *dispatcher;
 }               t_bundlekit;
+
+t_bundle *bundle_leaves(t_tree **leaves, int offset, int count)
+{
+    t_dict *dict = create_dict(1000); //fiddle with this number later. it doesnt need to be big.
+    
+    //take up to Count leaves starting at offset and pour their neighborhoods
+    //into the double-key hash. track which leaves we put in.
+    t_pair *ids = NULL;
+    long difficulty = 0;
+    long size = 0;
+    for (int i = 0; i < count && leaves[offset + i]; i++)
+    {
+        if (!ids)
+            ids = create_pair(i + offset);
+        else
+        {
+            t_pair *p = create_pair(i + offset);
+            p->next_key = ids;
+            ids = p;
+        }
+        size += leaves[i]->count * sizeof(t_body);
+        t_tree **adding = leaves[offset + i]->neighbors;
+        for (int j = 0; adding[j]; j++)
+        {
+            dict_insert(dict, adding[j], i);
+            difficulty += leaves[offset + i]->count * adding[j]->count;
+            size += adding[j]->count * sizeof(cl_float4);
+        }
+    }
+    t_bundle *b = bundle_dict(dict, ids);
+    b->difficulty = difficulty;
+    b->size = size;
+    return (b);
+}
+
+t_msg compress_msg(t_msg m)
+{
+    t_msg c;
+
+    char *transposed = calloc(1, m.size);
+    tpenc((unsigned char *)m.data, m.size, (unsigned char *)transposed, sizeof(int));
+    int max_compressed_size = LZ4_compressBound(m.size);
+    char *compressed = calloc(1, max_compressed_size);
+    int result_compressed_size = LZ4_compress_default(transposed, compressed, m.size, max_compressed_size);
+    printf("compressed to %d from %zu, %.2f\n", result_compressed_size, m.size, (float)result_compressed_size * 100 / (float)m.size);
+    c.data = calloc(1, result_compressed_size + sizeof(int));
+    memcpy(c.data, &m.size, sizeof(int));
+    memcpy(c.data + sizeof(int), compressed, result_compressed_size);
+    c.size = result_compressed_size + sizeof(int);
+    free(transposed);
+    free(compressed);
+    free(m.data);
+    return c;
+}
+
+t_msg serialize_bundle(t_bundle *b, t_tree **leaves)
+{
+    t_msg m;
+    m.size = sizeof(int) * 2;
+    for (int i = 0; i < b->keycount; i++)
+    {
+        m.size += sizeof(int) * 2;
+        m.size += leaves[b->keys[i]]->count * sizeof(t_body);
+    }
+    for (int i = 0; i < b->cellcount; i++)
+    {
+        m.size += sizeof(int) * 2;
+        m.size += b->cells[i]->count * sizeof(cl_float4);
+        m.size += b->matches_counts[i] * sizeof(int);
+    }
+    m.data = malloc(m.size);
+    size_t offset = 0;
+    memcpy(m.data + offset, &(b->keycount), sizeof(int));
+    offset += sizeof(int);
+    
+    memcpy(m.data + offset, &(b->cellcount), sizeof(int));
+    offset += sizeof(int);
+    for (int i = 0; i < b->keycount; i++)
+    {
+        memcpy(m.data + offset, &(b->keys[i]), sizeof(int));
+        offset += sizeof(int);
+        memcpy(m.data + offset, &(leaves[b->keys[i]]->count), sizeof(int));
+        offset += sizeof(int);
+        memcpy(m.data + offset, leaves[b->keys[i]]->bodies, leaves[b->keys[i]]->count * sizeof(t_body));
+        offset += leaves[b->keys[i]]->count * sizeof(t_body);
+    }
+    for (int i = 0; i < b->cellcount; i++)
+    {
+        memcpy(m.data + offset, &(b->matches_counts[i]), sizeof(int));
+        offset += sizeof(int);
+        memcpy(m.data + offset, b->matches[i], b->matches_counts[i] * sizeof(int));
+        offset += b->matches_counts[i] * sizeof(int);
+        memcpy(m.data + offset, &(b->cells[i]->count), sizeof(int));
+        offset += sizeof(int);
+        for (int j = 0; j < b->cells[i]->count; j++)
+        {
+            memcpy(m.data + offset, &(b->cells[i]->bodies[j].position), sizeof(cl_float4));
+            offset += sizeof(cl_float4);
+        }
+    }
+    printf("bundle size final was %.1fMB\n", (float)m.size / 1048576.0f);
+    return (m);
+}
 
 void *bundle_thread(void *param)
 {
