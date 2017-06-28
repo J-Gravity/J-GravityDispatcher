@@ -393,7 +393,7 @@ typedef struct s_assemble_set
 void *assemble_thread(void *param)
 {
     t_assemble *set = (t_assemble *)param;
-    for (int i = 0; i < set->max; i++)
+    for (int i = 0; i < set->max && set->leaves[i]; i++)
         set->leaves[i]->neighbors = assemble_neighborhood(set->leaves[i], set->root);
     free(set);
     return (0);
