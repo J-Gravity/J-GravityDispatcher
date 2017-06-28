@@ -40,7 +40,7 @@ int	main(int ac, char **av)
 	printf("dispatcher struct is %lu bytes!!/n", sizeof(t_dispatcher));
 	dispatcher->sin = setup_server_socket(PORT);
 	dispatcher->ticks_cnt = 10;
-	dispatcher->name = "66jobfair";
+	dispatcher->name = "default";
 	dispatcher->is_connect = 1;
 	dispatcher->is_running = 0;
 	dispatcher->timestep = TIME_STEP;
@@ -57,7 +57,7 @@ int	main(int ac, char **av)
 	if (ret)
 		printf("mutex init failed!!!!!!!!!!!\n");
 	clock_t start = clock(), diff;
-	//receive_simulation_job(dispatcher);
+	receive_simulation_job(dispatcher);
 	connect_workers(dispatcher, NULL);
 	diff = clock() - start;
 	int msec = diff * 1000 / CLOCKS_PER_SEC;

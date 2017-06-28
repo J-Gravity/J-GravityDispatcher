@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   connect_workers.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/24 22:43:24 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/26 22:27:50 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,16 +76,13 @@ void	*connect_worker_thread(void *param)
 		queue_enqueue(&dispatcher->workers_queue, new_link);
 		configure_worker_settings(dispatcher, new_worker);
 		if (DEBUG && MUTEX_DEBUG)
-			printf("worker list mutex unlocked!\n");
-		if (dispatcher->is_running)
+		printf("worker list mutex unlocked!\n");
+		if (DEBUG && WORKER_DEBUG)
 		{
-			if (DEBUG && WORKER_DEBUG)
-			{
-				printf("launching event thread from connect workers\n");
-				printf("new_link(%p) worker(%p)\n", new_link, new_link->data);
-			}
-			make_new_event_thread(dispatcher, new_link);
+			printf("launching event thread from connect workers\n");
+			printf("new_link(%p) worker(%p)\n", new_link, new_link->data);
 		}
+		make_new_event_thread(dispatcher, new_link);
 		if (DEBUG && WORKER_DEBUG)
 			printf("finished with connect worker\n");
 	}

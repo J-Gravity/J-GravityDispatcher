@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   dispatcher.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
 /*   Updated: 2017/06/26 17:56:28 by smifsud          ###   ########.fr       */
@@ -254,6 +254,8 @@ typedef struct		s_set_data
 	unsigned int	time_step;
 	unsigned int	frame_count;
 	char			approved;
+	char			rotating;
+	unsigned int	velocity_mag;
 }					t_set_data;
 
 typedef struct			s_dispatcher
@@ -282,6 +284,7 @@ typedef struct			s_dispatcher
 	t_tree				**cells;
 	int					cell_count;
 	t_socket			sin;
+	t_socket			cmd_sin;
 	char				is_connect;
 	char				is_running;
 	FILE 				*fp;

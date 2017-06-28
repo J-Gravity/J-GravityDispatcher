@@ -29,7 +29,11 @@ t_set_data *deserialize_set_data(t_msg msg)
 	memcpy(&(set_data->frame_count), msg.data + offset, sizeof(unsigned int));
 	offset += sizeof(unsigned int); //offset to approved
 	memcpy(&(set_data->approved), msg.data + offset, sizeof(char));
-	offset += sizeof(char); //offset to approved
+	offset += sizeof(char); //offset to rotating
+	memcpy(&(set_data->rotating), msg.data + offset, sizeof(char));
+	offset += sizeof(char); //offset to velocity_mag
+	memcpy(&(set_data->velocity_mag), msg.data + offset, sizeof(unsigned int));
+	offset += sizeof(unsigned int); //offset
 	return (set_data);
 }
 
@@ -38,29 +42,50 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 	int			fd;
 	t_msg		msg;
 	t_set_data	*set_data;
+	char		waiting = 1;
 
-	printf("%s\n", "Waiting on the signal from jgrav-host");
-	fd = accept(dispatcher->sin.fd, (struct sockaddr *)&(dispatcher->sin.addr.sin_addr), &(dispatcher->sin.addrlen));
-	printf("received jgrav-host message\n");
-	if (fd == 0)
-		printf("jgrav-host accept returned 0");
-	else if (fd == -1)
-		printf("jgrav-host accept failed with %d\n", errno);
-	else
+	dispatcher->cmd_sin = setup_server_socket(4224);
+	while (waiting)
 	{
-		msg = get_msg(fd);
-		printf("message id: %c\n", msg.id);
-		printf("message size: %zu\n", msg.size);
-		printf("message data: %s\n", msg.data);
-		set_data = deserialize_set_data(msg);
-		printf("set_data->set_name: %s\n", set_data->set_name);
-		printf("set_data->star_count: %d\n", set_data->star_count);
-		printf("set_data->big_radius: %d\n", set_data->big_radius);
-		printf("set_data->anchor_mass: %d\n", set_data->anchor_mass);
-		printf("set_data->time_step: %d\n", set_data->time_step);
-		printf("set_data->frame_count: %d\n", set_data->frame_count);
-		printf("set_data->approved: %d\n", set_data->approved);
-		dispatcher->set_data = set_data;
+		printf("%s\n", "Waiting on the signal from jgrav-host");
+		fd = accept(dispatcher->cmd_sin.fd, (struct sockaddr *)&(dispatcher->cmd_sin.addr.sin_addr), &(dispatcher->cmd_sin.addrlen));
+		printf("received jgrav-host message\n");
+		if (fd == 0)
+			printf("jgrav-host accept returned 0");
+		else if (fd == -1)
+			printf("jgrav-host accept failed with %d\n", errno);
+		else
+		{
+			msg = get_msg(fd);
+			if (msg.error == 42 && msg.id == ACKNOWLEDGED)
+			{
+				printf("message id: %c\n", msg.id);
+				printf("message size: %zu\n", msg.size);
+				printf("message data: %s\n", msg.data);
+				set_data = deserialize_set_data(msg);
+				printf("set_data->set_name: %s\n", set_data->set_name);
+				printf("set_data->star_count: %d\n", set_data->star_count);
+				printf("set_data->big_radius: %d\n", set_data->big_radius);
+				printf("set_data->anchor_mass: %d\n", set_data->anchor_mass);
+				printf("set_data->time_step: %d\n", set_data->time_step);
+				printf("set_data->frame_count: %d\n", set_data->frame_count);
+				printf("set_data->approved: %d\n", set_data->approved);
+				printf("set_data->rotating: %d\n", set_data->rotating);
+				printf("set_data->velocity_mag: %d\n", set_data->velocity_mag);
+				dispatcher->set_data = set_data;
+        		dispatcher->name = set_data->set_name;
+		    	dispatcher->timestep = set_data->time_step;
+		    	dispatcher->ticks_cnt = set_data->frame_count;
+				waiting = 0;
+			}
+			else
+			{
+				printf("bad command message!\n");
+				close(fd);
+				if (msg.error == 42)
+					free(msg.data);
+			}
+		}
 	}
 	printf("received complete\n");
 }
