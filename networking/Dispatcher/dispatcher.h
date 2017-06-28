@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/25 15:32:03 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/26 17:56:28 by smifsud          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -610,12 +610,6 @@ void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
 */
 void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
 			t_worker *worker, t_msg msg);
-/*
-*	A multithreaded quicksort
-*	takes an array and the number of elements in the array
-*/
-void		msort(t_sortbod *sorts, size_t count);
-
 /*
 * 	Comparison functionused for body sorting
 */
