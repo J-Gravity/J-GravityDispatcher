@@ -387,12 +387,13 @@ typedef struct s_assemble_set
 {
     t_tree **leaves;
     t_tree *root;
+    unsigned int max;
 }               t_assemble;
 
 void *assemble_thread(void *param)
 {
     t_assemble *set = (t_assemble *)param;
-    for (int i = 0; set->leaves[i]; i++)
+    for (int i = 0; i < set->max; i++)
         set->leaves[i]->neighbors = assemble_neighborhood(set->leaves[i], set->root);
     free(set);
     return (0);
@@ -409,6 +410,7 @@ void mt_assemble_neighborhoods(t_tree **leaves, t_tree *root)
         t_assemble *set = calloc(1, sizeof(t_assemble));
         set->leaves = &leaves[i * lpt];
         set->root = root;
+	set->max = lpt;
         pthread_create(&assemblers[i], NULL, assemble_thread, set);
     }
     for (int i = 0; i < THREADCOUNT; i++)
