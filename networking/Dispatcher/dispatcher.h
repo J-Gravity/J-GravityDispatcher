@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dispatcher.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/25 15:32:03 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 22:22:07 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,20 @@ int G_sent_wu;
 # define TPM_METRIC 1
 # define MUTEX_METRIC 0
 # define WORKER_TIME_METRIC 0
+
+#define TIMER_SETUP(VAR) \
+	clock_t VAR_start;\
+	clock_t VAR_diff;\
+	int	VAR;
+#define TIMER_START(VAR) \
+	VAR_start = clock();
+#define TIMER_STOP(VAR) \
+	VAR_diff = clock() - VAR_start;\
+	VAR = VAR_diff * 1000 / CLOCKS_PER_SEC;
+#define TIMER_PRINT(PREFIX, VAR) \
+	if (METRICS) \
+		printf("%s took %d seconds %d milliseconds\n", PREFIX, VAR/1000, \
+		VAR%1000);
 
 
 int G_total_locked;

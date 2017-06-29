@@ -44,7 +44,6 @@ void receive_simulation_job(t_dispatcher *dispatcher)
 	t_set_data	*set_data;
 	char		waiting = 1;
 
-	dispatcher->cmd_sin = setup_server_socket(4224);
 	while (waiting)
 	{
 		printf("%s\n", "Waiting on the signal from jgrav-host");
