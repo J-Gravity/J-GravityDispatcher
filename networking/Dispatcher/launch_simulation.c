@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/29 01:17:53 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 01:30:04 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ static int	sim_ready_prompt()
 	return (0);
 }
 
-void	launch_simulation(t_dispatcher *dispatcher)
+void		launch_simulation(t_dispatcher *dispatcher)
 {
 	setup_semaphores(dispatcher);
 	setup_async_file(dispatcher);

@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/29 01:26:26 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 01:30:18 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -561,6 +561,5 @@ void	msort(t_sortbod *sorts, size_t count);
 */
 
 int		sbod_comp(const void *a, const void *b);
-
 
 #endif
