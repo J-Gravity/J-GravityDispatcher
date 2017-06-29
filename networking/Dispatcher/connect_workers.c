@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/28 23:15:22 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:23:49 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,9 +61,7 @@ void	*connect_worker_thread(void *param)
 			printf("s are connected! - fd: %d\n" ,fd);
 
 		worker = new_worker(fd);
-		new_link = calloc(1, sizeof(t_lst));
-		new_link->data = worker;
-		new_link->next = NULL;
+		new_link = new_lst(worker);
 
 		pthread_mutex_lock(&dispatcher->worker_list_mutex);
 		dispatcher->worker_cnt++;
