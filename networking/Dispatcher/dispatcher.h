@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 23:59:22 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 00:08:43 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -449,7 +449,7 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 *		@param	file		The name of the input file
 *							struct
 */
-void		request_dataset(t_dispatcher *dispatcher, char *file);
+void		load_dataset(t_dispatcher *dispatcher, char *file);
 
 /*
 *	Divide up the dataset into workunits and store them in the

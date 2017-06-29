@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 20:48:50 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 22:53:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 00:08:43 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ int	main(int ac, char **av)
 	TIMER_PRINT("connect_workers", msec)
 
 	TIMER_START(msec)
-	request_dataset(dispatcher, av[1]);
+	load_dataset(dispatcher, av[1]);
 	TIMER_STOP(msec)
 	TIMER_PRINT("load_dataset", msec)
 
