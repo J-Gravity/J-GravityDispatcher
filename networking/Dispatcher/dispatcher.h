@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 22:22:07 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 22:51:39 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,7 +285,6 @@ typedef struct			s_dispatcher
 	char				*name;
 	float				timestep;
 	float				softening;
-	//t_lst				*workers;
 	t_queue				*workers_queue;
 	int					worker_cnt;
 	t_dataset			*dataset;
@@ -316,8 +315,10 @@ typedef struct	s_sortbod
 {
 	t_body bod;
 	uint64_t morton;
-}               t_sortbod;
+}				t_sortbod;
 
+t_queue			*new_queue();
+t_dispatcher	*new_dispatcher(int worker_port, int cmd_port);
 t_msg	serialize_settings(t_dispatcher *dispatcher);
 t_set_data	*deserialize_set_data(t_msg msg);
 void		receive_simulation_job(t_dispatcher *dispatcher);
