@@ -2,6 +2,9 @@ all: dispatcher
 
 CCFLAGS += -D DEVICE=$(DEVICE)
 
+build:
+	mkdir build
+
 tt:
 	make -C ../TurboTranspose-master clean
 	make -C ../TurboTranspose-master

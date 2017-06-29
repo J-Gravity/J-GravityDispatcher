@@ -549,17 +549,9 @@ void	*queue_peek(t_queue **queue);
 */
 int		queue_count(t_queue *queue);
 
-
-/*
-*	A multithreaded quicksort
-*	takes an array and the number of elements in the array
-*/
-void	msort(t_sortbod *sorts, size_t count);
-
 /*
 * 	Comparison functionused for body sorting
 */
-
 int		sbod_comp(const void *a, const void *b);
 
 #endif
