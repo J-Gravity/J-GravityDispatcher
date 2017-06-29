@@ -6,67 +6,12 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 23:56:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 00:48:29 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 #include "pthread.h"
-
-t_lst 		*remove_link(t_lst **list, void *data)
-{
-	t_lst	*head;
-	t_lst	*last;
-
-	head = *list;
-	last = *list;
-	if (head && head->data == data)
-	{
-		*list = head->next;
-		return (head);
-	}
-	while (head)
-	{
-		if (head->data == data)
-		{
-			last->next = head->next;
-			return (head);
-		}
-		last = head;
-		head = head->next;
-	}
-	return (NULL);
-}
-
-void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
-{
-	t_worker	*worker;
-
-	worker = (t_worker *)worker_link->data;
-	while (queue_count(worker->workunit_queue) > 0)
-	{
-		if (DEBUG && WORKER_DEBUG)
-			printf("adding lost worker's bundle back to the pool!\n");
-		queue_enqueue(&dispatcher->bundles, queue_create_new(queue_pop(&worker->workunit_queue)));
-		sem_post(dispatcher->start_sending);
-	}
-	free(worker->workunit_queue);
-	worker->workunit_queue = NULL;
-	if (DEBUG && WORKER_DEBUG)
-		printf("removing worker link!\n");
-	pthread_mutex_lock(&dispatcher->workers->mutex);
-	remove_link(&dispatcher->workers->first, worker);
-	dispatcher->workers->count--;
-	pthread_mutex_unlock(&dispatcher->workers->mutex);
-	free(worker_link);
-	if (worker->socket.fd)
-	{
-		close(worker->socket.fd);
-		worker->socket.fd = 0;
-	}
-	free(worker->tid);
-	free(worker);
-}
 
 static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 			t_msg msg)
@@ -86,24 +31,7 @@ static void	handle_worker_msg(t_dispatcher *dispatcher, t_worker *worker,
 		printf("invalid msg id: %d\n", msg.id);
 }
 
-void 		print_worker_fds(t_dispatcher *dispatcher)
-{
-	t_lst	*head = 0;
-
-	pthread_mutex_lock(&dispatcher->workers->mutex);
-	head = dispatcher->workers->first;
-	 printf("-------------\n");
-  	 while (head)
- 	 {
-	 	printf("(%p)worker: %d -> (%p)\n", head,
-	 		((t_worker*)(head->data))->socket.fd, head->next);
-  	 	head = head->next;
- 	 }
-	printf("-------------\n");
-	pthread_mutex_unlock(&dispatcher->workers->mutex);
-}
-
-void		*handle_worker_connection(void *input)
+void		*worker_event_thread(void *input)
 {
 	t_thread_handler	*params;
 	t_lst				*worker_link;
@@ -148,32 +76,8 @@ void		*handle_worker_connection(void *input)
 	return (0);
 }
 
-void		launch_worker_event_threads(t_dispatcher *dispatcher)
+int		sim_ready_prompt(t_dispatcher *dispatcher)
 {
-	t_lst				*head;
-	t_worker			*cur_worker;
-	t_thread_handler	*param;
-
-	pthread_mutex_lock(&dispatcher->workers->mutex);
-	head = dispatcher->workers->first;
-	while (head)
-	{	
-		cur_worker = (t_worker *)head->data;
-		if (cur_worker->tid == 0)
-		{
-			param = new_thread_handler(dispatcher, head);
-			cur_worker->tid = calloc(1, sizeof(pthread_t));
-			pthread_create(cur_worker->tid, NULL, handle_worker_connection,
-				param);
-		}
-		head = head->next;
-	}
-	pthread_mutex_unlock(&dispatcher->workers->mutex);
-}
-
-int		timeout_progressbar(t_dispatcher *dispatcher)
-{
-	int timeout = 60;
 	printf("\rPress \x1b[32m[ENTER] \x1b[0mto start dispatching workunits\n");
 	write(1, "[2K", 4);
 	write(1, "\rWaiting for workers to connect...\n", 35);
@@ -200,7 +104,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	setup_async_file(dispatcher);
 	if (DEBUG)
 		printf("begin launch_simulation\n");
-	if (timeout_progressbar(dispatcher) == -1)
+	if (sim_ready_prompt(dispatcher) == -1)
 		return ;
 	while (getchar() != 10)
 		;

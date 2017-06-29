@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/29 00:13:33 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 00:58:17 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,6 +313,8 @@ typedef struct	s_sortbod
 	uint64_t morton;
 }				t_sortbod;
 
+t_lst 		*remove_link(t_lst **list, void *data);
+void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link);
 void	configure_worker_settings(t_dispatcher *dispatcher, t_worker *worker);
 t_lst			*new_lst(void *data);
 t_queue			*new_queue();
@@ -358,14 +360,6 @@ void	*queue_pop(t_queue **queue);
 t_lst		*queue_enqueue(t_queue **queue, t_lst *new_node);
 
 void print_cl4(cl_float4 v);
-
-/*
-*	The function that runs on the network event handler threads.
-*	handles the network events for each worker.
-*		@param	input	A t_thread_handler struct that contains
-*						a pointer to a worker and a pointer to the dispatcher
-*/
-void	*handle_worker_connection(void *input);
 
 /*
 *	Create a network event thread for the provided worker
