@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/10 17:44:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/15 19:34:48 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:56:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void	*sender_thread(void *input)
 		pthread_mutex_lock(&dispatcher->sender_thread_mutex);
 		if (queue_count(dispatcher->bundles) > 0)
 		{
-			worker_link = queue_pop_link(&dispatcher->workers_queue);
+			worker_link = queue_pop_link(&dispatcher->workers);
 			if (!worker_link || !worker_link->data)
 			{
 				//printf("NULL from popping the worker queue!\n");
@@ -55,7 +55,7 @@ void	*sender_thread(void *input)
 				if (DEBUG)
 					printf("done sending bundle %d to worker %d\n", bundle->id, worker->socket.fd);
 			}
-			queue_enqueue(&dispatcher->workers_queue, worker_link);
+			queue_enqueue(&dispatcher->workers, worker_link);
 		}
 		else
 			pthread_mutex_unlock(&dispatcher->sender_thread_mutex);

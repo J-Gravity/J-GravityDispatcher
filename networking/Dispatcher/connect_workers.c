@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/28 23:44:07 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:56:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,14 @@ void	*connect_worker_thread(void *param)
 				printf("worker accept call failed\n");
 			return (0);
 		}
-		printf("%d worker", dispatcher->workers_queue->count + 1);
-		if (dispatcher->workers_queue->count + 1 == 1)
+		printf("%d worker", dispatcher->workers->count + 1);
+		if (dispatcher->workers->count + 1 == 1)
 			printf(" is connected! - fd: %d\n", fd);
 		else
 			printf("s are connected! - fd: %d\n" ,fd);
 		worker = new_worker(fd);
 		new_link = new_lst(worker);
-		queue_enqueue(&dispatcher->workers_queue, new_link);
+		queue_enqueue(&dispatcher->workers, new_link);
 		configure_worker_settings(dispatcher, worker);
 		if (DEBUG && WORKER_DEBUG)
 		{

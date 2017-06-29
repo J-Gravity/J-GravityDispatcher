@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/11 20:53:00 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 23:49:06 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:56:34 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,10 +54,10 @@ void		cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link)
 	worker->workunit_queue = NULL;
 	if (DEBUG && WORKER_DEBUG)
 		printf("removing worker link!\n");
-	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
-	remove_link(&dispatcher->workers_queue->first, worker);
-	dispatcher->workers_queue->count--;
-	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
+	pthread_mutex_lock(&dispatcher->workers->mutex);
+	remove_link(&dispatcher->workers->first, worker);
+	dispatcher->workers->count--;
+	pthread_mutex_unlock(&dispatcher->workers->mutex);
 	free(worker_link);
 	if (worker->socket.fd)
 	{
@@ -90,8 +90,8 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
 {
 	t_lst	*head = 0;
 
-	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
-	head = dispatcher->workers_queue->first;
+	pthread_mutex_lock(&dispatcher->workers->mutex);
+	head = dispatcher->workers->first;
 	 printf("-------------\n");
   	 while (head)
  	 {
@@ -100,7 +100,7 @@ void 		print_worker_fds(t_dispatcher *dispatcher)
   	 	head = head->next;
  	 }
 	printf("-------------\n");
-	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
+	pthread_mutex_unlock(&dispatcher->workers->mutex);
 }
 
 void		*handle_worker_connection(void *input)
@@ -154,8 +154,8 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 	t_worker			*cur_worker;
 	t_thread_handler	*param;
 
-	pthread_mutex_lock(&dispatcher->workers_queue->mutex);
-	head = dispatcher->workers_queue->first;
+	pthread_mutex_lock(&dispatcher->workers->mutex);
+	head = dispatcher->workers->first;
 	while (head)
 	{	
 		cur_worker = (t_worker *)head->data;
@@ -168,7 +168,7 @@ void		launch_worker_event_threads(t_dispatcher *dispatcher)
 		}
 		head = head->next;
 	}
-	pthread_mutex_unlock(&dispatcher->workers_queue->mutex);
+	pthread_mutex_unlock(&dispatcher->workers->mutex);
 }
 
 int		timeout_progressbar(t_dispatcher *dispatcher)
@@ -207,7 +207,7 @@ void		launch_simulation(t_dispatcher *dispatcher)
 	dispatcher->is_running = 1;
 	G_tick_start = time(NULL);
 	setup_async_file(dispatcher);
-	start_sender_threads(dispatcher, queue_count(dispatcher->workers_queue));
+	start_sender_threads(dispatcher, queue_count(dispatcher->workers));
 	divide_dataset(dispatcher);
 	printf("Simulation Started\n");
 	if (sem_wait(dispatcher->exit_sem) < 0)

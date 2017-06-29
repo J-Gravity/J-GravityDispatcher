@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_worker_done_msg.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/14 16:35:38 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/26 18:14:57 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:59:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,11 +82,11 @@ void	handle_worker_done_msg(t_dispatcher *dispatcher, t_worker *worker,
 		if (DEBUG)
 			printf("bundle %d complete\n", to_delete->id);
 		free_bundle(to_delete);
-		pthread_mutex_lock(&dispatcher->workunits_done_mutex);
-		dispatcher->workunits_done++;
-		if (dispatcher->workunits_done == dispatcher->total_workunits)
-			all_workunits_done(dispatcher);
-		pthread_mutex_unlock(&dispatcher->workunits_done_mutex);
+		pthread_mutex_lock(&dispatcher->bundles_done_mutex);
+		dispatcher->bundles_done++;
+		if (dispatcher->bundles_done == dispatcher->total_bundles)
+			all_bundles_done(dispatcher);
+		pthread_mutex_unlock(&dispatcher->bundles_done_mutex);
 	}
 	delete_WU(complete_WU);
 }

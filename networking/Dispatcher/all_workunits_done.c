@@ -1,7 +1,7 @@
 	/* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   all_workunits_done.c                               :+:      :+:    :+:   */
+/*   all_bundles_done.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,7 +12,7 @@
 
 #include "dispatcher.h"
 
-void	all_workunits_done(t_dispatcher *dispatcher)
+void	all_bundles_done(t_dispatcher *dispatcher)
 {
 	if (DEBUG)
 		printf("all workunits done for this tick\n");
@@ -27,18 +27,18 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (METRICS)
 	{
 		printf("--------------------------------Tick %d---------------------------\n", dispatcher->ticks_done);
-		printf("%d workers completed %d workunits totalling %ld MB\n", queue_count(dispatcher->workers_queue), dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
+		printf("%d workers completed %d workunits totalling %ld MB\n", queue_count(dispatcher->workers), dispatcher->bundles_done, G_workunit_size / (1024 * 1024));
 		// printf("Processed %ld MB/sec\n", (G_workunit_size / (1024 * 1024)) / 60);
 		// G_total_workunit_size += G_workunit_size;
 		// printf("Total workunits took %f seconds\n", G_worker_calcs);
-		// printf("The average workunit took %f seconds\n", G_worker_calcs / (double)dispatcher->workunits_done);
+		// printf("The average workunit took %f seconds\n", G_worker_calcs / (double)dispatcher->bundles_done);
 		// G_worker_calcs = 0;
 
 		if (TPM_METRIC)
 		{
 			printf("this tick took: %.2f seconds\n", tick_time);
 			printf("This tick ran at %.2f tick/min\n", 60.0 / tick_time);
-			printf("These workunits ran at %.2f workunits/min\n\n", 60 * ((double)dispatcher->workunits_done / tick_time));
+			printf("These workunits ran at %.2f workunits/min\n\n", 60 * ((double)dispatcher->bundles_done / tick_time));
 		}
 		if (MUTEX_METRIC)
 		{
@@ -49,7 +49,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("	handle locked for %d seconds\n", G_handle_locked / 1000);
 			printf("	printfds locked for %d seconds\n", G_printfds_locked / 1000);
 		}
-		G_total_workunit_cnt += dispatcher->workunits_done;
+		G_total_workunit_cnt += dispatcher->bundles_done;
 		G_total_locked += G_removeworker_locked + G_workerevent_locked + G_handle_locked + G_printfds_locked;
 		if (dispatcher->ticks_done % dispatcher->ticks_cnt == 0 && dispatcher->ticks_done != 0)
 		{
@@ -62,7 +62,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("\x1b[0m");
 		}
 	}
-	dispatcher->workunits_done = 0;
+	dispatcher->bundles_done = 0;
 	free(dispatcher->cells);
 	//move new_dataset to dataset
 	free(dispatcher->dataset->particles);

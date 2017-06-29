@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 23:49:32 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:59:22 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -274,8 +274,7 @@ typedef struct		s_set_data
 
 typedef struct			s_dispatcher
 {
-	pthread_mutex_t		workunits_mutex;
-	pthread_mutex_t		workunits_done_mutex;
+	pthread_mutex_t		bundles_done_mutex;
 	pthread_mutex_t		sender_thread_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
@@ -283,14 +282,14 @@ typedef struct			s_dispatcher
 	char				*name;
 	float				timestep;
 	float				softening;
-	t_queue				*workers_queue;
+	t_queue				*workers;
 	t_dataset			*dataset;
 	t_dataset			*new_dataset;
 	int					ticks_cnt;
 	int					ticks_done;
 	t_queue				*bundles;
-	int					total_workunits;
-	int					workunits_done;
+	int					total_bundles;
+	int					bundles_done;
 	t_tree				**cells;
 	int					cell_count;
 	t_socket			sin;
@@ -526,7 +525,7 @@ void		handle_worker_done_msg(t_dispatcher *dispatcher,
 *	Handles the TICK_COMPLETE_EVENT
 *		@param	dispatcher	The dispatcher's main struct
 */
-void		all_workunits_done(t_dispatcher *dispatcher);
+void		all_bundles_done(t_dispatcher *dispatcher);
 
 /*
 *	Broadcast message to all workers
