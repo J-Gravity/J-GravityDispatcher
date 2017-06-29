@@ -1,26 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   make_new_event_thread.c                            :+:      :+:    :+:   */
+/*   new_worker.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/05/22 13:37:17 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/05/22 17:00:15 by cyildiri         ###   ########.fr       */
+/*   Created: 2017/06/28 23:04:42 by cyildiri          #+#    #+#             */
+/*   Updated: 2017/06/28 23:20:04 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
-#include <pthread.h>
 
-void	make_new_event_thread(t_dispatcher *disp, t_lst *worker_link)
-{ 
-	t_thread_handler	*params;
-	t_worker			*worker;
+t_worker	*new_worker(int fd)
+{
+	t_worker	*worker;
 
-	params = new_thread_handler(disp, worker_link);
-	worker = (t_worker *)worker_link->data;
-	worker->tid = calloc(1, sizeof(pthread_t));
-	pthread_create(worker->tid, NULL,
-					handle_worker_connection, params);
+	worker = calloc(1, sizeof(t_worker));
+	worker->socket.fd = fd;
+	worker->tid = 0;
+	worker->workunit_queue = new_queue();
+	return (worker);
 }

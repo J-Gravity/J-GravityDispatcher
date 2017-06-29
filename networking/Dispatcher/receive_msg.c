@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_msg.c                                          :+:      :+:    :+:   */
+/*   receive_msg.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/13 21:57:36 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/25 16:19:26 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 01:32:43 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@ static void print_debug(int fd, t_msg msg)
 		line = "WORK_UNIT_DONE";
 	else if (msg.id == WORK_UNIT_REQUEST)
 		line = "WORK_UNIT_REQUEST";
+	else
+		line = "UNKNOWN";
 	printf("RECIEVED '%s' FROM worker %d\n", line, fd);
 }
 
@@ -81,7 +83,7 @@ char	read_body(int fd, t_msg *msg)
 	return (0);
 }
 
-t_msg	get_msg(int fd)
+t_msg	receive_msg(int fd)
 {
 
 	int 	recv_bytes;

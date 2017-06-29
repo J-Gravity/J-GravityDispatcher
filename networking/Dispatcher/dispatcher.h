@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   dispatcher.h                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: cyildiri <cyildiri@student.42.fr>          +#+  +:+       +#+        */
+/*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/26 17:56:28 by smifsud          ###   ########.fr       */
+/*   Updated: 2017/06/29 01:35:28 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@
 
 /* ************ */
 /* TEMP         */
+/* ************ */
 int G_sent_wu;
 
 /* ************ */
@@ -47,6 +48,20 @@ int G_sent_wu;
 # define TPM_METRIC 1
 # define MUTEX_METRIC 0
 # define WORKER_TIME_METRIC 0
+
+#define TIMER_SETUP(VAR) \
+	clock_t VAR_start;\
+	clock_t VAR_diff;\
+	int	VAR;
+#define TIMER_START(VAR) \
+	VAR_start = clock();
+#define TIMER_STOP(VAR) \
+	VAR_diff = clock() - VAR_start;\
+	VAR = VAR_diff * 1000 / CLOCKS_PER_SEC;
+#define TIMER_PRINT(PREFIX, VAR) \
+	if (METRICS) \
+		printf("%s took %d seconds %d milliseconds\n", PREFIX, VAR/1000, \
+		VAR%1000);
 
 
 int G_total_locked;
@@ -131,35 +146,35 @@ typedef struct			s_body
 	cl_float4			velocity;
 }						t_body;
 
-typedef struct s_bounds
+typedef struct			s_bounds
 {
-	float xmin;
-	float xmax;
-	float ymin;
-	float ymax;
-	float zmin;
-	float zmax;
-}				t_bounds;
+	float				xmin;
+	float				xmax;
+	float				ymin;
+	float				ymax;
+	float				zmin;
+	float				zmax;
+}						t_bounds;
 
-typedef struct s_cell
+typedef struct			s_cell
 {
-	t_body **bodies;
-	int bodycount;
-	struct s_cell *parent;
-	struct s_cell **children;
-	struct s_cell *scb;
-	cl_float4 center;
-	cl_float4 force_bias;
-	t_bounds bounds;
-}				t_cell;
+	t_body 				**bodies;
+	int					bodycount;
+	struct s_cell		*parent;
+	struct s_cell		**children;
+	struct s_cell		*scb;
+	cl_float4			center;
+	cl_float4			force_bias;
+	t_bounds			bounds;
+}						t_cell;
 
-typedef struct s_octree
+typedef struct			s_octree
 {
-	t_cell *root;
-	t_body **bodies;
-	size_t n_bodies;
-	t_bounds bounds;
-}				t_octree;
+	t_cell				*root;
+	t_body				**bodies;
+	size_t				n_bodies;
+	t_bounds			bounds;
+}						t_octree;
 
 typedef struct			s_WU
 {
@@ -206,81 +221,76 @@ typedef struct			s_dataset
 	t_body				*particles;
 }						t_dataset;
 
-typedef struct		s_pair
+typedef struct			s_pair
 {
-	size_t			key;
-	struct s_pair	*subkeys;
-	struct s_pair	*next_key;
-}					t_pair;
+	size_t				key;
+	struct s_pair		*subkeys;
+	struct s_pair		*next_key;
+}						t_pair;
 
-typedef struct		s_dict
+typedef struct			s_dict
 {
-	unsigned int	size;
-	t_pair			**table;
-}					t_dict;
+	unsigned int		size;
+	t_pair				**table;
+}						t_dict;
 
-typedef struct s_tree
+typedef struct			s_tree
 {
-	t_body *bodies;
-	int 	count;
-	struct s_tree **children;
-	struct s_tree *parent;
-	struct s_tree **neighbors;
-	struct s_tree *as_single;
-	t_bounds bounds;
-	uint64_t *mortons;
-}				t_tree;
+	t_body				*bodies;
+	int					count;
+	struct s_tree		**children;
+	struct s_tree		*parent;
+	struct s_tree		**neighbors;
+	struct s_tree		*as_single;
+	t_bounds			bounds;
+	uint64_t			*mortons;
+}						t_tree;
 
-typedef struct s_bundle
+typedef struct			s_bundle
 {
-	int *keys;
-	int keycount;
-	t_tree **cells;
-	int cellcount;
-	int **matches;
-	int *matches_counts;
-	char id;
-	long difficulty;
-	long size;
-}				t_bundle;
+	int					*keys;
+	int					keycount;
+	t_tree				**cells;
+	int					cellcount;
+	int					**matches;
+	int					*matches_counts;
+	char				id;
+	long				difficulty;
+	long				size;
+}						t_bundle;
 
-typedef struct		s_set_data
+typedef struct			s_set_data
 {
-	char			*set_name;
-	unsigned int	star_count;
-	unsigned int	solar_mass;
-	unsigned int	big_radius;
-	unsigned int	anchor_mass;
-	unsigned int	time_step;
-	unsigned int	frame_count;
-	char			approved;
-	char			rotating;
-	unsigned int	velocity_mag;
-}					t_set_data;
+	char				*set_name;
+	unsigned int		star_count;
+	unsigned int		solar_mass;
+	unsigned int		big_radius;
+	unsigned int		anchor_mass;
+	unsigned int		time_step;
+	unsigned int		frame_count;
+	char				approved;
+	char				rotating;
+	unsigned int		velocity_mag;
+}						t_set_data;
 
 typedef struct			s_dispatcher
 {
-	pthread_mutex_t		workunits_mutex;
-	pthread_mutex_t		worker_list_mutex;
-	pthread_mutex_t		workunits_done_mutex;
+	pthread_mutex_t		bundles_done_mutex;
 	pthread_mutex_t		sender_thread_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
-	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
 	float				timestep;
 	float				softening;
-	//t_lst				*workers;
-	t_queue				*workers_queue;
-	int					worker_cnt;
+	t_queue				*workers;
 	t_dataset			*dataset;
 	t_dataset			*new_dataset;
 	int					ticks_cnt;
 	int					ticks_done;
 	t_queue				*bundles;
-	int					total_workunits;
-	int					workunits_done;
+	int					total_bundles;
+	int					bundles_done;
 	t_tree				**cells;
 	int					cell_count;
 	t_socket			sin;
@@ -298,13 +308,20 @@ typedef struct			s_thread_handler
 	t_lst				*worker;
 }						t_thread_handler;
 
-typedef struct	s_sortbod
+typedef struct			s_sortbod
 {
-	t_body bod;
-	uint64_t morton;
-}               t_sortbod;
+	t_body				bod;
+	uint64_t			morton;
+}						t_sortbod;
 
-t_msg	serialize_settings(t_dispatcher *dispatcher);
+t_lst 			*remove_link(t_lst **list, void *data);
+void			cleanup_worker(t_dispatcher *dispatcher, t_lst *worker_link);
+void			configure_worker_settings(t_dispatcher *dispatcher, t_worker *worker);
+t_lst			*new_lst(void *data);
+t_queue			*new_queue();
+t_worker		*new_worker(int fd);
+t_dispatcher	*new_dispatcher(int worker_port, int cmd_port);
+t_msg			serialize_settings(t_dispatcher *dispatcher);
 t_set_data	*deserialize_set_data(t_msg msg);
 void		receive_simulation_job(t_dispatcher *dispatcher);
 void 		print_cl4(cl_float4 v);
@@ -315,20 +332,20 @@ int			dict_search(t_dict *dict, t_tree *cell, size_t subkey);
 void		dict_insert(t_dict *dict, t_tree *cell, size_t subkey);
 t_dict		*create_dict(unsigned int size);
 t_pair		*create_pair(size_t key);
-t_bundle 	*bundle_dict(t_dict *dict, t_pair *ids);
-t_msg 		serialize_bundle(t_bundle *b, t_tree **leaves);
+t_bundle	*bundle_dict(t_dict *dict, t_pair *ids);
+t_msg		serialize_bundle(t_bundle *b, t_tree **leaves);
 void		start_sender_threads(t_dispatcher *disp, int count);
-void 		print_worker_fds(t_dispatcher *dispatcher);
+void		print_worker_fds(t_dispatcher *dispatcher);
 t_lst		*queue_pop_link(t_queue **queue);
-void 		async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
-void 		setup_async_file(t_dispatcher *dispatcher);
-t_body *generate_dataset(t_set_data *sd);
+void		async_save(t_dispatcher *dispatcher, unsigned long offset, t_WU *wu);
+void		setup_async_file(t_dispatcher *dispatcher);
+t_body		*generate_dataset(t_set_data *sd);
 
 /*
  * 	Creates a new node and returns it
  * 		@param *workunit	The workunit to be added to the node
  */
-t_lst		*queue_create_new(void *bundle);
+t_lst	*queue_create_new(void *bundle);
 
 /*
  * 	Pops a node off the queue
@@ -341,17 +358,9 @@ void	*queue_pop(t_queue **queue);
  * 		@param **queue	A queue struct that holds first, last and size
  * 		@param *new		The new node to be added to the queue
  */
-t_lst		*queue_enqueue(t_queue **queue, t_lst *new_node);
+t_lst	*queue_enqueue(t_queue **queue, t_lst *new_node);
 
-void print_cl4(cl_float4 v);
-
-/*
-*	The function that runs on the network event handler threads.
-*	handles the network events for each worker.
-*		@param	input	A t_thread_handler struct that contains
-*						a pointer to a worker and a pointer to the dispatcher
-*/
-void	*handle_worker_connection(void *input);
+void	print_cl4(cl_float4 v);
 
 /*
 *	Create a network event thread for the provided worker
@@ -403,7 +412,7 @@ t_socket	setup_server_socket(int port);
 *	Listen for messages from a specific worker
 *		@param worker	The worker you want to listen for a message from
 */
-t_msg	get_msg(int fd);
+t_msg	receive_msg(int fd);
 
 /*
 *	fill in and return the t_msg(message) struct
@@ -427,7 +436,7 @@ void	send_worker_msg(t_worker *worker, t_msg msg);
 *		@param	dispatcher	The dispatcher's main struct
 *		@param	workers	A pointer to the linked list of workers
 */
-void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
+void	connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 
 /*
 *	Get the next dataset (t_dataset) from the web server and store it in the
@@ -436,28 +445,28 @@ void		connect_workers(t_dispatcher *dispatcher, t_lst **workers);
 *		@param	file		The name of the input file
 *							struct
 */
-void		request_dataset(t_dispatcher *dispatcher, char *file);
+void	load_dataset(t_dispatcher *dispatcher, char *file);
 
 /*
 *	Divide up the dataset into workunits and store them in the
 *		@optimization	Assign them a compute_class
 *		@param	dispatcher	The dispatcher's main struct
 */
-void		divide_dataset(t_dispatcher *dispatcher);
+void	divide_dataset(t_dispatcher *dispatcher);
 
 /*
 *		Starts the simulation by informing workers that work units are
 *		ready for computaiton.
 *		@param	dispatcher	The dispatcher's main struct
 */
-void		launch_simulation(t_dispatcher *dispatcher);
+void	launch_simulation(t_dispatcher *dispatcher);
 
 /*
 *	Save the latest tick to file with the output file format
 *		@param	dispatcher	The dispatcher's main struct
 *		@param	name	The name for the output files
 */
-void 		save_output(t_dispatcher *dispatcher, char *name);
+void 	save_output(t_dispatcher *dispatcher, char *name);
 
 /*
 *	Send a work unit to a specified worker
@@ -465,7 +474,7 @@ void 		save_output(t_dispatcher *dispatcher, char *name);
 *		@param	workunit	non-completed work unit
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
-int			send_workunit(t_worker *worker, t_workunit *workunit);
+int		send_workunit(t_worker *worker, t_workunit *workunit);
 
 /*
 *	Send a work unit to a specified worker
@@ -473,21 +482,21 @@ int			send_workunit(t_worker *worker, t_workunit *workunit);
 *		@param	workunit	non-completed work unit
 *		@return	0 if the request was fullfilled. 1 otherwise
 */
-int			send_bundle(t_worker *worker, t_bundle *bundle, t_tree **leaves);
+int		send_bundle(t_worker *worker, t_bundle *bundle, t_tree **leaves);
 
 /*
 *	Serializes the workunit struct and stores it in the message struct
 *		@param	workunit	The work unit that will be stored in the msg
 *		@return message struct conataining the serialized work unit
 */
-t_msg		serialize_workunit(t_workunit w);
+t_msg	serialize_workunit(t_workunit w);
 
 /*
 *	Parse the data of a worker message and write it to t_workunit struct
 *		@param	msg	The message from the worker that contains a complete
 					work unit
 */
-t_WU		deserialize_WU(t_msg msg);
+t_WU	deserialize_WU(t_msg msg);
 
 /*
 *	Handles the worker's request for a work unit to process
@@ -495,8 +504,8 @@ t_WU		deserialize_WU(t_msg msg);
 *		@param	worker	The worker that made the request
 *		@param	msg	The message sent by the worker
 */
-void		handle_workunit_req(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg	msg);
+void	handle_workunit_req(t_dispatcher *dispatcher,
+		t_worker *worker, t_msg	msg);
 
 /*
 *	Handles the worker's notification that it is done with its assigned
@@ -505,30 +514,30 @@ void		handle_workunit_req(t_dispatcher *dispatcher,
 *		@param	worker	The worker that sent the message
 *		@param	msg	The message sent by the worker
 */
-void		handle_worker_done_msg(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg	msg);
+void	handle_worker_done_msg(t_dispatcher *dispatcher,
+		t_worker *worker, t_msg	msg);
 
 /*
 *	Handles the TICK_COMPLETE_EVENT
 *		@param	dispatcher	The dispatcher's main struct
 */
-void		all_workunits_done(t_dispatcher *dispatcher);
+void	all_bundles_done(t_dispatcher *dispatcher);
 
 /*
 *	Broadcast message to all workers
 *		@param	dispatcher	The dispatcher's main struct
 */
-void		broadcast_worker_msg(t_lst *workers, t_msg msg);
+void	broadcast_worker_msg(t_lst *workers, t_msg msg);
 
 /*
 *	clears the link list of work units.
 */
-void		clear_work_units(t_queue **work_units);
+void	clear_work_units(t_queue **work_units);
 
 /*
 *	clears the link list of work units.
 */
-void		clear_unit(t_lst **work_units);
+void	clear_unit(t_lst **work_units);
 
 /*
 *	returns first workunit in queue without deletion from queue
@@ -538,83 +547,11 @@ void	*queue_peek(t_queue **queue);
 /*
 *	returns the total count of items in queue
 */
-int queue_count(t_queue *queue);
+int		queue_count(t_queue *queue);
 
-/*******************************************************************************
-********************************************************************************
-                 POTENTIAL OPTIMIZATIONS AFTER MVP COMPLETE
-********************************************************************************
-*******************************************************************************/
-/*
-*	Coalesce all cells for each tick into a full tick
-*		@param	dispatcher	The dispatcher's main struct
-*		@incomplete	prototype still needs to be flushed out
-*/
-void		coalesce_into_ticks(t_dispatcher *dispatcher);
-
-/*
-*	Broadcast a super particle to all the cells for their computaiton
-*	of the next tick (over the network)
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	body	The super particle that represents a cell
-*/
-void		broadcast_super_particle(t_dispatcher *dispatcher, t_body *body);
-
-/*
-*	get the cell where the specified particle belongs
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	body	particle to send
-*		@return	cell to send it to
-*/
-t_cell		*find_appropriate_cell(t_dispatcher *dispatcher, t_body *body);
-
-/*
-*	Send body(particle) to a new cell
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	body	particle to send
-*		@param	cell	cell to send it to
-*/
-void		send_particle(t_dispatcher *dispatcher, t_body *body, t_cell *cell);
-
-/*
-*	Requests All workers to dump their cache of cell ticks to central storage
-*		@param	dispatcher	The dispatcher's main struct
-*		@return	0 if the request was fullfilled. 1 otherwise
-*/
-int 		dump_all_workers_cache(t_dispatcher *dispatcher);
-
-/*
-*	Requests a worker to dump its cache of cell ticks to central storage
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	worker	The worker that the request will be sent to
-*		@return	0 if the request was fullfilled. 1 otherwise
-*/
-int 		request_cache_dump(t_dispatcher *dispatcher, t_worker *worker);
-
-/*
-*	Handles the request for broadacasting a super particle to all the
-*	other cells in the simulation
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	worker	The worker that made the request
-*		@param	msg	The message sent by the worker
-*/
-void		handle_broadcast_super_particle_req(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg msg);
-
-/*
-*	Handles the notificaion from the worker that their storage threashold
-*	is almost reached
-*		@param	dispatcher	The dispatcher's main struct
-*		@param	worker	The worker that sent the notification message
-*		@param	msg	The message sent by the worker
-*/
-void		handle_cache_threshold_reached(t_dispatcher *dispatcher,
-			t_worker *worker, t_msg msg);
 /*
 * 	Comparison functionused for body sorting
 */
-
-int sbod_comp(const void *a, const void *b);
-
+int		sbod_comp(const void *a, const void *b);
 
 #endif

@@ -21,6 +21,8 @@ static void print_debug(t_worker *worker, t_msg msg)
 		line = "WORK_UNITS_READY";
 	else if (msg.id == WORK_UNIT)
 		line = "WORK_UNIT";
+	else
+		line = "UNKNOWN";
 	printf("SENT %zu byte '%s' TO worker %d\n", msg.size, line, worker->socket.fd);
 }
 
