@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/29 01:30:18 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 01:35:28 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -412,7 +412,7 @@ t_socket	setup_server_socket(int port);
 *	Listen for messages from a specific worker
 *		@param worker	The worker you want to listen for a message from
 */
-t_msg	get_msg(int fd);
+t_msg	receive_msg(int fd);
 
 /*
 *	fill in and return the t_msg(message) struct

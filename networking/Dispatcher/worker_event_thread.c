@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/29 00:50:21 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/29 00:58:32 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 01:35:28 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ static void	*worker_event_thread(void *input)
 	worker->active = 1;
 	while (worker->active)
 	{
-		msg = get_msg(worker->socket.fd);
+		msg = receive_msg(worker->socket.fd);
 		if (DEBUG && MSG_DEBUG && MSG_DETAILS_DEBUG)
 		{
 			printf("done receiving message\n");
