@@ -3,7 +3,6 @@
 #include <limits.h>
 #include "lz4.h"
 #include "transpose.h"
-#include "msort.h"
 
 int sbod_comp(const void *a, const void *b)
 {
