@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/29 00:08:43 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 00:13:33 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -313,6 +313,7 @@ typedef struct	s_sortbod
 	uint64_t morton;
 }				t_sortbod;
 
+void	configure_worker_settings(t_dispatcher *dispatcher, t_worker *worker);
 t_lst			*new_lst(void *data);
 t_queue			*new_queue();
 t_worker		*new_worker(int fd);

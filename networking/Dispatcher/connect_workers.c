@@ -6,29 +6,13 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/28 23:56:34 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/29 00:13:01 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "dispatcher.h"
 #include <unistd.h>
 #include <pthread.h>
-
-void	configure_worker_settings(t_dispatcher *dispatcher, t_worker *worker)
-{
-	t_msg	settings_msg;
-	t_msg	response;
-
-	settings_msg = serialize_settings(dispatcher);
-	send_worker_msg(worker, settings_msg);
-	free(settings_msg.data);
-
-	response = get_msg(worker->socket.fd);
-	if (response.id != SETTINGS_APPLIED)
-		printf("ERROR: Worker Failed to respond to SETTINGS MSG\n");
-	else
-		printf("Worker settings applied successfully!!\n");
-}
 
 void	*connect_worker_thread(void *param)
 {
