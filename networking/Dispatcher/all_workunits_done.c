@@ -27,7 +27,7 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 	if (METRICS)
 	{
 		printf("--------------------------------Tick %d---------------------------\n", dispatcher->ticks_done);
-		printf("%d workers completed %d workunits totalling %ld MB\n", dispatcher->worker_cnt, dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
+		printf("%d workers completed %d workunits totalling %ld MB\n", queue_count(dispatcher->workers_queue), dispatcher->workunits_done, G_workunit_size / (1024 * 1024));
 		// printf("Processed %ld MB/sec\n", (G_workunit_size / (1024 * 1024)) / 60);
 		// G_total_workunit_size += G_workunit_size;
 		// printf("Total workunits took %f seconds\n", G_worker_calcs);
@@ -92,13 +92,6 @@ void	all_workunits_done(t_dispatcher *dispatcher)
 			printf("2.x:%f\n", dispatcher->dataset->particles[2].position.x);
 		}
 		divide_dataset(dispatcher);
-		//sem_post(dispatcher->start_sending);
-		// Inform all workers work units are ready
-		// pthread_mutex_lock(&dispatcher->worker_list_mutex);
-		// if (DEBUG && MUTEX_DEBUG)
-		// 	printf("worker list mutex locked!\n");
-		// broadcast_worker_msg(dispatcher->workers, new_message(WORK_UNITS_READY, 0, ""));
-		// pthread_mutex_unlock(&dispatcher->worker_list_mutex);
 		if (DEBUG && MUTEX_DEBUG)
 			printf("worker list mutex unlocked!\n");
 

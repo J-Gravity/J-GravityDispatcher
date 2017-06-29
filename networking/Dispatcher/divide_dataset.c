@@ -789,7 +789,7 @@ void mt_bundle(t_dispatcher *disp, t_tree **leaves)
 {
     pthread_t *bundlers = calloc(THREADCOUNT, sizeof(pthread_t));
     int lcount = disp->cell_count;
-    int wcount = disp->worker_cnt;
+    int wcount = queue_count(disp->workers_queue);
     int leaves_per_bundle = (int)ceil((float)lcount / (float)wcount);
     for (int i = 0; i < THREADCOUNT; i++)
     {
@@ -820,7 +820,7 @@ void    divide_dataset(t_dispatcher *dispatcher)
     mt_assemble_neighborhoods(leaves, t);
     printf("left mt_assemble_neighborhoods\n");
     dispatcher->cells = leaves;
-    dispatcher->total_workunits = dispatcher->worker_cnt;
+    dispatcher->total_workunits = queue_count(dispatcher->workers_queue);
     dispatcher->cell_count = count_tree_array(leaves);
     printf("bundling started\n");
     mt_bundle(dispatcher, leaves);

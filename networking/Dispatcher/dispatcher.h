@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/05 19:43:37 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/28 23:25:21 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:49:32 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,18 +275,15 @@ typedef struct		s_set_data
 typedef struct			s_dispatcher
 {
 	pthread_mutex_t		workunits_mutex;
-	pthread_mutex_t		worker_list_mutex;
 	pthread_mutex_t		workunits_done_mutex;
 	pthread_mutex_t		sender_thread_mutex;
 	pthread_t			**sender_threads;
 	sem_t				*start_sending;
-	sem_t				*sender_limit;
 	sem_t				*exit_sem;
 	char				*name;
 	float				timestep;
 	float				softening;
 	t_queue				*workers_queue;
-	int					worker_cnt;
 	t_dataset			*dataset;
 	t_dataset			*new_dataset;
 	int					ticks_cnt;

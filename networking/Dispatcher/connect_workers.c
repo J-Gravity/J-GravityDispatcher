@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/08 21:10:00 by scollet           #+#    #+#             */
-/*   Updated: 2017/06/28 23:23:49 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/06/28 23:44:07 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,25 +54,15 @@ void	*connect_worker_thread(void *param)
 				printf("worker accept call failed\n");
 			return (0);
 		}
-		printf("%d worker", dispatcher->worker_cnt + 1);
-		if (dispatcher->worker_cnt + 1 == 1)
+		printf("%d worker", dispatcher->workers_queue->count + 1);
+		if (dispatcher->workers_queue->count + 1 == 1)
 			printf(" is connected! - fd: %d\n", fd);
 		else
 			printf("s are connected! - fd: %d\n" ,fd);
-
 		worker = new_worker(fd);
 		new_link = new_lst(worker);
-
-		pthread_mutex_lock(&dispatcher->worker_list_mutex);
-		dispatcher->worker_cnt++;
-		pthread_mutex_unlock(&dispatcher->worker_list_mutex);
-		if (DEBUG && MUTEX_DEBUG)
-			printf("worker list mutex locked!\n");
-	
 		queue_enqueue(&dispatcher->workers_queue, new_link);
 		configure_worker_settings(dispatcher, worker);
-		if (DEBUG && MUTEX_DEBUG)
-		printf("worker list mutex unlocked!\n");
 		if (DEBUG && WORKER_DEBUG)
 		{
 			printf("launching event thread from connect workers\n");
