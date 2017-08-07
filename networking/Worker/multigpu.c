@@ -28,32 +28,32 @@ static t_multicontext *setup_multicontext(void)
     //how many GPUs for this platform?
     cl_uint numGPUs;
     clGetDeviceIDs(Platform[0], CL_DEVICE_TYPE_GPU, 0, NULL, &numGPUs);
-    printf("%d GPUs in this platform\n");
+    printf("%d GPUs in this platform\n", numGPUs);
 
-    // Secure a GPU
-    for (int i = 0; i < numPlatforms; i++)
-    {
-    	char *platName = malloc(1024);
-    	clGetPlatformInfo(Platform[i], CL_PLATFORM_NAME, 1024, platName, NULL);
-    	printf("%s platform\n", platName);
-        err = clGetDeviceIDs(Platform[i], DEVICE, 1, &(c->device_id), NULL);
-        if (err == CL_SUCCESS)
-        {
-            break;
-        }
-    }
+    // // Secure a GPU
+    // for (int i = 0; i < numPlatforms; i++)
+    // {
+    // 	char *platName = malloc(1024);
+    // 	clGetPlatformInfo(Platform[i], CL_PLATFORM_NAME, 1024, platName, NULL);
+    // 	printf("%s platform\n", platName);
+    //     err = clGetDeviceIDs(Platform[i], DEVICE, 1, &(c->device_id), NULL);
+    //     if (err == CL_SUCCESS)
+    //     {
+    //         break;
+    //     }
+    // }
 
-    if (c->device_id == NULL)
-        checkError(err, "Finding a device");
+    // if (c->device_id == NULL)
+    //     checkError(err, "Finding a device");
 
-    // Create a compute context
-    c->context = clCreateContext(0, 1, &(c->device_id), NULL, NULL, &err);
-    checkError(err, "Creating context");
+    // // Create a compute context
+    // c->context = clCreateContext(0, 1, &(c->device_id), NULL, NULL, &err);
+    // checkError(err, "Creating context");
 
-    // Create a command queue
-    c->commands = clCreateCommandQueue(c->context, (c->device_id), 0, &err);
-    checkError(err, "Creating command queue");
-    printf("setup context\n");
+    // // Create a command queue
+    // c->commands = clCreateCommandQueue(c->context, (c->device_id), 0, &err);
+    // checkError(err, "Creating command queue");
+    // printf("setup context\n");
     return (c);
 }
 
