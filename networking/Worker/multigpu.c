@@ -3,10 +3,17 @@
 #include "worker.h"
 #include "err_code.h"
 
-static t_context *setup_context(void)
+typedef struct s_multicontext
+{
+    cl_device_id *ids;
+    cl_context context;
+    cl_command_queue *cq;
+}               t_multicontext;
+
+static t_multicontext *setup_multicontext(void)
 {
      cl_uint numPlatforms;
-     t_context *c = (t_context *)calloc(1, sizeof(t_context));
+     t_multicontext *c = (t_multicontext *)calloc(1, sizeof(t_multicontext));
      int err;
 
     // Find number of platforms
@@ -17,6 +24,11 @@ static t_context *setup_context(void)
     cl_platform_id Platform[numPlatforms];
     err = clGetPlatformIDs(numPlatforms, Platform, NULL);
     checkError(err, "Getting platforms");
+
+    //how many GPUs for this platform?
+    cl_uint numGPUs;
+    clGetDeviceIDs(Platform[0], CL_DEVICE_TYPE_GPU, 0, NULL, &numGPUs);
+    printf("%d GPUs in this platform\n");
 
     // Secure a GPU
     for (int i = 0; i < numPlatforms; i++)
