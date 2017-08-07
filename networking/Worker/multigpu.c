@@ -21,6 +21,9 @@ static t_context *setup_context(void)
     // Secure a GPU
     for (int i = 0; i < numPlatforms; i++)
     {
+    	char *platName = malloc(1024);
+    	clGetPlatformInfo(Platform[i], CL_PLATFORM_NAME, 1024, platName, NULL);
+    	printf("%s platform\n", platName);
         err = clGetDeviceIDs(Platform[i], DEVICE, 1, &(c->device_id), NULL);
         if (err == CL_SUCCESS)
         {
