@@ -96,23 +96,6 @@ void print_cl4(cl_float4 v)
     printf("x: %f y: %f z: %f w:%f\n", v.x, v.y, v.z, v.w);
 }
 
-
-static char *load_cl_file(char *filename)
-{
-    char *source;
-    int fd;
-
-    source = (char *)calloc(1,8192);
-    fd = open(filename, O_RDONLY);
-    if (fd < 0)
-    {
-        printf("could not find file\n");
-        exit(1);
-    }
-    read(fd, source, 8192);
-    return (source);
-}
-
 static t_context *setup_context(void)
 {
      cl_uint numPlatforms;

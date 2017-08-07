@@ -18,7 +18,7 @@ quick:
 	gcc -o worker *.c ../TurboTranspose-master/transpose.o ../TurboTranspose-master/transpose_sse.o ../lz4-lib/liblz4.a -O3 -I ../TurboTranspose-master -I ../lz4-lib -framework OpenCL -Wno-deprecated-declarations
 
 amd:
-	gcc -o worker *.c ../TurboTranspose-master/transpose.o ../TurboTranspose-master/transpose_sse.o ../lz4-lib/liblz4.a -O3 -I ../TurboTranspose-master -I ../lz4-lib -lopencl
+	gcc -o worker *.c ../TurboTranspose-master/transpose.o ../TurboTranspose-master/transpose_sse.o ../lz4-lib/liblz4.a -O3 -I ../TurboTranspose-master -I ../lz4-lib -lOpenCL -pthread
 
 clean:
 	rm -f worker

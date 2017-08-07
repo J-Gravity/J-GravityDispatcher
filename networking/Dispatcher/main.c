@@ -41,7 +41,7 @@ int	main(int ac, char **av)
 	dispatcher->ticks_cnt = 10;
 	dispatcher->timestep = TIME_STEP;
 	dispatcher->softening = SOFTENING;
-	receive_simulation_job(dispatcher);
+//	receive_simulation_job(dispatcher);
 	
 	TIMER_START(msec)
 	connect_workers(dispatcher, NULL);

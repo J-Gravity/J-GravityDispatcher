@@ -102,7 +102,7 @@ long G_total_workunit_cnt;
 #if defined(__APPLE__) || defined(__MACOSX)
 #include <OpenCL/opencl.h>
 #else
-#include <CL/cl.h>
+#include <CL/opencl.h>
 #endif
 # include <pthread.h>
 # include <fcntl.h>

@@ -21,8 +21,6 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
-
-#include <dispatch/dispatch.h>
 #include "worker.h"
 
 static void print_debug(int fd, t_msg msg)
