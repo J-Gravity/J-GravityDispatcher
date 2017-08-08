@@ -1,5 +1,5 @@
 //toy tester to understand multi-device contexts,etc
-
+#define CL_USE_DEPRECATED_OPENCL_1_2_APIS
 #include "worker.h"
 #include "err_code.h"
 
@@ -38,14 +38,15 @@ static t_multicontext *setup_multicontext(void)
     c->context = clCreateContext(0, c->device_count, c->ids, NULL, NULL, &err);
     checkError(err, "Creating context");
 
-    // // Create a command queue
-    // c->commands = clCreateCommandQueue(c->context, (c->device_id), 0, &err);
-    // checkError(err, "Creating command queue");
-    // printf("setup context\n");
+    // Create the command queues
+    c->cq = calloc(c->device_count, sizeof(cl_command_queue));
+    for (int i = 0; i < c->device_count; i++)
+    	c->cq[i] = clCreateCommandQueue(c->context, c->ids[i], CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE, NULL);
+    printf("setup context\n");
     return (c);
 }
 
 int main(void)
 {
-	setup_context();
+	setup_multicontext();
 }
