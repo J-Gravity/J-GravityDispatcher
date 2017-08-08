@@ -126,7 +126,7 @@ static t_multicontext *setup_multicontext(void)
     return (c);
 }
 
-static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
+static cl_kernel   make_kernel(t_multicontext *c, char *sourcefile, char *name)
 {
     cl_kernel k;
     cl_program p;
@@ -139,16 +139,6 @@ static cl_kernel   make_kernel(t_context *c, char *sourcefile, char *name)
 
     // Build the program
     err = clBuildProgram(p, 0, NULL, NULL, NULL, NULL);
-    if (err != CL_SUCCESS)
-    {
-        size_t len;
-        char buffer[2048];
-
-        printf("Error: Failed to build program executable!\n%s\n", err_code(err));
-        clGetProgramBuildInfo(p, c->device_id, CL_PROGRAM_BUILD_LOG, sizeof(buffer), buffer, &len);
-        printf("%s\n", buffer);
-        exit(0);
-    }
 
     // Create the compute kernel from the program
     k = clCreateKernel(p, name, &err);
