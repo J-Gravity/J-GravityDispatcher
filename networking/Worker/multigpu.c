@@ -152,5 +152,5 @@ static cl_kernel   make_kernel(t_multicontext *c, char *sourcefile, char *name)
 int main(void)
 {
 	t_multicontext *c = setup_multicontext();
-	make_kernel(c, "mykernel", NULL);
+	make_kernel(c, "nbody", NULL);
 }
