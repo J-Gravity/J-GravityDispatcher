@@ -47,5 +47,5 @@ static t_multicontext *setup_multicontext(void)
 
 int main(void)
 {
-	setup_context();
+	setup_multicontext();
 }
