@@ -21,8 +21,13 @@ int		semval(sem_t *sem)
 	return (v);
 }
 
-void	msort_swap(size_t size, char *a, size_t i, size_t l)
+void	msort_swap(t_sortbod *i, t_sortbod *l)
 {
+	uint64_t	t;
+
+	t = i->morton;
+	i->morton = l->morton;
+	l->morton = t;
 }
 
 void	*tmsort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void *))
@@ -31,12 +36,22 @@ void	*tmsort(void *sort, size_t count, size_t datasize, int (*cmp) (void *, void
 	return (sort);
 }
 
+int		mcmp(t_sortbod a, uint64_t b)
+{
+	if (a.morton < b)
+		return (-1);
+	if (a.morton >= b)
+		return (1);
+	dprintf(2, "NAN found, tests done <, >=  : %llu || %llu\n", a.morton, b);
+	return (0);
+}
+
 void	*qmsort(void *params)
 {
-	size_t		pivot;
+	uint64_t	pivot;
 	size_t		i;
 	size_t		l;
-	t_sortbod	*sorts = (char*)(((msort_param_t*)params)->sorts);
+	t_sortbod	*sorts = (t_sortbod*)(((msort_param_t*)params)->sorts);
 	size_t		end = ((msort_param_t*)params)->end;
 	size_t		start = ((msort_param_t*)params)->start;
 
@@ -48,14 +63,14 @@ void	*qmsort(void *params)
 	while (i <= l)
 	{
 		//if i < pivot i++;
-		while (cmp(sorts[i], pivot) == -1)
+		while (mcmp(sorts[i], pivot) == -1)
 			i++;
 		//if l >= pivot l--;
-		while (cmp(sorts[l], pivot) == 1)
+		while (mcmp(sorts[l], pivot) == 1)
 			l--;
 		if (i >= l)
 			break ;
-		msort_swap(datasize, sorts, I, L);
+		msort_swap(&sorts[i], &sorts[l]);
 	}
 
 	msort_param_t	param1;
@@ -98,7 +113,7 @@ void	*msort(t_sortbod *sorts, size_t count)
 	size_t		i;
 	size_t		l;
 	size_t		end;
-	size_t		pivot;
+	uint64_t	pivot;
 
 	//do sample of data
 	//if looks partially sorted dp timsort
@@ -117,14 +132,14 @@ void	*msort(t_sortbod *sorts, size_t count)
 	while (i <= l)
 	{
 		//if i < pivot i++;
-		while (cmp(sorts[i], pivot) == -1)
+		while (mcmp(sorts[i], pivot) == -1)
 			i++;
 		//if l >= pivot l--;
-		while (cmp(sorts[l], pivot) == 1)
+		while (mcmp(sorts[l], pivot) == 1)
 			l--;
 		if (i >= l)
 			break ;
-		msort_swap(datasize, sorts, I, L);
+		msort_swap(&sorts[i], &sorts[l]);
 	}
 	msort_param_t	param1;
 	param1.start = 0;

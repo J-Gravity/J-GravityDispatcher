@@ -2,6 +2,7 @@
 #include <math.h>
 #include <limits.h>
 #include "lz4.h"
+#include "msort.h"
 #include "transpose.h"
 
 int sbod_comp(const void *a, const void *b)
@@ -632,8 +633,8 @@ t_tree *make_tree(t_body *bodies, int count)
 
 	//sort the bodies by their morton codes
 	//they are now arranged on a z-order curve.
-    mort_tim_sort(sorts, count);
-	//msort(sorts, count);
+    //mort_tim_sort(sorts, count);
+	msort(sorts, count);
 	//copy data back from cached sort structure
     uint64_t *mortons = calloc(count, sizeof(uint64_t));
     for (int i = 0; i < count; i++)

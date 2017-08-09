@@ -3,10 +3,9 @@
 #include <pthread.h>
 #include "msort.h"
 
-
 void	bsort(msort_param_t params)
 {
-	size_t		pivot;
+	uint64_t	pivot;
 	size_t		i;
 	size_t		l;
 	t_sortbod	*sorts = (t_sortbod*)(params.sorts);
@@ -21,14 +20,14 @@ void	bsort(msort_param_t params)
 	while (i <= l)
 	{
 		//if i < pivot i++;
-		while (cmp(sorts[i], pivot) == -1)
+		while (mcmp(sorts[i], pivot) == -1)
 			i++;
 		//if l >= pivot l--;
-		while (cmp(sorts[l], pivot) == 1)
+		while (mcmp(sorts[l], pivot) == 1)
 			l--;
 		if (i >= l)
 			break ;
-		msort_swap(datasize, sorts, i, l);
+		msort_swap(&sorts[i], &sorts[l]);
 	}
 	
 	msort_param_t	param1;
