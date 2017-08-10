@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/08/10 11:06:28 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/08/10 11:35:15 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,14 @@ static void	*simulation_thread(void *param)
 	t_worker	*worker;
 
 	worker = (t_worker *)param;
-	while (worker->active && dispatcher->ticks_done >= dispatcher->ticks_cnt)
+	while (worker->active)
 	{
 		setup_async_file(dispatcher);
 		duplicate_dataset(dispatcher);
 		dispatcher->workunits_done = 0;
 		divide_dataset(dispatcher);
+		// wait for next tick semaphore that will be fired when all the 
+		// workunits from the last tick to be integrated
 	}
 	printf("SIMULATION- exiting simulation thread\n");
 	sem_post(worker->exit_sem);

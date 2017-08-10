@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 19:20:34 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/08/10 11:16:39 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/08/10 11:39:12 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,10 @@ static void *integration_thread(void *param)
 		free(workunit->local_bodies);
 		free(workunit);
 		dispatcher->workunits_done++;
+		if (workunits_done == workunits_cnt)
+			dispatcher->ticks_done++;
+		if (dispatcher->ticks_done < dispatcher->ticks_cnt)
+			//fire the nextTick semaphore
 		G_total_send_time += time(NULL) - send_time;
     }
     return (0);
