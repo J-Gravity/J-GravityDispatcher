@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/06/23 14:39:35 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/08/10 12:08:59 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,36 +22,6 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include "worker.h"
-
-static void print_debug(int fd, t_msg msg)
-{
-	char *line;
-
-	if (msg.id == WORK_UNIT_REQUEST)
-		line = "WORK_UNIT_REQUEST";
-	else if (msg.id == WORK_UNIT_DONE)
-		line = "WORK_UNIT_DONE";
-	printf("SENT %zu bytes '%s' TO dispatcher %d\n", msg.size, line, fd);
-}
-
-void	send_msg(int fd, t_msg msg)
-{
-	char	*buffer;
-	size_t		msg_size;
-
-	msg_size = HEADER_SIZE + msg.size;
-	buffer = (char *)calloc(1, msg_size);
-	buffer[0] = msg.id;
-	memcpy(&buffer[1], &msg.size, sizeof(size_t));
-	memcpy(&buffer[HEADER_SIZE], msg.data, msg.size);
-	send(fd, buffer, msg_size, 0);
-	if (DEBUG & MSG_DEBUG)
-		print_debug(fd, msg);
-	if (msg.data)
-		free(msg.data);
-	if (buffer)
-		free(buffer);
-}
 
 static void unlink_semaphores()
 {
@@ -96,9 +66,6 @@ static void initialize_semaphores(t_worker *worker)
 
 int main(int argc, char **argsv)
 {
-	int			err;
-	int			conn_socket;
-	struct		sockaddr_in serv_addr;
 	t_worker	*worker;
 
 	G_softening = SOFTENING;
@@ -106,37 +73,19 @@ int main(int argc, char **argsv)
 	worker = (t_worker *)calloc(1, sizeof(t_worker));
 	if (argc == 1)
 	{
-		printf("Usage ./a.out [IP Address]\n");
+		printf("Usage ./a.out <inital_dataset.jgrav file>\n");
 		exit(1);
 	}
-	conn_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (conn_socket == -1)
-		write(1, "sock error occured\n", 19);
 
-	memset(&serv_addr, '0', sizeof(serv_addr));
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_port = htons(PORT);
-	// Convert IPv4 and IPv6 addresses from text to binary form
-	if (inet_pton(AF_INET, argsv[1], &serv_addr.sin_addr)<=0)
-	{
-		printf("\nInvalid address/ Address not supported \n");
-		return -1;
-	}
-	if (connect(conn_socket, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
-	{
-		printf("\nConnection Failed \n");
-		return -1;
-	}
-	printf("Successfully connected to %s\n", argsv[1]);
-	worker->socket.fd = conn_socket;
+	//load inital_dataset
+	load_dataset(dispatcher, av[1]);
 
 	initialize_semaphores(worker);
 	if (DEBUG)
 		printf("semaphores initalized\n");
-	launch_event_thread(worker);
+	launch_simulation_thread(worker);
 	launch_calculation_thread(worker);
-	launch_sender_thread(worker);
-	launch_debundle_thread(worker);
+	launch_integration_thread(worker);
 	if (DEBUG)
 		printf("threads launched\n");
 	int val = sem_wait(worker->exit_sem);
