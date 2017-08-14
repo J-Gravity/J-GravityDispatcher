@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/05/03 21:59:51 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/08/10 12:08:59 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/08/10 15:31:14 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,19 +27,16 @@ static void unlink_semaphores()
 {
 	int ret;
 
+    ret = sem_unlink("/next_tick");
+    if (DEBUG && ret)
+        printf("sem_unlink err %d\n", errno);
 	ret = sem_unlink("/calc_thread");
     if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
-	ret = sem_unlink("/sender_thread");
+	ret = sem_unlink("/integration_thread");
     if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
 	ret = sem_unlink("/exit");
-    if (DEBUG && ret)
-        printf("sem_unlink err %d\n", errno);
-    ret = sem_unlink("/debundle");
-    if (DEBUG && ret)
-        printf("sem_unlink err %d\n", errno);
-    ret = sem_unlink("/readybundle");
     if (DEBUG && ret)
         printf("sem_unlink err %d\n", errno);
 }
@@ -47,21 +44,18 @@ static void unlink_semaphores()
 static void initialize_semaphores(t_worker *worker)
 {
 	unlink_semaphores();
+	worker->next_tick_sem = sem_open("/next_tick", O_CREAT, 077, 0);
+	if (worker->next_tick_sem == SEM_FAILED)
+		printf("sem4 open failed with %d\n", errno);
 	worker->calc_thread_sem = sem_open("/calc_thread", O_CREAT, 0777, 0);
 	if (worker->calc_thread_sem == SEM_FAILED)
 		printf("sem1 open failed with %d\n", errno);
-	worker->sender_thread_sem = sem_open("/sender_thread", O_CREAT, 0777, 0);
-	if (worker->sender_thread_sem == SEM_FAILED)
+	worker->integration_thread_sem = sem_open("/integration_thread", O_CREAT, 0777, 0);
+	if (worker->integration_thread_sem == SEM_FAILED)
 		printf("sem2 open failed with %d\n", errno);
 	worker->exit_sem = sem_open("/exit", O_CREAT, 0777, 0);
 	if (worker->exit_sem == SEM_FAILED)
 		printf("sem3 open failed with %d\n", errno);
-	worker->debundle_sem = sem_open("/debundle", O_CREAT, 077, 0);
-	if (worker->debundle_sem == SEM_FAILED)
-		printf("sem4 open failed with %d\n", errno);
-	worker->ready_for_bundle = sem_open("/readybundle", O_CREAT, 077, 1);
-	if (worker->ready_for_bundle == SEM_FAILED)
-		printf("sem4 open failed with %d\n", errno);
 }
 
 int main(int argc, char **argsv)

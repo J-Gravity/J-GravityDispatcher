@@ -133,16 +133,14 @@ typedef struct			s_worker
 	char				active;
 	t_queue				*todo_work;
 	t_queue				*completed_work;
-	t_queue 			*bundle_queue;
-	pthread_t			*event_thread;
+	t_queue 			*workunit_queue;
+	pthread_t			*simulation_thread;
 	pthread_t			*calc_thread;
-	pthread_t			*sender_thread;
-	pthread_t 			*debundle_thread;
-	sem_t				*sender_thread_sem;
+	pthread_t			*integration_thread;
+	sem_t				*next_tick_sem;
 	sem_t				*calc_thread_sem;
+	sem_t				*integration_thread_sem;
 	sem_t				*exit_sem;
-	sem_t 				*ready_for_bundle;
-	sem_t 				*debundle_sem;
 	t_socket			socket;
 }						t_worker;
 

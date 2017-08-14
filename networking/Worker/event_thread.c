@@ -6,7 +6,7 @@
 /*   By: cyildiri <cyildiri@student.42.us.org>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/06/02 17:06:01 by cyildiri          #+#    #+#             */
-/*   Updated: 2017/08/10 11:35:15 by cyildiri         ###   ########.fr       */
+/*   Updated: 2017/08/10 15:26:29 by cyildiri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,11 +33,13 @@ static void	*simulation_thread(void *param)
 	while (worker->active)
 	{
 		setup_async_file(dispatcher);
-		duplicate_dataset(dispatcher);
+		if (ticks_done > 0)
+			duplicate_dataset(dispatcher);
 		dispatcher->workunits_done = 0;
 		divide_dataset(dispatcher);
-		// wait for next tick semaphore that will be fired when all the 
-		// workunits from the last tick to be integrated
+		//wait for last tick to complete
+		if (sem_wait(worker->next_tick_sem) < 0)
+			printf("SIMULATION- sem_wait failed with err:%d\n", errno);
 	}
 	printf("SIMULATION- exiting simulation thread\n");
 	sem_post(worker->exit_sem);
